@@ -1,0 +1,184 @@
+\documentclass[10pt]{article}
+\usepackage[letterpaper]{geometry}
+\geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{color}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage[font=small,labelfont=bf,labelsep=period]{caption}
+\usepackage[english]{babel}
+\usepackage{indentfirst}
+\usepackage{array}
+\usepackage{makecell}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{arydshln}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xfrac}
+\usepackage{etoolbox}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{dcolumn}
+\usepackage{hyperref}
+\usepackage{courier}
+\usepackage{url}
+\usepackage{esvect}
+\usepackage{commath}
+\usepackage{verbatim} % for block comments
+\usepackage{enumitem}
+\usepackage{hyperref} % for clickable table of contents
+\usepackage{braket}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{gensymb}
+\usepackage{longtable}
+
+% for circled numbers
+\usepackage{tikz}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+
+\titleclass{\subsubsubsection}{straight}[\subsection]
+
+% define new command for triple sub sections
+\newcounter{subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
+\renewcommand\theparagraph{\thesubsubsubsection.\arabic{paragraph}} % optional; useful if paragraphs are to be numbered
+
+\titleformat{\subsubsubsection}
+  {\normalfont\normalsize\bfseries}{\thesubsubsubsection}{1em}{}
+\titlespacing*{\subsubsubsection}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{5}{\z@}%
+  {3.25ex \@plus1ex \@minus.2ex}%
+  {-1em}%
+  {\normalfont\normalsize\bfseries}}
+\renewcommand\subparagraph{\@startsection{subparagraph}{6}{\parindent}%
+  {3.25ex \@plus1ex \@minus .2ex}%
+  {-1em}%
+  {\normalfont\normalsize\bfseries}}
+\def\toclevel@subsubsubsection{4}
+\def\toclevel@paragraph{5}
+\def\toclevel@paragraph{6}
+\def\l@subsubsubsection{\@dottedtocline{4}{7em}{4em}}
+\def\l@paragraph{\@dottedtocline{5}{10em}{5em}}
+\def\l@subparagraph{\@dottedtocline{6}{14em}{6em}}
+\makeatother
+
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+\begin{document}
+
+\title{ME 280a: HW 1}
+\author{April Novak}
+
+\maketitle
+
+\section{Introduction and Objectives}
+
+The purpose of this study is to solve a simple finite element (FE) problem and perform a convergence study to determine the number of elements needed to reach a specific tolerance. The Galerkin FE method is used, which for certain classes of problems possesses the ``best approximation property,'' a characteristic that signifies that the FE solution obtained is the best possible solution for a given mesh refinement and choice of shape functions. The mathematical procedure is described in Section \ref{sec:Procedure}.
+
+\section{Procedure}
+\label{sec:Procedure}
+
+This section describes the mathematical process used to solve the following problem:
+
+\begin{equation}
+\label{eq:Problem}
+\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=k^2\sin{\left(\frac{2\pi kx}{L}\right)}
+\end{equation}
+
+where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. The Galerkin FE method (FEM) achieves the best approximation property by expanding both \(u\) and a test function \(\psi\) in the same set of basis functions:
+
+\begin{equation}
+\label{eq:approx}
+\begin{aligned}
+u\approx u^N=\sum_{j=1}^{N}a_j\phi_j\\
+\psi=\sum_{i=1}^{N}b_i\phi_i\\
+\end{aligned}
+\end{equation}
+
+where \(u^N\) is the approximate solution. Galerkin's method is stated as:
+
+\begin{equation}
+r^N\cdot u^N=0
+\end{equation}
+
+where \(r^N\) is the residual. Hence, to formulate the weak form to Eq. \eqref{eq:Problem}, multiply Eq. \eqref{eq:Problem} through by \(\psi\) and integrate over all space, \(d\Omega\).
+
+\begin{equation}
+\int_{\Omega}^{}\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)\psi d\Omega-\int_{\Omega}^{}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi d\Omega=0
+\end{equation}
+
+Applying integration by parts to the first term:
+
+\begin{equation}
+-\int_{\Omega}^{}E(x)\frac{du}{dx}\frac{d\psi}{dx}d\Omega+\int_{\partial\Omega}^{}E(x)\frac{du}{dx}\psi d(\partial\Omega)-\int_{\Omega}^{}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi d\Omega=0
+\end{equation}
+
+where \(\partial\Omega\) refers to one dimension lower than \(\Omega\), which for this case refers to evaluation at the endpoints of the domain. Hence, for this particular 1-D problem, the above reduces to:
+
+\begin{equation}
+\begin{aligned}
+-\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx+ E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi dx=0\\
+\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi dx-E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}\\
+\end{aligned}
+\end{equation}
+
+Inserting the approximation in Eq. \eqref{eq:approx}:
+
+\begin{equation}
+\begin{aligned}
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\sum_{i=1}^{N}b_i\phi_i\right)dx-E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\left(\sum_{i=1}^{N}b_i\phi_i\right)\biggr\vert_{0}^{L}\\
+\end{aligned}
+\end{equation}
+
+Recognizing that \(b_i\) appears in each term, the sum of the remaining terms must also equal zero (i.e. basically cancel \(b_i\) from each term).
+
+\begin{equation}
+\begin{aligned}
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx-E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_i\right)}{dx}\left(\phi_j\right)\biggr\vert_{0}^{L}\\
+\end{aligned}
+\end{equation}
+
+This equation can be satisfied for each choice of \(j\), and hence can be reduced to:
+
+\begin{equation}
+\begin{aligned}
+\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx-E(x)\frac{d\left(a_j\phi_j\right)}{dx}\left(\phi_i\right)\biggr\vert_{0}^{L}\\
+\end{aligned}
+\end{equation}
+
+There are two possible boundary conditions that can be imposed - essential boundary conditions, in which \(u\) is specified, and natural boundary conditions, where \(E(x)du/dx\) is specified. The Galerkin method specifies that the test functions \(\psi\) satisfy the homogeneous form of the essential boundary conditions. 
+
+This produces a system of matrix equations of the form:
+
+\begin{equation}
+\textbf{K}\vv{x}=\vv{b}
+\end{equation}
+
+where:
+
+\begin{equation}
+\begin{aligned}
+K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_j}{dx}\frac{d\phi_j}{dx}dx\\
+x_j=a_j\\
+b_i=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx\\
+\end{aligned}
+\end{equation}
+
+The above equation governs the entire domain, 
+
+
+\end{document}
