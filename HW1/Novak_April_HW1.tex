@@ -160,9 +160,7 @@ This equation can be satisfied for each choice of \(j\), and hence can be reduce
 \end{aligned}
 \end{equation}
 
-There are two possible boundary conditions that can be imposed - essential boundary conditions, in which \(u\) is specified, and natural boundary conditions, where \(E(x)du/dx\) is specified. The Galerkin method specifies that the test functions \(\psi\) satisfy the homogeneous form of the essential boundary conditions. 
-
-This produces a system of matrix equations of the form:
+There are two possible boundary conditions that can be imposed - essential boundary conditions, in which \(u\) is specified, and natural boundary conditions, where \(E(x)du/dx\) is specified. The Galerkin method specifies that the test functions \(\psi\) satisfy the homogeneous form of the essential boundary conditions. This produces a system of matrix equations of the form:
 
 \begin{equation}
 \textbf{K}\vv{x}=\vv{b}
@@ -172,13 +170,30 @@ where:
 
 \begin{equation}
 \begin{aligned}
-K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_j}{dx}\frac{d\phi_j}{dx}dx\\
+K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\\
 x_j=a_j\\
 b_i=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx\\
 \end{aligned}
 \end{equation}
 
-The above equation governs the entire domain.
+The above equation governs the entire domain. \(\textbf{K}\) is an \(n \times n\) matrix, where \(n\) is the number of global nodes. In order for these equations to be useful with Gaussian quadrature, they must be transformed to the master element which exists over \(-1\leq\xi\leq1\) with the Jacobian \(dx/d\xi\):
+
+\begin{equation}
+\begin{aligned}
+K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}\frac{dx}{d\xi}d\xi\\
+x_j=a_j\\
+b_i=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx\\
+\end{aligned}
+\end{equation} 
+
+For linear elements, the shape functions have the following form over the master element:
+
+\begin{equation}
+\begin{aligned}
+N_1(\xi)=\frac{1-\xi}{2}\\
+N_2(\xi)=\frac{1+\xi}{2}\\
+\end{aligned}
+\end{equation}
 
 
 \end{document}
