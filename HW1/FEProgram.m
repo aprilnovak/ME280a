@@ -4,7 +4,7 @@ L = 1.0;                % problem domain
 k_freq = 1.0;           % forcing frequency
 num_elem = 10.0;         % number of finite elements
 shape_order = 3;        % number of nodes per element
-E = 1.0;                % elastic modulus
+E = 0.1;                % elastic modulus
 left = 'Dirichlet';     % left boundary condition 
 left_value = 0.0;       % left Dirichlet boundary condition value
 right = 'Dirichlet';    % right boundary condition type
@@ -83,9 +83,25 @@ end
 
 % plot the solution in the parent domain, and then transform it to the
 % physical domain
+parent_domain = -1:0.1:1;
 
+for elem = 1:num_elem
+    solution_in_element = zeros(length(parent_domain), 1);
+    for j = 1:length(parent_domain)
+        [N, dN, x_xe, dx_dxe] = shapefunctions(parent_domain(j), shape_order, coordinates, LM, elem);
+        for i = 1:num_nodes_per_element
+            solution_in_element = solution_in_element + a_expanded(LM(elem, i)) * N(i);
+        end
+    end
+end
 
+% plot the analytical solution
+x = 0:0.1:L;
+C_1 = (right_value + (k_freq^2 * sin(2 * pi * k_freq) * (L / (2 * pi * k_freq))^2 / E)) / L;
+solution_analytical = (1 / E) * -k_freq^2 * sin(2 * pi * k_freq * x / L) * (L / (2 * pi * k_freq))^2 + C_1 * x + left_value;
 
+plot(x, solution_analytical, 'k')
+%plot(coordinates(:,1), a_expanded, 'b')
 
 
 

@@ -10,14 +10,14 @@ dN = zeros(shape_order, 1);
 
 switch shape_order
     case 2
-        N(1) = (1 - xe) / 2;
-        N(2) = (1 + xe) / 2;
+        N(1) = (1 - xe) ./ 2;
+        N(2) = (1 + xe) ./ 2;
         dN(1) = - 1/2;
         dN(2) = 1/2;
     case 3
-        N(1) = xe * (xe - 1) / 2;
+        N(1) = xe .* (xe - 1) ./ 2;
         N(2) = - (xe - 1) .* (1 + xe);
-        N(3) = xe .* (1 + xe) / 2;
+        N(3) = xe .* (1 + xe) ./ 2;;
         dN(1) = xe - 1/2;
         dN(2) = -2 .* xe;
         dN(3) = 1/2 + xe;
