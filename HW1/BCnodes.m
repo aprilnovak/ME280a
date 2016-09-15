@@ -1,7 +1,7 @@
 % Script to return the node numbers associated with different types of
 % boundary conditions
 
-function [dirichlet_nodes, neumann_nodes] = BCnodes(left, right, left_value, right_value, num_nodes)
+function [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes)
 
 % arrays that hold the nodes in the first row and the values in each column
 dirichlet_nodes = [];
@@ -30,4 +30,11 @@ switch right
         disp('You entered an incorrect field for the type of BC on the right boundary.');
 end
 
+a_k = [];
+
+if isempty(dirichlet_nodes)
+    disp('no dirichlet nodes')
+else
+    a_k = dirichlet_nodes(2,:)';
+end
 

@@ -1,7 +1,7 @@
 clear all
 
 L = 1.0;                % problem domain
-k_freq = 1.0;           % forcing frequency
+k_freq = 2.0;           % forcing frequency
 num_elem = 10.0;         % number of finite elements
 shape_order = 3;        % number of nodes per element
 E = 0.1;                % elastic modulus
@@ -14,7 +14,7 @@ right_value = 1.0;      % right Dirichlet boundary condition value
 [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
 
 % specify the boundary conditions
-[dirichlet_nodes, neumann_nodes] = BCnodes(left, right, left_value, right_value, num_nodes);
+[dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
 
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(num_nodes_per_element);
@@ -34,17 +34,17 @@ for elem = 1:num_elem
      for l = 1:length(qp)
          for i = 1:num_nodes_per_element
              [N, dN, x_xe, dx_dxe] = shapefunctions(qp(l), shape_order, coordinates, LM, elem);
-             
+
              % assemble the (elemental) forcing vector
-             f(i) = f(i) + wt(l) * k_freq * k_freq * sin(2 * pi * k_freq * x_xe / L) * N(i) / dx_dxe;
+             f(i) = f(i) - wt(l) * k_freq * k_freq * sin(2 * pi * k_freq * x_xe / L) * N(i) * dx_dxe;
              
              for j = 1:num_nodes_per_element
                  % assemble the (elemental) stiffness matrix
-                 k(i,j) = k(i,j) + wt(l) * E * dN(i) * dN(j) * dx_dxe;
+                 k(i,j) = k(i,j) + wt(l) * E * dN(i) * dN(j) / dx_dxe;
              end
          end
      end
-     
+    
      % place the elemental k matrix into the global K matrix
      for m = 1:length(permutation(:,1))
         i = permutation(m,1);
@@ -59,13 +59,13 @@ for elem = 1:num_elem
 end
 
 % perform static condensation to remove known Dirichlet nodes from solve
-[K_condensed, F_condensed] = condensation(K, F, num_nodes, dirichlet_nodes);
+[K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
 % perform the solve
-a_condensed = K_condensed \ F_condensed;
+a_u_condensed = K_uu \ (F_u - K_uk * F_k);
 
 % expand a_condensed to include the Dirichlet nodes
-a_expanded = zeros(num_nodes, 1);
+a_u_expanded = zeros(num_nodes, 1);
 
 a_row = 1;
 i = 1;      % index for dirichlet_nodes
@@ -73,35 +73,36 @@ j = 1;      % index for expanded row
         
 for a_row = 1:num_nodes
     if (find(dirichlet_nodes(1, :) == a_row))
-        a_expanded(a_row) = dirichlet_nodes(2,i);
+        a_u_expanded(a_row) = dirichlet_nodes(2,i);
         i = i + 1;
     else
-        a_expanded(a_row) = a_condensed(j);
+        a_u_expanded(a_row) = a_u_condensed(j);
         j = j + 1;
     end
 end
 
 % plot the solution in the parent domain, and then transform it to the
 % physical domain
-parent_domain = -1:0.1:1;
-
-for elem = 1:num_elem
-    solution_in_element = zeros(length(parent_domain), 1);
-    for j = 1:length(parent_domain)
-        [N, dN, x_xe, dx_dxe] = shapefunctions(parent_domain(j), shape_order, coordinates, LM, elem);
-        for i = 1:num_nodes_per_element
-            solution_in_element = solution_in_element + a_expanded(LM(elem, i)) * N(i);
-        end
-    end
-end
+% parent_domain = -1:0.1:1;
+% 
+% for elem = 1:num_elem
+%     solution_in_element = zeros(length(parent_domain), 1);
+%     for j = 1:length(parent_domain)
+%         [N, dN, x_xe, dx_dxe] = shapefunctions(parent_domain(j), shape_order, coordinates, LM, elem);
+%         for i = 1:num_nodes_per_element
+%             solution_in_element = solution_in_element + a_expanded(LM(elem, i)) * N(i);
+%         end
+%     end
+% end
 
 % plot the analytical solution
-x = 0:0.1:L;
+x = 0:0.01:L;
 C_1 = (right_value + (k_freq^2 * sin(2 * pi * k_freq) * (L / (2 * pi * k_freq))^2 / E)) / L;
 solution_analytical = (1 / E) * -k_freq^2 * sin(2 * pi * k_freq * x / L) * (L / (2 * pi * k_freq))^2 + C_1 * x + left_value;
 
 plot(x, solution_analytical, 'k')
-%plot(coordinates(:,1), a_expanded, 'b')
+hold on
+plot(coordinates(:,1), a_u_expanded, 'b')
 
 
 

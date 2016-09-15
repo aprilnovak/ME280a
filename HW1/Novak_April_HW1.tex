@@ -99,7 +99,7 @@ This section describes the mathematical process used to solve the following prob
 \frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=k^2\sin{\left(\frac{2\pi kx}{L}\right)}
 \end{equation}
 
-where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. The Galerkin FE method (FEM) achieves the best approximation property by expanding both \(u\) and a test function \(\psi\) in the same set of basis functions:
+where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. The Galerkin FE method (FEM) achieves the best approximation property by expanding both \(u\) and a test function \(\psi\) in the same set of basis functions \(\phi\):
 
 \begin{equation}
 \label{eq:approx}
@@ -132,15 +132,15 @@ where \(\partial\Omega\) refers to one dimension lower than \(\Omega\), which fo
 \begin{equation}
 \begin{aligned}
 -\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx+ E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi dx=0\\
-\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi dx-E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi dx+E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
-Inserting the approximation in Eq. \eqref{eq:approx}:
+Inserting the approximation described in Eq. \eqref{eq:approx}:
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\sum_{i=1}^{N}b_i\phi_i\right)dx-E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\left(\sum_{i=1}^{N}b_i\phi_i\right)\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\sum_{i=1}^{N}b_i\phi_i\right)dx+E(x)\frac{du}{dx}\left(\sum_{i=1}^{N}b_i\phi_i\right)\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -148,7 +148,7 @@ Recognizing that \(b_i\) appears in each term, the sum of the remaining terms mu
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx-E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_i\right)}{dx}\left(\phi_j\right)\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\left(\phi_j\right)\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -156,14 +156,15 @@ This equation can be satisfied for each choice of \(j\), and hence can be reduce
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx-E(x)\frac{d\left(a_j\phi_j\right)}{dx}\left(\phi_i\right)\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\left(\phi_j\right)\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
-There are two possible boundary conditions that can be imposed - essential boundary conditions, in which \(u\) is specified, and natural boundary conditions, where \(E(x)du/dx\) is specified. The Galerkin method specifies that the test functions \(\psi\) satisfy the homogeneous form of the essential boundary conditions. This produces a system of matrix equations of the form:
+This produces a system of matrix equations of the form:
 
 \begin{equation}
-\textbf{K}\vv{x}=\vv{b}
+\label{eq:MatrixEqn}
+\textbf{K}\vv{a}=\vv{F}
 \end{equation}
 
 where:
@@ -171,18 +172,18 @@ where:
 \begin{equation}
 \begin{aligned}
 K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\\
-x_j=a_j\\
-b_i=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx\\
+a_j=a_j\\
+F_i=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\left(\phi_j\right)\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
-The above equation governs the entire domain. \(\textbf{K}\) is an \(n \times n\) matrix, where \(n\) is the number of global nodes. In order for these equations to be useful with Gaussian quadrature, they must be transformed to the master element which exists over \(-1\leq\xi\leq1\) with the Jacobian \(dx/d\xi\):
+where the second term in \(F_i\) is only applied at nodes that have Neumann boundary conditions (since \(\psi\) satisfies the homogeneous form of the essential boundary conditions). The above equation governs the entire domain. \(\textbf{K}\) is an \(n \times n\) matrix, where \(n\) is the number of global nodes. The solution is contained within \(\vv{a}\). In order for these equations to be useful with Gaussian quadrature, they must be transformed to the master element which exists over \(-1\leq\xi\leq1\) with the Jacobian \(dx/d\xi\):
 
 \begin{equation}
 \begin{aligned}
-K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}\frac{dx}{d\xi}d\xi\\
-x_j=a_j\\
-b_i=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx\\
+K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\left(\frac{dx}{d\xi}\frac{dx}{d\xi}\frac{d\xi}{dx}\right)\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{d\xi}\frac{d\phi_j}{d\xi}dx\left(\frac{d\xi}{dx}\right)\\
+a_j=a_j\\
+F_i=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx\rightarrow\int_{-1}^{1}k^2\sin{\left(\frac{2\pi kx(\xi)}{L}\right)}\phi_i\frac{dx}{d\xi}d\xi\\
 \end{aligned}
 \end{equation} 
 
@@ -206,16 +207,55 @@ It has been assumed that \(E\) is not a function of \(x\). Integrating once more
 
 \begin{equation}
 \label{eq:Problem2}
-u(x)=-\frac{1}{E}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\frac{L}{2\pi k}\right)^2+C_1x
+u(x)=-\frac{1}{E}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\frac{L}{2\pi k}\right)^2+C_1x+C_2
 \end{equation}
 
+where \(C_1\) and \(C_2\) are constants to be determined by applying the boundary conditions. The boundary conditions for this problem are Dirichlet at both endpoints, such that:
+
+\begin{equation}
+\begin{aligned}
+u(0)=0\\
+u(L)=1\\
+\end{aligned}
+\end{equation}
+
+By the first BC, \(C_2=0\), and \(C_1\) based on the second condition equals:
+
+\begin{equation}
+C_1=\frac{u(L)+k^2\sin{(2\pi k)}\left(\frac{L}{2\pi k E}\right)^2}{L}
+\end{equation}
+
+In order to apply the boundary conditions within the numerical context of the finite element method, the matrix equation in Eq. \eqref{eq:MatrixEqn} must be rewritten to reflect that some of the nodal values are actually already specified through the Dirichlet boundary conditions. 
+
+\begin{equation}
+\begin{bmatrix}
+	K_{kk} & K_{ku}\\
+	K_{uk} & K_{uu}\\
+\end{bmatrix}
+\begin{bmatrix}
+	x_k\\
+	x_u\\
+\end{bmatrix}
+=
+\begin{bmatrix}
+	b_k\\
+	b_u\\
+\end{bmatrix}
+\end{equation}
+
+where \(k\) indicates a known quantity (specified through a boundary condition) and \(u\) indicates an unknown quantity.   Explicitly expanding this equation gives:
+
+\begin{equation}
+\begin{aligned}
+K_{kk}x_k+K_{ku}x_u=b_k\\
+K_{uk}x_k+K_{uu}x_u=b_u\\
+\end{aligned}
+\end{equation}
+
+Solving this matrix system is sometimes referred to as ``static condensation,'' since the original matrix system in Eq. \eqref{eq:MatrixEqn} must be separated into its components. The nodes at which Dirichlet conditions are specified are ``known,'' while all other nodes, including Neumann condition nodes, are ``unknown,'' since it is the value of \(u\) that we are looking to find at each node.
 
 
-
-
-
-
-
+There are two possible boundary conditions that can be imposed - essential boundary conditions, in which \(u\) is specified, and natural boundary conditions, where \(E(x)du/dx\) is specified. The Galerkin method specifies that the test functions \(\psi\) satisfy the homogeneous form of the essential boundary conditions. 
 
 
 \end{document}
