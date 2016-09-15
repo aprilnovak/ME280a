@@ -1,8 +1,8 @@
 clear all
 
-L = 1.0;                % problem domain
+L = 2.0;                % problem domain
 k_freq = 2.0;           % forcing frequency
-num_elem = 10.0;         % number of finite elements
+num_elem = 40.0;         % number of finite elements
 shape_order = 3;        % number of nodes per element
 E = 0.1;                % elastic modulus
 left = 'Dirichlet';     % left boundary condition 
@@ -20,8 +20,7 @@ right_value = 1.0;      % right Dirichlet boundary condition value
 [permutation] = permutation(num_nodes_per_element);
 
 % define the quadrature rule
-wt = [1.0, 1.0];                    % weights
-qp = [-sqrt(1/3), sqrt(1/3)];       % points
+[wt, qp] = quadrature(shape_order);
 
 % assemble the elemental k and elemental f
 K = zeros(num_nodes);
@@ -65,7 +64,7 @@ end
 a_u_condensed = K_uu \ (F_u - K_uk * F_k);
 
 % expand a_condensed to include the Dirichlet nodes
-a_u_expanded = zeros(num_nodes, 1);
+a = zeros(num_nodes, 1);
 
 a_row = 1;
 i = 1;      % index for dirichlet_nodes
@@ -73,36 +72,62 @@ j = 1;      % index for expanded row
         
 for a_row = 1:num_nodes
     if (find(dirichlet_nodes(1, :) == a_row))
-        a_u_expanded(a_row) = dirichlet_nodes(2,i);
+        a(a_row) = dirichlet_nodes(2,i);
         i = i + 1;
     else
-        a_u_expanded(a_row) = a_u_condensed(j);
+        a(a_row) = a_u_condensed(j);
         j = j + 1;
     end
 end
 
 % plot the solution in the parent domain, and then transform it to the
 % physical domain
-% parent_domain = -1:0.1:1;
-% 
-% for elem = 1:num_elem
-%     solution_in_element = zeros(length(parent_domain), 1);
-%     for j = 1:length(parent_domain)
-%         [N, dN, x_xe, dx_dxe] = shapefunctions(parent_domain(j), shape_order, coordinates, LM, elem);
-%         for i = 1:num_nodes_per_element
-%             solution_in_element = solution_in_element + a_expanded(LM(elem, i)) * N(i);
-%         end
-%     end
-% end
+
+parent_domain = -1:0.1:1;
+
+syms xe
+
+switch shape_order
+    case 2
+        N1(xe) = (1 - xe) ./ 2;
+        N2(xe) = (1 + xe) ./ 2;
+        dN1(xe) = - 1/2;
+        dN2(xe) = 1/2;
+        N = {N1, N2};
+        dN = {dN1, dN2};
+    case 3
+        N1(xe) = xe .* (xe - 1) ./ 2;
+        N2(xe) = - (xe - 1) .* (1 + xe);
+        N3(xe) = xe .* (1 + xe) ./ 2;
+        dN1(xe) = xe - 1/2;
+        dN2(xe) = -2 .* xe;
+        dN3(xe) = 1/2 + xe;
+        N = {N1, N2, N3};
+        dN = {dN1, dN2, dN3};
+    otherwise
+        disp('You entered an unsupported shape function order.');
+end
+
+for elem = 1:num_elem
+    r(xe) = coordinates(LM(elem, 1), 1)*N{1}(xe) + coordinates(LM(elem, 2), 1)*N{2}(xe) + coordinates(LM(elem, 3), 1)*N{3}(xe);
+    J = diff(r,xe);
+    solution = a(LM(elem, 1))*N{1}(parent_domain) + a(LM(elem, 2))*N{2}(parent_domain) + a(LM(elem, 3))*N{3}(parent_domain);
+    
+    if elem == 1
+        plot(coordinates(:,1), a, 'ro','LineWidth',2)
+        grid on
+        hold on
+    end
+    
+    plot(r(parent_domain), solution, '-k')
+    hold on
+end
 
 % plot the analytical solution
-x = 0:0.01:L;
+physical_domain = 0:0.01:L;
 C_1 = (right_value + (k_freq^2 * sin(2 * pi * k_freq) * (L / (2 * pi * k_freq))^2 / E)) / L;
-solution_analytical = (1 / E) * -k_freq^2 * sin(2 * pi * k_freq * x / L) * (L / (2 * pi * k_freq))^2 + C_1 * x + left_value;
-
-plot(x, solution_analytical, 'k')
-hold on
-plot(coordinates(:,1), a_u_expanded, 'b')
+solution_analytical = (1 ./ E) .* -k_freq.^2 .* sin(2 .* pi .* k_freq .* physical_domain ./ L) .* (L ./ (2 .* pi .* k_freq)).^2 + C_1 .* physical_domain + left_value;
+plot(physical_domain, solution_analytical)
 
 
 
