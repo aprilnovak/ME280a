@@ -13,6 +13,9 @@ right_value = 1.0;      % right Dirichlet boundary condition value
 % perform the meshing
 [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
 
+% specify the boundary conditions
+[dirichlet_nodes, neumann_nodes] = BCnodes(left, right, left_value, right_value, num_nodes);
+
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(num_nodes_per_element);
 
@@ -55,9 +58,6 @@ for elem = 1:num_elem
      end
 end
 
-% apply the boundary conditions
-[dirichlet_nodes, neumann_nodes] = BCnodes(left, right, num_nodes);
-
 % perform static condensation to remove known Dirichlet nodes from solve
 [K_condensed, F_condensed] = condensation(K, F, num_nodes, dirichlet_nodes);
 
@@ -69,7 +69,21 @@ a_expanded = zeros(num_nodes, 1);
 
 a_row = 1;
 i = 1;      % index for dirichlet_nodes
-j = 1;      % index for condensed row
+j = 1;      % index for expanded row
+        
+for a_row = 1:num_nodes
+    if (find(dirichlet_nodes(1, :) == a_row))
+        a_expanded(a_row) = dirichlet_nodes(2,i);
+        i = i + 1;
+    else
+        a_expanded(a_row) = a_condensed(j);
+        j = j + 1;
+    end
+end
+
+% plot the solution in the parent domain, and then transform it to the
+% physical domain
+
 
 
 

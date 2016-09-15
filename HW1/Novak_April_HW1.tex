@@ -195,5 +195,27 @@ N_2(\xi)=\frac{1+\xi}{2}\\
 \end{aligned}
 \end{equation}
 
+In order to verify that the program functions correctly, the solution is plotted with the analytical solution to Eq. \eqref{eq:Problem}. To determine the analytical solution, integrate Eq. \eqref{eq:Problem} once to obtain:
+
+\begin{equation}
+\label{eq:Problem2}
+\frac{du}{dx}=-\frac{1}{E}k^2\cos{\left(\frac{2\pi kx}{L}\right)}\frac{L}{2\pi k}+C_1
+\end{equation}
+
+It has been assumed that \(E\) is not a function of \(x\). Integrating once more:
+
+\begin{equation}
+\label{eq:Problem2}
+u(x)=-\frac{1}{E}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\frac{L}{2\pi k}\right)^2+C_1x
+\end{equation}
+
+
+
+
+
+
+
+
+
 
 \end{document}
