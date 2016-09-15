@@ -65,6 +65,11 @@ end
 a_condensed = K_condensed \ F_condensed;
 
 % expand a_condensed to include the Dirichlet nodes
+a_expanded = zeros(num_nodes, 1);
+
+a_row = 1;
+i = 1;      % index for dirichlet_nodes
+j = 1;      % index for condensed row
 
 
 
