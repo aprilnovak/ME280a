@@ -2,7 +2,7 @@ clear all
 
 L = 2.0;                % problem domain
 k_freq = 2.0;           % forcing frequency
-num_elem = 40.0;         % number of finite elements
+num_elem = 4.0;         % number of finite elements
 shape_order = 3;        % number of nodes per element
 E = 0.1;                % elastic modulus
 left = 'Dirichlet';     % left boundary condition 
@@ -61,7 +61,7 @@ end
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
 % perform the solve
-a_u_condensed = K_uu \ (F_u - K_uk * F_k);
+a_u_condensed = K_uu \ (F_u - K_uk * dirichlet_nodes(2,:)');
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);

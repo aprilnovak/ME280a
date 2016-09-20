@@ -87,10 +87,14 @@
 
 \section{Introduction and Objectives}
 
-The purpose of this study is to solve a simple finite element (FE) problem and perform a convergence study to determine the number of elements needed to reach a specific tolerance. The Galerkin FE method is used, which for certain classes of problems possesses the ``best approximation property,'' a characteristic that signifies that the FE solution obtained is the best possible solution for a given mesh refinement and choice of shape functions. The mathematical procedure is described in Section \ref{sec:Procedure}.
+The purpose of this study is to solve a simple finite element (FE) problem and perform a convergence study to determine the number of elements needed to reach a specific tolerance. The Galerkin FE method is used, which for certain classes of problems possesses the ``best approximation property,'' a characteristic that signifies that the FE solution obtained is the best possible solution for a given mesh refinement and choice of shape functions. The mathematical procedure and numerical implementation is described in Section \ref{sec:Procedure}.
 
 \section{Procedure}
 \label{sec:Procedure}
+
+This section details the problem statement and mathematical method used for solving the problem.
+
+\subsection{Problem Statement}
 
 This section describes the mathematical process used to solve the following problem:
 
@@ -99,7 +103,40 @@ This section describes the mathematical process used to solve the following prob
 \frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=k^2\sin{\left(\frac{2\pi kx}{L}\right)}
 \end{equation}
 
-where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. The Galerkin FE method (FEM) achieves the best approximation property by expanding both \(u\) and a test function \(\psi\) in the same set of basis functions \(\phi\):
+where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. In order to verify that the program functions correctly, it is instructive to determine the analytical solution to Eq. \eqref{eq:Problem}. To determine the analytical solution, integrate Eq. \eqref{eq:Problem} once to obtain:
+
+\begin{equation}
+\label{eq:Problem2}
+\frac{du}{dx}=-\frac{1}{E}k^2\cos{\left(\frac{2\pi kx}{L}\right)}\frac{L}{2\pi k}+C_1
+\end{equation}
+
+It has been assumed that \(E\) is not a function of \(x\), and hence can be treated as constant in the integration. Integrating once more:
+
+\begin{equation}
+\label{eq:Problem2}
+u(x)=-\frac{1}{E}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\frac{L}{2\pi k}\right)^2+C_1x+C_2
+\end{equation}
+
+The boundary conditions for this problem are Dirichlet at both endpoints, such that:
+
+\begin{equation}
+\begin{aligned}
+u(0)=0\\
+u(L)=1\\
+\end{aligned}
+\end{equation}
+
+By the first BC, \(C_2=0\), and \(C_1\) based on the second condition equals:
+
+\begin{equation}
+C_1=\frac{u(L)+k^2\sin{(2\pi k)}\left(\frac{L}{2\pi k E}\right)^2}{L}
+\end{equation}
+
+The purpose of this assignment is to solve Eq. \eqref{eq:Problem} with the FEM and then to perform a convergence study based on an error estimate relating the FE solution to the analytical solution given in Eq. \eqref{eq:Problem2}.
+
+\subsection{Finite Element Implementation}
+
+The Galerkin FE method (FEM) achieves the best approximation property by approximating the true solution \(u(x)\) as \(u^N(x)\), where both \(u^N(x)\) and the test function \(\psi\) are expanded in the same set of basis functions \(\phi\):
 
 \begin{equation}
 \label{eq:approx}
@@ -109,7 +146,7 @@ u\approx u^N=\sum_{j=1}^{N}a_j\phi_j\\
 \end{aligned}
 \end{equation}
 
-where \(u^N\) is the approximate solution. Galerkin's method is stated as:
+Galerkin's method is stated as:
 
 \begin{equation}
 r^N\cdot u^N=0
@@ -140,7 +177,7 @@ Inserting the approximation described in Eq. \eqref{eq:approx}:
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\sum_{i=1}^{N}b_i\phi_i\right)dx+E(x)\frac{du}{dx}\left(\sum_{i=1}^{N}b_i\phi_i\right)\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\sum_{i=1}^{N}b_i\phi_idx+E(x)\frac{du}{dx}\sum_{i=1}^{N}b_i\phi_i\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -148,7 +185,7 @@ Recognizing that \(b_i\) appears in each term, the sum of the remaining terms mu
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\left(\phi_j\right)\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\phi_j\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -156,7 +193,7 @@ This equation can be satisfied for each choice of \(j\), and hence can be reduce
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\left(\phi_j\right)\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\phi_j\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -173,17 +210,19 @@ where:
 \begin{aligned}
 K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\\
 a_j=a_j\\
-F_i=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\left(\phi_j\right)\biggr\vert_{0}^{L}\\
+F_i=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\phi_j\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
-where the second term in \(F_i\) is only applied at nodes that have Neumann boundary conditions (since \(\psi\) satisfies the homogeneous form of the essential boundary conditions). The above equation governs the entire domain. \(\textbf{K}\) is an \(n \times n\) matrix, where \(n\) is the number of global nodes. The solution is contained within \(\vv{a}\). In order for these equations to be useful with Gaussian quadrature, they must be transformed to the master element which exists over \(-1\leq\xi\leq1\) with the Jacobian \(dx/d\xi\):
+where the second term in \(F_i\) is only applied at nodes that have Neumann boundary conditions (since \(\psi\) satisfies the homogeneous form of the essential boundary conditions). The above equation governs the entire domain. \(\textbf{K}\) is an \(n \times n\) matrix, where \(n\) is the number of global nodes. The solution is contained within \(\vv{a}\). 
+
+In order for these equations to be useful with Gaussian quadrature, they must be transformed to the master element which exists over \(-1\leq\xi\leq1\):
 
 \begin{equation}
 \begin{aligned}
 K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\left(\frac{dx}{d\xi}\frac{dx}{d\xi}\frac{d\xi}{dx}\right)\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{d\xi}\frac{d\phi_j}{d\xi}dx\left(\frac{d\xi}{dx}\right)\\
 a_j=a_j\\
-F_i=\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx\rightarrow\int_{-1}^{1}k^2\sin{\left(\frac{2\pi kx(\xi)}{L}\right)}\phi_i\frac{dx}{d\xi}d\xi\\
+F_i=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx\rightarrow-\int_{-1}^{1}k^2\sin{\left(\frac{2\pi kx(\xi)}{L}\right)}\phi_i\frac{dx}{d\xi}d\xi\\
 \end{aligned}
 \end{equation} 
 
@@ -194,35 +233,6 @@ For linear elements, the shape functions have the following form over the master
 N_1(\xi)=\frac{1-\xi}{2}\\
 N_2(\xi)=\frac{1+\xi}{2}\\
 \end{aligned}
-\end{equation}
-
-In order to verify that the program functions correctly, the solution is plotted with the analytical solution to Eq. \eqref{eq:Problem}. To determine the analytical solution, integrate Eq. \eqref{eq:Problem} once to obtain:
-
-\begin{equation}
-\label{eq:Problem2}
-\frac{du}{dx}=-\frac{1}{E}k^2\cos{\left(\frac{2\pi kx}{L}\right)}\frac{L}{2\pi k}+C_1
-\end{equation}
-
-It has been assumed that \(E\) is not a function of \(x\). Integrating once more:
-
-\begin{equation}
-\label{eq:Problem2}
-u(x)=-\frac{1}{E}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\frac{L}{2\pi k}\right)^2+C_1x+C_2
-\end{equation}
-
-where \(C_1\) and \(C_2\) are constants to be determined by applying the boundary conditions. The boundary conditions for this problem are Dirichlet at both endpoints, such that:
-
-\begin{equation}
-\begin{aligned}
-u(0)=0\\
-u(L)=1\\
-\end{aligned}
-\end{equation}
-
-By the first BC, \(C_2=0\), and \(C_1\) based on the second condition equals:
-
-\begin{equation}
-C_1=\frac{u(L)+k^2\sin{(2\pi k)}\left(\frac{L}{2\pi k E}\right)^2}{L}
 \end{equation}
 
 In order to apply the boundary conditions within the numerical context of the finite element method, the matrix equation in Eq. \eqref{eq:MatrixEqn} must be rewritten to reflect that some of the nodal values are actually already specified through the Dirichlet boundary conditions. 
@@ -252,10 +262,8 @@ K_{uk}x_k+K_{uu}x_u=b_u\\
 \end{aligned}
 \end{equation}
 
-Solving this matrix system is sometimes referred to as ``static condensation,'' since the original matrix system in Eq. \eqref{eq:MatrixEqn} must be separated into its components. The nodes at which Dirichlet conditions are specified are ``known,'' while all other nodes, including Neumann condition nodes, are ``unknown,'' since it is the value of \(u\) that we are looking to find at each node.
+Solving this matrix system is sometimes referred to as ``static condensation,'' since the original matrix system in Eq. \eqref{eq:MatrixEqn} must be separated into its components. The nodes at which Dirichlet conditions are specified are ``known,'' while all other nodes, including Neumann condition nodes, are ``unknown,'' since it is the value of \(u\) that we are looking to find at each node. The second of these equations is the one that is solved in this assignment, since there are no natural boundary conditions.
 
-
-There are two possible boundary conditions that can be imposed - essential boundary conditions, in which \(u\) is specified, and natural boundary conditions, where \(E(x)du/dx\) is specified. The Galerkin method specifies that the test functions \(\psi\) satisfy the homogeneous form of the essential boundary conditions. 
 
 
 \end{document}
