@@ -108,10 +108,15 @@ switch shape_order
         disp('You entered an unsupported shape function order.');
 end
 
+i = 1;
 for elem = 1:num_elem
     r(xe) = coordinates(LM(elem, 1), 1)*N{1}(xe) + coordinates(LM(elem, 2), 1)*N{2}(xe) + coordinates(LM(elem, 3), 1)*N{3}(xe);
     J = diff(r,xe);
     solution = a(LM(elem, 1))*N{1}(parent_domain) + a(LM(elem, 2))*N{2}(parent_domain) + a(LM(elem, 3))*N{3}(parent_domain);
+    
+    % sample the solution into a vector u_sampled_solution
+    u_sampled_solution_matrix(i,:) = solution;
+    i = i + 1;
     
     if elem == 1
         plot(coordinates(:,1), a, 'ro','LineWidth',2)
@@ -124,11 +129,23 @@ for elem = 1:num_elem
 end
 
 % plot the analytical solution
-physical_domain = 0:0.01:L;
+physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
 C_1 = (right_value + (k_freq^2 * sin(2 * pi * k_freq) * (L / (2 * pi * k_freq))^2 / E)) / L;
 solution_analytical = (1 ./ E) .* -k_freq.^2 .* sin(2 .* pi .* k_freq .* physical_domain ./ L) .* (L ./ (2 .* pi .* k_freq)).^2 + C_1 .* physical_domain + left_value;
 plot(physical_domain, solution_analytical)
 
+% assemble u_sampled_solution into a single vector
+j = length(u_sampled_solution_matrix(1,:)) + 1;
 
+for i = 1:length(u_sampled_solution_matrix(:,1))
+    if i == 1 % first row
+        solution_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_matrix(i,:);
+    else
+        solution_FE(j:(j + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_matrix(i,2:end);
+        j = j + length(u_sampled_solution_matrix(1,:)) - 1;
+    end
+end
+
+solution_difference = solution_FE - solution_analytical;
 
 
