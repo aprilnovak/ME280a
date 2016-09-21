@@ -264,6 +264,30 @@ K_{uk}x_k+K_{uu}x_u=b_u\\
 
 Solving this matrix system is sometimes referred to as ``static condensation,'' since the original matrix system in Eq. \eqref{eq:MatrixEqn} must be separated into its components. The nodes at which Dirichlet conditions are specified are ``known,'' while all other nodes, including Neumann condition nodes, are ``unknown,'' since it is the value of \(u\) that we are looking to find at each node. The second of these equations is the one that is solved in this assignment, since there are no natural boundary conditions.
 
+\subsection{Error Estimates and Convergence Criteria}
 
+The accuracy of the FE approximation is estimated using the energy norm \(e^N\), defined as:
+
+\begin{equation}
+e^N=\frac{\|u-u^N\|}{\|u\|}
+\end{equation}
+
+where:
+
+\begin{equation}
+\|u\|=\sqrt{\int_{\Omega}^{}\frac{du}{dx}E\frac{du}{dx}}
+\end{equation}
+
+\begin{equation}
+\|u-u^N\|=\sqrt{\int_{\Omega}^{}\frac{d(u-u^N)}{dx}E\frac{d(u-u^N)}{dx}}=\sqrt{\int_{\Omega}^{}\left(\frac{du}{dx}E\frac{du}{dx}-\frac{du^N}{dx}E\frac{du^N}{dx}\right)}
+\end{equation}
+
+The derivatives of the FE solution are determined according to:
+
+\begin{equation}
+\frac{du^N}{dx}=\frac{d}{dx}\sum_{j=1}^{N}a_j\phi_j(x)=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{dx}
+\end{equation}
+
+while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}.
 
 \end{document}
