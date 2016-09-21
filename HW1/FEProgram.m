@@ -2,13 +2,20 @@ clear all
 
 L = 2.0;                % problem domain
 k_freq = 2.0;           % forcing frequency
-num_elem = 3.0;         % number of finite elements
+num_elem = 30.0;         % number of finite elements
 shape_order = 2;        % number of nodes per element
 E = 0.1;                % elastic modulus
 left = 'Dirichlet';     % left boundary condition 
 left_value = 0.0;       % left Dirichlet boundary condition value
 right = 'Dirichlet';    % right boundary condition type
 right_value = 1.0;      % right Dirichlet boundary condition value
+
+% --- ANALYTICAL SOLUTION --- %
+parent_domain = -1:0.1:1;
+physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
+C_1 = (right_value + (k_freq^2 * sin(2 * pi * k_freq) * (L / (2 * pi * k_freq))^2 / E)) / L;
+solution_analytical = (1 ./ E) .* -k_freq.^2 .* sin(2 .* pi .* k_freq .* physical_domain ./ L) .* (L ./ (2 .* pi .* k_freq)).^2 + C_1 .* physical_domain + left_value;
+solution_analytical_derivative = -(1 ./ E) * k_freq * k_freq * cos(2 * pi * k_freq * physical_domain ./ L) * L ./ (2 * pi * k_freq) + C_1;
 
 % perform the meshing
 [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
@@ -80,11 +87,6 @@ for a_row = 1:num_nodes
     end
 end
 
-% plot the solution in the parent domain, and then transform it to the
-% physical domain
-
-parent_domain = -1:0.1:1;
-
 syms xe
 
 switch shape_order
@@ -125,7 +127,7 @@ for elem = 1:num_elem
     
     % sample the solution into a vector u_sampled_solution
     u_sampled_solution_matrix(i,:) = solution;
-    u_sampled_solution_derivative_matrix(i,:) = solution_derivative;
+    u_sampled_solution_derivative_matrix(i,:) = solution_derivative ./ J;
     i = i + 1;
     
     if elem == 1
@@ -139,9 +141,6 @@ for elem = 1:num_elem
 end
 
 % plot the analytical solution
-physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
-C_1 = (right_value + (k_freq^2 * sin(2 * pi * k_freq) * (L / (2 * pi * k_freq))^2 / E)) / L;
-solution_analytical = (1 ./ E) .* -k_freq.^2 .* sin(2 .* pi .* k_freq .* physical_domain ./ L) .* (L ./ (2 .* pi .* k_freq)).^2 + C_1 .* physical_domain + left_value;
 plot(physical_domain, solution_analytical)
 hold on
 
@@ -151,14 +150,24 @@ j = length(u_sampled_solution_matrix(1,:)) + 1;
 for i = 1:length(u_sampled_solution_matrix(:,1))
     if i == 1
         solution_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_matrix(i,:);
-        solution_derivative_FE(1:length(u_sampled_solution_derivative_matrix(i,:))) = u_sampled_solution_derivative_matrix(i,:);
+        if shape_order == 2
+            solution_derivative_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_derivative_matrix(i,:) * ones(1,length(u_sampled_solution_matrix(i,:)));
+        else
+            solution_derivative_FE(1:length(u_sampled_solution_derivative_matrix(i,:))) = u_sampled_solution_derivative_matrix(i,:);
+        end
     else
         solution_FE(j:(j + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_matrix(i,2:end);
-        solution_derivative_FE(j:(j + length(u_sampled_solution_derivative_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix(i,2:end);
+        if shape_order == 2
+            solution_derivative_FE(j:(j + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix(i,:) * ones(1,length(u_sampled_solution_matrix(i,2:end)));
+        else
+            solution_derivative_FE(j:(j + length(u_sampled_solution_derivative_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix(i,2:end);
+        end
         j = j + length(u_sampled_solution_matrix(1,:)) - 1;
     end
 end
 
 solution_difference = solution_FE - solution_analytical;
 plot(physical_domain, solution_derivative_FE, 'go')
+hold on
+plot(physical_domain, solution_analytical_derivative, 'mo')
 

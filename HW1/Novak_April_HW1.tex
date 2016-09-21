@@ -285,7 +285,7 @@ where:
 The derivatives of the FE solution are determined according to:
 
 \begin{equation}
-\frac{du^N}{dx}=\frac{d}{dx}\sum_{j=1}^{N}a_j\phi_j(x)=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{dx}
+\frac{du^N}{dx}=\frac{d}{dx}\sum_{j=1}^{N}a_j\phi_j(x)=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{dx}=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{d\xi}\frac{d\xi}{dx}
 \end{equation}
 
 while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}.
