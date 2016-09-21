@@ -264,6 +264,17 @@ K_{uk}x_k+K_{uu}x_u=b_u\\
 
 Solving this matrix system is sometimes referred to as ``static condensation,'' since the original matrix system in Eq. \eqref{eq:MatrixEqn} must be separated into its components. The nodes at which Dirichlet conditions are specified are ``known,'' while all other nodes, including Neumann condition nodes, are ``unknown,'' since it is the value of \(u\) that we are looking to find at each node. The second of these equations is the one that is solved in this assignment, since there are no natural boundary conditions.
 
+All the integration is performed numerically using Gaussian quadrature. For simplicity, a two-point quadrature rule is used, with the following weights \(w\) and sampling points \(x\):
+
+\begin{equation}
+\begin{aligned}
+w=[1.0, 1.0]\\
+x=[-\sqrt{1/3}, \sqrt{1/3}]\\
+\end{aligned}
+\end{equation}
+
+The actual numerical algorithm computes the elemental \(k(i,j)\) and \(b(i)\) by looping over \(i, j\), and the quadrature points. Then, these elemental matrices are assembled into the global matrices using a connectivity matrix, which relates the local node numbering scheme to the global node numbering scheme. See the Appendix for the full code used in this assignment. The code was made highly modular in order to allow flexibility.
+
 \subsection{Error Estimates and Convergence Criteria}
 
 The accuracy of the FE approximation is estimated using the energy norm \(e^N\), defined as:

@@ -2,7 +2,7 @@ clear all
 
 L = 2.0;                % problem domain
 k_freq = 2.0;           % forcing frequency
-num_elem = 30.0;         % number of finite elements
+num_elem = 1.0;         % number of finite elements
 shape_order = 2;        % number of nodes per element
 E = 0.1;                % elastic modulus
 left = 'Dirichlet';     % left boundary condition 
@@ -171,3 +171,7 @@ plot(physical_domain, solution_derivative_FE, 'go')
 hold on
 plot(physical_domain, solution_analytical_derivative, 'mo')
 
+% compute the energy norm
+energy_norm_analytical = trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative);
+energy_norm_FE = trapz(physical_domain, solution_derivative_FE .* E .* solution_derivative_FE);
+eval(sqrt(energy_norm_analytical - energy_norm_FE) ./ sqrt(energy_norm_analytical))
