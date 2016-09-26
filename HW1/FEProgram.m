@@ -1,8 +1,8 @@
 clear all
 
 L = 1.0;                        % problem domain
-k_freq = 1.0;                   % forcing frequency
-num_elem = 1;                  % number of finite elements (initial guess)
+k_freq = 2;                     % forcing frequency
+num_elem = 3;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
 E = 0.1;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
@@ -15,8 +15,10 @@ energy_norm = tolerance + 1;    % arbitrary initialization value
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(shape_order);
 
-while energy_norm > tolerance
-    num_elem = num_elem + 1;
+for num_elem = [2, 4, 8, 16, 32, 64, 128]
+
+% while energy_norm > tolerance
+%     num_elem = num_elem + 1;
     
     % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
@@ -151,11 +153,19 @@ end
 energy_norm_analytical = trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative);
 energy_norm_FE = trapz(physical_domain, solution_derivative_FE .* E .* solution_derivative_FE);
 energy_norm = sqrt(energy_norm_analytical - energy_norm_FE) ./ sqrt(energy_norm_analytical);
-sprintf('energy norm: %f', energy_norm)
+%sprintf('energy norm: %f', energy_norm)
+
+
+plot(physical_domain, solution_FE)
+hold on
 
 end
-
-sprintf('number elements: %i', num_elem)
-plot(physical_domain, solution_FE, 'r')
-hold on
 plot(physical_domain, solution_analytical, 'k')
+legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128', 'analytical solution', 'Location', 'southeast')
+xlabel('Problem domain')
+ylabel(sprintf('solution for k = %i', k_freq))
+
+% sprintf('number elements: %i', num_elem)
+% plot(physical_domain, solution_FE, 'r')
+% hold on
+% plot(physical_domain, solution_analytical, 'k')
