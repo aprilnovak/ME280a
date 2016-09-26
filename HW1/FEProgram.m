@@ -2,7 +2,7 @@ clear all
 
 L = 1.0;                        % problem domain
 k_freq = 4.0;                   % forcing frequency
-num_elem = 7;                  % number of finite elements (initial guess)
+num_elem = 10;                  % number of finite elements (initial guess)
 shape_order = 3;                % number of nodes per element
 E = 0.1;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
@@ -98,95 +98,95 @@ energy_norm = tolerance + 1;    % arbitrary initialization value
         end
     end
 
-    syms xe
-
-    switch shape_order
-        case 2
-            N1(xe) = (1 - xe) ./ 2;
-            N2(xe) = (1 + xe) ./ 2;
-            dN1 = - 1/2;
-            dN2 = 1/2;
-            N = {N1, N2};
-            dN = {dN1, dN2};
-        case 3
-            N1(xe) = xe .* (xe - 1) ./ 2;
-            N2(xe) = - (xe - 1) .* (1 + xe);
-            N3(xe) = xe .* (1 + xe) ./ 2;
-            dN1(xe) = xe - 1/2;
-            dN2(xe) = -2 .* xe;
-            dN3(xe) = 1/2 + xe;
-            N = {N1, N2, N3};
-            dN = {dN1, dN2, dN3};
-        otherwise
-            disp('You entered an unsupported shape function order.');
-    end
-
-    i = 1;
-    for elem = 1:num_elem
-
-        if (shape_order == 2)
-            r(xe) = coordinates(LM(elem, 1), 1)*N{1}(xe) + coordinates(LM(elem, 2), 1)*N{2}(xe);
-            J = coordinates(LM(elem, 1), 1) * dN{1} + coordinates(LM(elem, 2), 1) * dN{2};
-            solution = a(LM(elem, 1))*N{1}(parent_domain) + a(LM(elem, 2))*N{2}(parent_domain);
-            solution_derivative = a(LM(elem, 1))*dN{1} + a(LM(elem, 2))*dN{2};
-        else
-            r(xe) = coordinates(LM(elem, 1), 1)*N{1}(xe) + coordinates(LM(elem, 2), 1)*N{2}(xe) + coordinates(LM(elem, 3), 1)*N{3}(xe);
-            J = coordinates(LM(elem, 1), 1) * dN{1}(xe) + coordinates(LM(elem, 2), 1) * dN{2}(xe) + coordinates(LM(elem, 3), 1) * dN{3}(xe);
-            solution = a(LM(elem, 1))*N{1}(parent_domain) + a(LM(elem, 2))*N{2}(parent_domain) + a(LM(elem, 3))*N{3}(parent_domain);
-            solution_derivative = a(LM(elem, 1))*dN{1}(parent_domain) + a(LM(elem, 2))*dN{2}(parent_domain) + a(LM(elem, 3))*dN{3}(parent_domain);
-        end
-
-        % sample the solution into a vector u_sampled_solution
-        u_sampled_solution_matrix(i,:) = solution;
-        u_sampled_solution_derivative_matrix(i,:) = solution_derivative ./ J;
-        i = i + 1;
-
-        if elem == 1
-            plot(coordinates(:,1), a, 'ro','LineWidth',2)
-            grid on
-            hold on
-        end
-
-        plot(r(parent_domain), solution, '-k')
-        hold on
-    end
-
-    %plot the analytical solution
-    plot(physical_domain, solution_analytical)
-    hold on
-
-    % assemble u_sampled_solution into a single vector
-    j = length(u_sampled_solution_matrix(1,:)) + 1;
-
-    for i = 1:length(u_sampled_solution_matrix(:,1))
-        if i == 1
-            solution_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_matrix(i,:);
-            if shape_order == 2
-                solution_derivative_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_derivative_matrix(i,:) * ones(1,length(u_sampled_solution_matrix(i,:)));
-            else
-                solution_derivative_FE(1:length(u_sampled_solution_derivative_matrix(i,:))) = u_sampled_solution_derivative_matrix(i,:);
-            end
-        else
-            solution_FE(j:(j + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_matrix(i,2:end);
-            if shape_order == 2
-                solution_derivative_FE(j:(j + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix(i,:) * ones(1,length(u_sampled_solution_matrix(i,2:end)));
-            else
-                solution_derivative_FE(j:(j + length(u_sampled_solution_derivative_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix(i,2:end);
-            end
-            j = j + length(u_sampled_solution_matrix(1,:)) - 1;
-        end
-    end
-
-    %plot(physical_domain, solution_derivative_FE, 'go')
-    %hold on
-    %plot(physical_domain, solution_analytical_derivative, 'mo')
-
-    % compute the energy norm
-    energy_norm_analytical = trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative);
-    energy_norm_FE = trapz(physical_domain, solution_derivative_FE .* E .* solution_derivative_FE);
-    % change to eval for higher-order elements
-    energy_norm = sqrt(energy_norm_analytical - energy_norm_FE) ./ sqrt(energy_norm_analytical);
-%end
+%     syms xe
+% 
+%     switch shape_order
+%         case 2
+%             N1(xe) = (1 - xe) ./ 2;
+%             N2(xe) = (1 + xe) ./ 2;
+%             dN1 = - 1/2;
+%             dN2 = 1/2;
+%             N = {N1, N2};
+%             dN = {dN1, dN2};
+%         case 3
+%             N1(xe) = xe .* (xe - 1) ./ 2;
+%             N2(xe) = - (xe - 1) .* (1 + xe);
+%             N3(xe) = xe .* (1 + xe) ./ 2;
+%             dN1(xe) = xe - 1/2;
+%             dN2(xe) = -2 .* xe;
+%             dN3(xe) = 1/2 + xe;
+%             N = {N1, N2, N3};
+%             dN = {dN1, dN2, dN3};
+%         otherwise
+%             disp('You entered an unsupported shape function order.');
+%     end
+% 
+%     i = 1;
+%     for elem = 1:num_elem
+% 
+%         if (shape_order == 2)
+%             r(xe) = coordinates(LM(elem, 1), 1)*N{1}(xe) + coordinates(LM(elem, 2), 1)*N{2}(xe);
+%             J = coordinates(LM(elem, 1), 1) * dN{1} + coordinates(LM(elem, 2), 1) * dN{2};
+%             solution = a(LM(elem, 1))*N{1}(parent_domain) + a(LM(elem, 2))*N{2}(parent_domain);
+%             solution_derivative = a(LM(elem, 1))*dN{1} + a(LM(elem, 2))*dN{2};
+%         else
+%             r(xe) = coordinates(LM(elem, 1), 1)*N{1}(xe) + coordinates(LM(elem, 2), 1)*N{2}(xe) + coordinates(LM(elem, 3), 1)*N{3}(xe);
+%             J = coordinates(LM(elem, 1), 1) * dN{1}(xe) + coordinates(LM(elem, 2), 1) * dN{2}(xe) + coordinates(LM(elem, 3), 1) * dN{3}(xe);
+%             solution = a(LM(elem, 1))*N{1}(parent_domain) + a(LM(elem, 2))*N{2}(parent_domain) + a(LM(elem, 3))*N{3}(parent_domain);
+%             solution_derivative = a(LM(elem, 1))*dN{1}(parent_domain) + a(LM(elem, 2))*dN{2}(parent_domain) + a(LM(elem, 3))*dN{3}(parent_domain);
+%         end
+% 
+%         % sample the solution into a vector u_sampled_solution
+%         u_sampled_solution_matrix(i,:) = solution;
+%         u_sampled_solution_derivative_matrix(i,:) = solution_derivative ./ J;
+%         i = i + 1;
+% 
+% %         if elem == 1
+% %             plot(coordinates(:,1), a, 'ro','LineWidth',2)
+% %             grid on
+% %             hold on
+% %         end
+% % 
+% %         plot(r(parent_domain), solution, '-k')
+% %         hold on
+%     end
+% 
+%     %plot the analytical solution
+% %     plot(physical_domain, solution_analytical)
+% %     hold on
+% 
+%     % assemble u_sampled_solution into a single vector
+%     j = length(u_sampled_solution_matrix(1,:)) + 1;
+% 
+%     for i = 1:length(u_sampled_solution_matrix(:,1))
+%         if i == 1
+%             solution_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_matrix(i,:);
+%             if shape_order == 2
+%                 solution_derivative_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_derivative_matrix(i,:) * ones(1,length(u_sampled_solution_matrix(i,:)));
+%             else
+%                 solution_derivative_FE(1:length(u_sampled_solution_derivative_matrix(i,:))) = u_sampled_solution_derivative_matrix(i,:);
+%             end
+%         else
+%             solution_FE(j:(j + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_matrix(i,2:end);
+%             if shape_order == 2
+%                 solution_derivative_FE(j:(j + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix(i,:) * ones(1,length(u_sampled_solution_matrix(i,2:end)));
+%             else
+%                 solution_derivative_FE(j:(j + length(u_sampled_solution_derivative_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix(i,2:end);
+%             end
+%             j = j + length(u_sampled_solution_matrix(1,:)) - 1;
+%         end
+%     end
+% % 
+% %     plot(physical_domain, solution_derivative_FE, 'go')
+% %     hold on
+% %     plot(physical_domain, solution_analytical_derivative, 'm-')
+% 
+%     % compute the energy norm
+%     energy_norm_analytical = trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative);
+%     energy_norm_FE = trapz(physical_domain, solution_derivative_FE .* E .* solution_derivative_FE);
+%     % change to eval for higher-order elements
+%     energy_norm = sqrt(energy_norm_analytical - energy_norm_FE) ./ sqrt(energy_norm_analytical);
+% %end
 
 %[dummy] = FEplot(a, coordinates, shape_order, num_elem, physical_domain, LM, num_nodes_per_element);
 
@@ -219,12 +219,21 @@ for elem = 1:num_elem
         solution_over_element = solution_over_element + coefficients(i) .* (element_domain .^ (i - 1));
     end
     
-    % put solution into a matrix
+    % determine the derivative over the element
+    derivative_over_element = zeros(1, length(parent_domain));
+    for i = 2:num_nodes_per_element % the derivative of the constant is zero
+        derivative_over_element = derivative_over_element + coefficients(i) .* (i - 1) .* (element_domain .^ (i - 2));
+    end
+    
+    % put into a matrix
     u_sampled_solution_matrix(p,:) = solution_over_element;
+    u_sampled_solution_derivative_matrix2(p,:) = derivative_over_element;
     p = p + 1;
     
-    plot(element_domain, solution_over_element, 'k*')
-    hold on
+    
+%     plot(element_domain, derivative_over_element, 'k*')
+%     hold on
+       
 end
 
 % assemble solution into a single vector (for plotting and computing the
@@ -233,23 +242,23 @@ end
 for i = 1:length(u_sampled_solution_matrix(:,1))
     if i == 1
         solution_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_matrix(i,:);
-%         if shape_order == 2
-%             solution_derivative_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_derivative_matrix(i,:) * ones(1,length(u_sampled_solution_matrix(i,:)));
-%         else
-%             solution_derivative_FE(1:length(u_sampled_solution_derivative_matrix(i,:))) = u_sampled_solution_derivative_matrix(i,:);
-%         end
+        if shape_order == 2
+            solution_derivative_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_derivative_matrix2(i,:);
+        else
+            solution_derivative_FE(1:length(u_sampled_solution_derivative_matrix2(i,:))) = u_sampled_solution_derivative_matrix2(i,:);
+        end
     else
         solution_FE(m:(m + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_matrix(i,2:end);
-%         if shape_order == 2
-%             solution_derivative_FE(m:(m + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix(i,:) * ones(1,length(u_sampled_solution_matrix(i,2:end)));
-%         else
-%             solution_derivative_FE(m:(m + length(u_sampled_solution_derivative_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix(i,2:end);
-%         end
+        if shape_order == 2
+            solution_derivative_FE(m:(m + length(u_sampled_solution_matrix(1,:)) - 2)) = u_sampled_solution_derivative_matrix2(i,2:end);
+        else
+            solution_derivative_FE(m:(m + length(u_sampled_solution_derivative_matrix2(1,:)) - 2)) = u_sampled_solution_derivative_matrix2(i,2:end);
+        end
         m = m + length(u_sampled_solution_matrix(1,:)) - 1;
     end
 end
 
-plot(physical_domain, solution_FE, 'b*')
-
-
+plot(physical_domain, solution_FE, 'r')
+hold on
+plot(physical_domain, solution_analytical, 'k')
 
