@@ -1,8 +1,8 @@
 clear all
 
 L = 1.0;                        % problem domain
-k_freq = 4.0;                   % forcing frequency
-num_elem = 10;                  % number of finite elements (initial guess)
+k_freq = 1.0;                   % forcing frequency
+num_elem = 1;                  % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
 E = 0.1;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
@@ -155,6 +155,7 @@ sprintf('energy norm: %f', energy_norm)
 
 end
 
+sprintf('number elements: %i', num_elem)
 plot(physical_domain, solution_FE, 'r')
 hold on
 plot(physical_domain, solution_analytical, 'k')
