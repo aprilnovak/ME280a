@@ -299,6 +299,38 @@ The derivatives of the FE solution are determined according to:
 \frac{du^N}{dx}=\frac{d}{dx}\sum_{j=1}^{N}a_j\phi_j(x)=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{dx}=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{d\xi}\frac{d\xi}{dx}
 \end{equation}
 
-while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}.
+while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}. Convergence is defined to have been achieved for a given \(k\) and number of elements \(N\) once:
+
+\begin{equation}
+\label{eq:Convergence}
+e^N=\frac{\|u-u^N\|}{\|u\|} \leq 0.05
+\end{equation}
+
+\subsection{Solution Results}
+
+Table \ref{table:N} shows the number of elements needed to satisfy Eq. \eqref{eq:Convergence} for each \(k\).
+
+\begin{table}[H]
+\caption{Number of elements needed to reach convergence.}
+\centering
+\begin{tabular}{l c}
+\hline\hline
+k & Number of Elements\\ [0.5ex]
+\hline
+1 & 28\\
+2 & 67\\
+4 & 142\\
+8 & \\
+16 & \\
+32 & \\
+\hline
+\end{tabular}
+\label{table:N}
+\end{table}
+
+Fig. shows the FE solutions for \(N=2, 4, 8, 16, 32, 64, \) and \(128\) for \(k=1, 2, 4, 8, 16, 32\). The exact solution is also plotted for comparison. 
+
+
+Fig. shows \(e^N\) as a function of \(N\) for each value of \(k\) represented in the previous figure.
 
 \end{document}
