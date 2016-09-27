@@ -1,10 +1,10 @@
 clear all
 
-k_plot_flag = 1;                % 1 - plot the error as a function of N
+k_plot_flag = 0;                % 1 - plot the error as a function of N
 N_plot_flag = 1;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
-k_freq = 1;                     % forcing frequency
+k_freq = 2;                     % forcing frequency
 num_elem = 3;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
 E = 0.1;                        % elastic modulus
@@ -21,7 +21,9 @@ energy_norm = tolerance + 1;    % arbitrary initialization value
 % index for collecting error
 e = 1;
 
-N_elem = [2, 4, 6, 8, 16, 32, 64, 128];
+N_elem = 2:2:128;
+
+%for k_freq = 1.0:2.0
 
 for num_elem = N_elem
 % while energy_norm > tolerance
@@ -145,6 +147,8 @@ for elem = 1:num_elem
 end
 
 % assemble solution and derivative into a single vector
+solution_FE = zeros(1, length(physical_domain));
+solution_derivative_FE = zeros(1, length(physical_domain));
 for i = 1:length(u_sampled_solution_matrix(:,1))
     if i == 1
         solution_FE(1:length(u_sampled_solution_matrix(i,:))) = u_sampled_solution_matrix(i,:);
@@ -173,8 +177,14 @@ e = e + 1;
 
 end
 
-plot(physical_domain, solution_analytical)
-legend('2', '4', '8', '16', '32', '64', '128','analytical')
+if (N_plot_flag)
+    plot(physical_domain, solution_analytical)
+    legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128','analytical', 'Location', 'southeast')
+    xlabel('Problem domain', 'FontSize', 14)
+    ylabel(sprintf('solution for k = %i', k_freq), 'FontSize', 14)
+    text(0.85, 0.3, sprintf('k = %i', k_freq), 'FontSize', 14, 'FontWeight', 'bold', 'EdgeColor', [0 0 0])
+    saveas(gcf, sprintf('Nplot_for_k_%i', k_freq))
+end
 
 if (k_plot_flag)
     figure()
@@ -184,13 +194,7 @@ if (k_plot_flag)
     ylabel('Energy norm')
 end
 
-% plot(physical_domain, solution_analytical, 'k')
-% legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128', 'analytical solution', 'Location', 'southeast')
-% xlabel('Problem domain')
-% ylabel(sprintf('solution for k = %i', k_freq))
-% 
-% 
-% figure()
+close all
 
-
-sprintf('For k = %i, number elements: %i', k_freq, num_elem)
+%end
+%sprintf('For k = %i, number elements: %i', k_freq, num_elem)
