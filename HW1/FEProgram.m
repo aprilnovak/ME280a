@@ -14,6 +14,7 @@ right = 'Dirichlet';            % right boundary condition type
 right_value = 1.0;              % right Dirichlet boundary condition value
 tolerance = 0.05;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
+fontsize = 16;                  % fontsize for plots
 
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(shape_order);
@@ -21,9 +22,9 @@ energy_norm = tolerance + 1;    % arbitrary initialization value
 % index for collecting error
 e = 1;
 
-N_elem = 2:2:128;
+N_elem = [2, 4, 8, 16, 32, 64, 128];
 
-%for k_freq = 1.0:2.0
+for k_freq = [1, 2, 4, 8, 16, 32]
 
 for num_elem = N_elem
 % while energy_norm > tolerance
@@ -110,6 +111,8 @@ p = 1;
 
 
 % --- PLOTTING --- %
+u_sampled_solution_matrix = zeros(num_elem, length(parent_domain));
+u_sampled_solution_derivative_matrix = zeros(num_elem, length(parent_domain));
 for elem = 1:num_elem
     % over each element, figure out the polynomial by solving a linear
     % system, Ax = b, where A depends on the order of the shape functions
@@ -179,11 +182,12 @@ end
 
 if (N_plot_flag)
     plot(physical_domain, solution_analytical)
-    legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128','analytical', 'Location', 'southeast')
-    xlabel('Problem domain', 'FontSize', 14)
-    ylabel(sprintf('solution for k = %i', k_freq), 'FontSize', 14)
-    text(0.85, 0.3, sprintf('k = %i', k_freq), 'FontSize', 14, 'FontWeight', 'bold', 'EdgeColor', [0 0 0])
-    saveas(gcf, sprintf('Nplot_for_k_%i', k_freq))
+    h = legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128','analytical', 'Location', 'southeast')
+    set(h, 'FontSize', fontsize - 2);
+    xlabel('Problem domain', 'FontSize', fontsize)
+    ylabel(sprintf('Solution for k = %i', k_freq), 'FontSize', fontsize)
+    text(0.85, 0.5, sprintf('k = %i', k_freq), 'FontSize', fontsize, 'FontWeight', 'bold', 'EdgeColor', [0 0 0])
+    saveas(gcf, sprintf('Nplot_for_k_%i', k_freq), 'jpeg')
 end
 
 if (k_plot_flag)
@@ -196,5 +200,5 @@ end
 
 close all
 
-%end
+end
 %sprintf('For k = %i, number elements: %i', k_freq, num_elem)

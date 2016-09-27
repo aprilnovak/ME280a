@@ -368,9 +368,44 @@ k & \(N\)\\ [0.5ex]
 \label{table:N}
 \end{table}
 
-Fig. shows the FE solutions for \(N=2, 4, 8, 16, 32, 64, \) and \(128\) for \(k=1, 2, 4, 8, 16, 32\). The exact solution is also plotted for comparison. 
+Fig. \ref{Nplots} shows the FE solutions for \(N=2, 4, 8, 16, 32, 64, \) and \(128\) for \(k=1, 2, 4, 8, 16, 32\). The exact solution is also plotted for comparison. As can be seen, in general, increasing \(N\) improves the finite element solution with respect to better-approximating the analytical solution. It is interesting to note that, for choices of the number of elements \(N\) that are twice the value of \(k\) (i.e. for \(N=2k\)), the finite element solution is a straight line between the two endpoints. This likely occurs because of the highly oscillatory nature of the analytical solution.
 
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.35\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{Nplot_for_k_1.jpg}
+  \caption{}
+\end{subfigure}
+\begin{subfigure}{.35\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{Nplot_for_k_2.jpg}
+  \caption{}
+\end{subfigure}
+\begin{subfigure}{.35\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{Nplot_for_k_4.jpg}
+  \caption{}
+\end{subfigure}
+\begin{subfigure}{.35\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{Nplot_for_k_8.jpg}
+  \caption{}
+\end{subfigure}
+\begin{subfigure}{.35\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{Nplot_for_k_16.jpg}
+  \caption{}
+\end{subfigure}
+\begin{subfigure}{.35\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{Nplot_for_k_32.jpg}
+  \caption{}
+\end{subfigure}
+\caption{Finite element and exact (analytical) solutions for \(N=2, 4, 8, 16, 32, 64, \) and \(128\) for (a) \(k=1\), (b) \(k=2\), (c) \(k=4\), (d) \(k=8\), (e) \(k=16\), and (f) \(k=32\).}
+\label{fig:Nplots}
+\end{figure}
 
-Fig. shows \(e^N\) as a function of \(N\) for each value of \(k\) represented in the previous figure.
+Fig. shows \(e^N\) as a function of \(N\) for each value of \(k\) represented in the previous figure. \(N\) is allowed to vary from 1 to 128 to obtain a fine-enough plot to observe the convergence behavior.
 
 \end{document}
