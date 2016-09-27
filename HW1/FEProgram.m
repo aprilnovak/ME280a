@@ -1,7 +1,7 @@
 clear all
 
 L = 1.0;                        % problem domain
-k_freq = 2;                     % forcing frequency
+k_freq = 1;                     % forcing frequency
 num_elem = 3;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
 E = 0.1;                        % elastic modulus
@@ -15,10 +15,16 @@ energy_norm = tolerance + 1;    % arbitrary initialization value
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(shape_order);
 
-for num_elem = [2, 4, 8, 16, 32, 64, 128]
+% index for collecting error
+e = 1;
 
-% while energy_norm > tolerance
-%     num_elem = num_elem + 1;
+% range of N for the simulation
+N_elem = [2, 4, 8, 16, 32, 64, 128];
+
+%for num_elem = N_elem
+
+while energy_norm > tolerance
+    num_elem = num_elem + 1;
     
     % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
@@ -150,22 +156,28 @@ for i = 1:length(u_sampled_solution_matrix(:,1))
 end
 
 % compute the energy norm
-energy_norm_analytical = trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative);
-energy_norm_FE = trapz(physical_domain, solution_derivative_FE .* E .* solution_derivative_FE);
-energy_norm = sqrt(energy_norm_analytical - energy_norm_FE) ./ sqrt(energy_norm_analytical);
-%sprintf('energy norm: %f', energy_norm)
+energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative));
+energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E .* (solution_derivative_FE - solution_analytical_derivative)));
+energy_norm = energy_norm_top ./ energy_norm_bottom;
+sprintf('energy norm: %f', energy_norm)
+e_N(e) = energy_norm;
+e = e + 1;
 
-
-plot(physical_domain, solution_FE)
-hold on
+% plot(physical_domain, solution_FE)
+% hold on
 
 end
-plot(physical_domain, solution_analytical, 'k')
-legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128', 'analytical solution', 'Location', 'southeast')
-xlabel('Problem domain')
-ylabel(sprintf('solution for k = %i', k_freq))
+% plot(physical_domain, solution_analytical, 'k')
+% legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128', 'analytical solution', 'Location', 'southeast')
+% xlabel('Problem domain')
+% ylabel(sprintf('solution for k = %i', k_freq))
+% 
+% 
+% figure()
+% plot(N_elem, e_N)
+% legend(sprintf('k = %i', k_freq))
 
-% sprintf('number elements: %i', num_elem)
+sprintf('number elements: %i', num_elem)
 % plot(physical_domain, solution_FE, 'r')
 % hold on
 % plot(physical_domain, solution_analytical, 'k')

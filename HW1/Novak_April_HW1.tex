@@ -330,7 +330,7 @@ where:
 \end{equation}
 
 \begin{equation}
-\|u-u^N\|=\sqrt{\int_{\Omega}^{}\frac{d(u-u^N)}{dx}E\frac{d(u-u^N)}{dx}}=\sqrt{\int_{\Omega}^{}\left(\frac{du}{dx}E\frac{du}{dx}-\frac{du^N}{dx}E\frac{du^N}{dx}\right)}
+\|u-u^N\|=\sqrt{\int_{\Omega}^{}\frac{d(u-u^N)}{dx}E\frac{d(u-u^N)}{dx}}=\sqrt{\int_{\Omega}^{}\left(\frac{du}{dx}-\frac{du^N}{dx}\right)E\left(\frac{du}{dx}-\frac{du^N}{dx}\right)}
 \end{equation}
 
 The derivatives of the FE solution are determined according to:
@@ -351,11 +351,11 @@ e^N=\frac{\|u-u^N\|}{\|u\|} \leq 0.05
 Table \ref{table:N} shows the number of elements needed to satisfy Eq. \eqref{eq:Convergence} for each \(k\).
 
 \begin{table}[H]
-\caption{Number of elements needed to reach convergence.}
+\caption{Number of elements \(N\) needed to reach convergence according to Eq. \eqref{eq:Convergence}.}
 \centering
 \begin{tabular}{l c}
 \hline\hline
-k & Number of Elements\\ [0.5ex]
+k & \(N\)\\ [0.5ex]
 \hline
 1 & 28\\
 2 & 67\\
