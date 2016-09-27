@@ -1,5 +1,8 @@
 clear all
 
+k_plot_flag = 1;                % 1 - plot the error as a function of N
+N_plot_flag = 1;                % 1 - plot the solutions for various N
+
 L = 1.0;                        % problem domain
 k_freq = 1;                     % forcing frequency
 num_elem = 3;                   % number of finite elements (initial guess)
@@ -18,13 +21,11 @@ energy_norm = tolerance + 1;    % arbitrary initialization value
 % index for collecting error
 e = 1;
 
-% range of N for the simulation
-N_elem = [2, 4, 8, 16, 32, 64, 128];
+N_elem = [2, 4, 6, 8, 16, 32, 64, 128];
 
-%for num_elem = N_elem
-
-while energy_norm > tolerance
-    num_elem = num_elem + 1;
+for num_elem = N_elem
+% while energy_norm > tolerance
+%     num_elem = num_elem + 1;
     
     % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
@@ -160,13 +161,29 @@ energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative 
 energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E .* (solution_derivative_FE - solution_analytical_derivative)));
 energy_norm = energy_norm_top ./ energy_norm_bottom;
 sprintf('energy norm: %f', energy_norm)
+
+if (N_plot_flag)
+    plot(physical_domain, solution_FE)
+    hold on
+end
+
+%end
 e_N(e) = energy_norm;
 e = e + 1;
 
-% plot(physical_domain, solution_FE)
-% hold on
-
 end
+
+plot(physical_domain, solution_analytical)
+legend('2', '4', '8', '16', '32', '64', '128','analytical')
+
+if (k_plot_flag)
+    figure()
+    loglog(N_elem, e_N, 'k*-')
+    legend(sprintf('k = %i', k_freq))
+    xlabel('Number of elements')
+    ylabel('Energy norm')
+end
+
 % plot(physical_domain, solution_analytical, 'k')
 % legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128', 'analytical solution', 'Location', 'southeast')
 % xlabel('Problem domain')
@@ -174,10 +191,6 @@ end
 % 
 % 
 % figure()
-% plot(N_elem, e_N)
-% legend(sprintf('k = %i', k_freq))
 
-sprintf('number elements: %i', num_elem)
-% plot(physical_domain, solution_FE, 'r')
-% hold on
-% plot(physical_domain, solution_analytical, 'k')
+
+sprintf('For k = %i, number elements: %i', k_freq, num_elem)
