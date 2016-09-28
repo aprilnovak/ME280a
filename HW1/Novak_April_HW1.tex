@@ -430,28 +430,31 @@ This section contains the code used for this modeling. The main program is \text
 \subsection{\texttt{FEProgram.m}}
 \lstinputlisting[language=Matlab]{FEProgram.m}
 
-\subsection{\texttt{mesh.m}}
+\subsection{\texttt{permutation.m}}
+This function determines the permutation matrix for use with the connectivity matrix.
+\lstinputlisting[language=Matlab]{permutation.m}
 
+\subsection{\texttt{mesh.m}}
 This function performs the meshing.
 \lstinputlisting[language=Matlab]{mesh.m}
 
 \subsection{\texttt{BCnodes.m}}
-
 This function applies boundary conditions.
 \lstinputlisting[language=Matlab]{BCnodes.m}
 
-\subsection{\texttt{quadrature.m}}
+\subsection{\texttt{shapefunctions.m}}
+This function contains the library of shape functions.
+\lstinputlisting[language=Matlab]{shapefunctions.m}
 
+\subsection{\texttt{quadrature.m}}
 This function selects the quadrature rule.
 \lstinputlisting[language=Matlab]{quadrature.m}
 
 \subsection{\texttt{condensation.m}}
-
 This function separates out the matrix equation as in Eq. \eqref{eq:condensation}.
 \lstinputlisting[language=Matlab]{condensation.m}
 
 \subsection{\texttt{postprocess.m}}
-
 This function postprocesses the FE solution and transforms it back to the physical domain using a linear system solve as described in Eq. \eqref{eq:LinearSolve}.
 \lstinputlisting[language=Matlab]{postprocess.m}
 

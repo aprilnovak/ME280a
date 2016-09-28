@@ -1,5 +1,3 @@
-% --- PLOTTING --- %
-
 function [solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_element, shape_order, coordinates, physical_domain)
 
 b = zeros(1, shape_order);

@@ -1,4 +1,3 @@
-
 function [permutation] = permutation(num_nodes_per_element)
 
 permutation = zeros(num_nodes_per_element ^ 2, 2);

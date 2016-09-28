@@ -31,10 +31,12 @@ end
 
 for k_freq = [1, 2, 4, 8, 16, 32]
 
-    % index for collecting error
+% index for collecting error
 e = 1;
 
 for num_elem = N_elem
+% uncomment to find how many elements are required to reach the error
+% tolerance
 % while energy_norm > tolerance
 %     num_elem = num_elem + 1;
     
@@ -126,6 +128,8 @@ if (N_plot_flag)
     hold on
 end
 
+% uncomment to find out how many elements are needed to reach the error
+% tolerance
 %end
 e_N(e) = energy_norm;
 e = e + 1;
@@ -158,4 +162,7 @@ if (k_plot_flag)
     saveas(gcf, 'eN_vs_N', 'jpeg')
 end
 
+
+% uncomment to find out how many elements are needed to reach the error
+% tolerance
 %sprintf('For k = %i, number elements: %i', k_freq, num_elem)
