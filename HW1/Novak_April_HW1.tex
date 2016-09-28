@@ -38,6 +38,12 @@
 \usepackage{booktabs}
 \usepackage{gensymb}
 \usepackage{longtable}
+\usepackage{listings}
+\lstset{
+    frame=single,
+    breaklines=true,
+    postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\color{red}\hookrightarrow\space}}
+}
 
 % for circled numbers
 \usepackage{tikz}
@@ -272,6 +278,7 @@ Transformation to the isoparametric domain therefore easily allows construction 
 In order to apply the boundary conditions within the numerical context of the finite element method, the matrix equation in Eq. \eqref{eq:MatrixEqn} must be rewritten to reflect that some of the nodal values are actually already specified through the Dirichlet boundary conditions. 
 
 \begin{equation}
+\label{eq:condensation}
 \begin{bmatrix}
 	K_{kk} & K_{ku}\\
 	K_{uk} & K_{uu}\\
@@ -301,6 +308,7 @@ Solving this matrix system is sometimes referred to as ``static condensation,'' 
 Once the solution is obtained by simple Gaussian elimination, the solution is transformed back to the physical domain (from the isoparametric domain) by solving a linear matrix system to determine the coefficients on the basis functions over each element (in the physical domain). For example, for a quadratic shape function, over one element with coordinates \(x_1, x_2,\) and \(x_3\), with solution values \(a_1, a_2,\) and \(a_3\), the following linear system solves for the coordinates on the shape function in the physical domain, in that element:
 
 \begin{equation}
+\label{eq:LinearSolve}
 \begin{bmatrix}
 1 & x_1 & x_1^2\\
 1 & x_2 & x_2^2\\
@@ -346,7 +354,7 @@ while the derivative of the analytical solution is obtained from Eq. \eqref{eq:P
 e^N=\frac{\|u-u^N\|}{\|u\|} \leq 0.05
 \end{equation}
 
-\subsection{Solution Results}
+\subsection{Solution Results and Discussion}
 
 Table \ref{table:N} shows the number of elements needed to satisfy Eq. \eqref{eq:Convergence} for each \(k\).
 
@@ -355,7 +363,7 @@ Table \ref{table:N} shows the number of elements needed to satisfy Eq. \eqref{eq
 \centering
 \begin{tabular}{l c}
 \hline\hline
-k & \(N to reach convergence\)\\ [0.5ex]
+k & \(N\) to reach convergence\\ [0.5ex]
 \hline
 1 & 28\\
 2 & 67\\
@@ -406,6 +414,46 @@ Fig. \ref{Nplots} shows the FE solutions for \(N=2, 4, 8, 16, 32, 64, \) and \(1
 \label{fig:Nplots}
 \end{figure}
 
-Fig. shows \(e^N\) as a function of \(N\) for each value of \(k\) represented in the previous figure. \(N\) is allowed to vary from 1 to 128 to obtain a fine-enough plot to observe the convergence behavior.
+Fig. \ref{fig:eN} shows \(e^N\) as a function of \(N\) for each value of \(k\) represented in the previous figure. \(N\) is allowed to vary from 1 to 128 to obtain a fine-enough plot to observe the convergence behavior. As can be seen, the higher the \(k\), the more elements that are needed to obtain a desired global energy norm. For very oscillatory solutions, for coarser meshes, nodes may happen to consistently \textit{not} ``fall'' in the peaks and valleys of the solution, completely missing the oscillatory behavior. Hence, increasing the mesh resolution for oscillatory solutions with high frequency  does not always reduce the energy norm simply due to where the nodes may happen to lie. However, with a fine-enough mesh, by increasing the number of elements, the energy norm will monotonically decrease. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=13cm]{eN_vs_N.jpg}
+  \caption{Energy norm \(e^N\) as a function of \(N\) for \(k=1, 2, 4, 8, 16, \) and \(32\).}
+  \label{fig:eN}
+\end{figure}
+
+\section{Appendix}
+
+This section contains the code used for this modeling. The main program is \texttt{FEProgram.m}, and functions perform specialized tasks for a high degree of modularity.
+
+\subsection{\texttt{FEProgram.m}}
+\lstinputlisting[language=Matlab]{FEProgram.m}
+
+\subsection{\texttt{mesh.m}}
+
+This function performs the meshing.
+\lstinputlisting[language=Matlab]{mesh.m}
+
+\subsection{\texttt{BCnodes.m}}
+
+This function applies boundary conditions.
+\lstinputlisting[language=Matlab]{BCnodes.m}
+
+\subsection{\texttt{quadrature.m}}
+
+This function selects the quadrature rule.
+\lstinputlisting[language=Matlab]{quadrature.m}
+
+\subsection{\texttt{condensation.m}}
+
+This function separates out the matrix equation as in Eq. \eqref{eq:condensation}.
+\lstinputlisting[language=Matlab]{condensation.m}
+
+\subsection{\texttt{postprocess.m}}
+
+This function postprocesses the FE solution and transforms it back to the physical domain using a linear system solve as described in Eq. \eqref{eq:LinearSolve}.
+\lstinputlisting[language=Matlab]{postprocess.m}
+
 
 \end{document}

@@ -1,5 +1,3 @@
-% FE HW 1, April Novak
-
 function [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order)
 
 % the number of nodes depends on the shape function order
