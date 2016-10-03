@@ -1,19 +1,19 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-k_plot_flag = 1;                % 1 - plot the error as a function of N
-N_plot_flag = 0;                % 1 - plot the solutions for various N
+k_plot_flag = 0;                % 1 - plot the error as a function of N
+N_plot_flag = 1;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
 k_freq = 2;                     % forcing frequency
 num_elem = 5;                   % number of finite elements (initial guess)
-shape_order = 4;                % number of nodes per element
+shape_order = 2;                % number of nodes per element
 E = 0.2;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
 left_value = 3.0;               % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
 right_value = -1.0;              % right Dirichlet boundary condition value
-tolerance = 0.05;               % convergence tolerance
+tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
 
@@ -21,23 +21,29 @@ fontsize = 16;                  % fontsize for plots
 [permutation] = permutation(shape_order);
 
 if (N_plot_flag)
-     N_elem = [100];
+     N_elem = [1000, 2000];
 elseif (k_plot_flag)
-     N_elem = 1:500;
+     N_elem = 1:100;
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-for k_freq = 12
+K_freq = [12];
+
+for k_freq = K_freq
 
 % index for collecting error
 e = 1;
 
+% initial guess for determining number of elements to reach error tol
+% N_elem = 1000;
+
 for num_elem = N_elem
-% uncomment to find how many elements are required to reach the error
-% tolerance
+
+% uncomment to find how many elements are required to reach the error tol %
 % while energy_norm > tolerance
 %     num_elem = num_elem + 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
@@ -52,7 +58,6 @@ for num_elem = N_elem
     term2_1 = ((k_freq .^ 3) ./ (E .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
     solution_analytical_derivative = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E .* gamma .^ 2);
     
-    
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
 
@@ -62,7 +67,6 @@ for num_elem = N_elem
     % define the quadrature rule
     [wt, qp] = quadrature(shape_order);
 
-    % assemble the elemental k and elemental f
     K = zeros(num_nodes);
     F = zeros(num_nodes, 1);
 
@@ -134,9 +138,9 @@ if (N_plot_flag)
     hold on
 end
 
-% uncomment to find out how many elements are needed to reach the error
-% tolerance
-%end
+% uncomment to find how many elements are needed to reach the error tol   %
+% end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 e_N(e) = energy_norm;
 e = e + 1;
 
@@ -144,11 +148,15 @@ end
 
 if (N_plot_flag)
     plot(physical_domain, solution_analytical)
-    h = legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128','analytical', 'Location', 'southeast');
+    txt = cell(length(N_elem),1);
+    for i = 1:length(N_elem)
+       txt{i}= sprintf('N = %i', N_elem(i));
+    end
+    txt{i+1} = 'analytical';
+    h = legend(txt);
     set(h, 'FontSize', fontsize - 2);
     xlabel('Problem domain', 'FontSize', fontsize)
     ylabel(sprintf('Solution for k = %i', k_freq), 'FontSize', fontsize)
-    text(0.85, 0.5, sprintf('k = %i', k_freq), 'FontSize', fontsize, 'FontWeight', 'bold', 'EdgeColor', [0 0 0])
     saveas(gcf, sprintf('Nplot_for_k_%i', k_freq), 'jpeg')
     %close all
 end
@@ -163,7 +171,11 @@ end
 end
 
 if (k_plot_flag)
-    h2 = legend('k = 1', 'k = 2', 'k = 4', 'k = 8', 'k = 16', 'k = 32');
+    txt = cell(length(K_freq),1);
+    for i = 1:length(K_freq)
+       txt{i}= sprintf('k = %i', K_freq(i));
+    end
+    h2 = legend(txt);
     set(h2, 'FontSize', fontsize);
     saveas(gcf, 'eN_vs_N', 'jpeg')
 end
