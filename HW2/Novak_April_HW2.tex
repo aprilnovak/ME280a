@@ -108,22 +108,22 @@ This section describes the mathematical process used to solve the following prob
 \label{eq:Problem}
 \begin{aligned}
 \frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=xk^3\cos{\left(\frac{2\pi kx}{L}\right)}\\
-\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=xk^3\cos{(\gamma x)}\\
+\frac{d}{dx}\left(\frac{du}{dx}\right)=\frac{1}{E}xk^3\cos{(\gamma x)}\\
 \end{aligned}
 \end{equation}
 
-where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. For simplicity, a constant \(\gamma=2\pi k/L\) is defined. In order to verify that the program functions correctly, the FE solution to Eq. \eqref{eq:Problem} will be compared with the analytical solution to Eq. \eqref{eq:Problem}. To determine the analytical solution, integrate Eq. \eqref{eq:Problem} once to obtain:
+where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. For simplicity, a constant \(\gamma=2\pi k/L\) is defined, and it has been assumed that \(E\) is a constant. In order to verify that the program functions correctly, the FE solution to Eq. \eqref{eq:Problem} will be compared with the analytical solution to Eq. \eqref{eq:Problem}. To determine the analytical solution, integrate Eq. \eqref{eq:Problem} once to obtain:
 
 \begin{equation}
 \label{eq:Problem2}
-\frac{du}{dx}=\frac{1}{E}\left\lbrack \frac{xk^3}{\gamma}\sin{(\gamma x)}+\frac{k^3}{\gamma^2}\cos{(\gamma x)}+C_1\right\rbrack
+\frac{du}{dx}=\frac{k^3}{E}\left\lbrack \frac{x}{\gamma}\sin{(\gamma x)}+\frac{1}{\gamma^2}\cos{(\gamma x)}\right\rbrack+C_1
 \end{equation}
 
 It has been assumed that \(E\) is not a function of \(x\), and hence can be treated as constant in the integration. Integrating once more:
 
 \begin{equation}
 \label{eq:Problem3}
-u(x)=\frac{1}{E}\left\lbrack\frac{-xk^3}{\gamma^2}\cos{(\gamma x)}+\frac{2k^3}{\gamma^3}\sin{(\gamma x)}+C_1x+C_2\right\rbrack
+u(x)=\frac{1}{E}\left\lbrack\frac{-xk^3}{\gamma^2}\cos{(\gamma x)}+\frac{2k^3}{\gamma^3}\sin{(\gamma x)}\right\rbrack+C_1x+C_2
 \end{equation}
 
 The boundary conditions for this problem are Dirichlet at both endpoints, such that:

@@ -8,11 +8,11 @@ L = 1.0;                        % problem domain
 k_freq = 2;                     % forcing frequency
 num_elem = 5;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
-E = 0.1;                        % elastic modulus
+E = 0.2;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
-left_value = 0.0;               % left Dirichlet boundary condition value
+left_value = 3.0;               % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
-right_value = 1.0;              % right Dirichlet boundary condition value
+right_value = -1.0;              % right Dirichlet boundary condition value
 tolerance = 0.05;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
@@ -23,13 +23,12 @@ fontsize = 16;                  % fontsize for plots
 if (N_plot_flag)
      N_elem = [2, 4, 8, 16, 32, 64, 128];
 elseif (k_plot_flag)
-     N_elem = 1:128;
+     N_elem = 1:500;
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-
-for k_freq = [1, 2, 4, 8, 16, 32]
+for k_freq = 12
 
 % index for collecting error
 e = 1;
@@ -43,10 +42,17 @@ for num_elem = N_elem
     % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
     physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
-    C_1 = (right_value + (k_freq^2 * sin(2 * pi * k_freq) * (L / (2 * pi * k_freq))^2 / E)) / L;
-    solution_analytical = (1 ./ E) .* -k_freq.^2 .* sin(2 .* pi .* k_freq .* physical_domain ./ L) .* (L ./ (2 .* pi .* k_freq)).^2 + C_1 .* physical_domain + left_value;
-    solution_analytical_derivative = -(1 ./ E) * k_freq * k_freq * cos(2 * pi * k_freq * physical_domain ./ L) * L ./ (2 * pi * k_freq) + C_1;
-
+    gamma = 2 * pi * k_freq ./ L;
+    term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E .* gamma .^3);
+    term2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E .* gamma .^ 2);
+    C_1 = left_value;
+    C_2 = (right_value - C_1 - (2 * (k_freq .^ 3) * sin(gamma .* L) ./ (E .* gamma .^3)) + ((k_freq .^ 3) * L .* cos(gamma .* L) ./ (E .* gamma .^ 2))) ./ L;
+    solution_analytical = C_1 + term1 - term2 + C_2 .* physical_domain;
+    term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E .* gamma .^3);
+    term2_1 = ((k_freq .^ 3) ./ (E .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
+    solution_analytical_derivative = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E .* gamma .^ 2);
+    
+    
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
 
@@ -69,7 +75,7 @@ for num_elem = N_elem
                  [N, dN, x_xe, dx_dxe] = shapefunctions(qp(l), shape_order, coordinates, LM, elem);
 
                  % assemble the (elemental) forcing vector
-                 f(i) = f(i) - wt(l) * k_freq * k_freq * sin(2 * pi * k_freq * x_xe / L) * N(i) * dx_dxe;
+                 f(i) = f(i) - wt(l) * x_xe * (k_freq .^ 3) * cos(gamma * x_xe) * N(i) * dx_dxe;
 
                  for j = 1:num_nodes_per_element
                      % assemble the (elemental) stiffness matrix
@@ -144,7 +150,7 @@ if (N_plot_flag)
     ylabel(sprintf('Solution for k = %i', k_freq), 'FontSize', fontsize)
     text(0.85, 0.5, sprintf('k = %i', k_freq), 'FontSize', fontsize, 'FontWeight', 'bold', 'EdgeColor', [0 0 0])
     saveas(gcf, sprintf('Nplot_for_k_%i', k_freq), 'jpeg')
-    close all
+    %close all
 end
 
 if (k_plot_flag)
