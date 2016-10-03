@@ -34,6 +34,16 @@ switch shape_order
         disp('You entered an unsupported shape function order.');
 end
 
+% check that the sum of the shape functions adds up to 1
+sum = 0;
+for j = 1:shape_order
+    sum = sum + N(j);
+end
+
+if (abs(sum - 1.0) > 1e-10)
+    disp('Sum of the shape functions does not add up to 1.');
+end
+
 % x(xe) transformation to the parametric domain
 x_xe = 0.0;
 dx_dxe = 0.0;
