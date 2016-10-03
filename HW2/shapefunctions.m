@@ -21,6 +21,15 @@ switch shape_order
         dN(1) = xe - 1/2;
         dN(2) = -2 .* xe;
         dN(3) = 1/2 + xe;
+    case 4
+        N(1) = (9/16) * (1 - xe) * (1/3 - xe) * (-1/3 - xe);
+        N(2) = (-27/16) * (1 - xe) * (1/3 - xe) * (-1 - xe);
+        N(3) = (27/16) * (1 - xe) * (-1/3 - xe) * (-1 - xe);
+        N(4) = (-9/16) * (1/3 - xe) * (-1/3 - xe) * (-1 - xe);
+        dN(1) = (9/16) * (-3 * xe.^ 2 + 2 * xe + 1/9);
+        dN(2) = (-27/16) * (-3 * xe .^ 2 + 2 .* xe ./ 3 + 1);
+        dN(3) = (27/16) * (-3 * xe .^ 2 - 2.* xe ./ 3 + 1);
+        dN(4) = (-9/16) * (-3 * xe ^ 2 - 2 * xe + 1/9);
     otherwise
         disp('You entered an unsupported shape function order.');
 end
