@@ -7,7 +7,7 @@ N_plot_flag = 0;                % 1 - plot the solutions for various N
 L = 1.0;                        % problem domain
 k_freq = 2;                     % forcing frequency
 num_elem = 5;                   % number of finite elements (initial guess)
-shape_order = 2;                % number of nodes per element
+shape_order = 4;                % number of nodes per element
 E = 0.2;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
 left_value = 3.0;               % left Dirichlet boundary condition value
@@ -21,7 +21,7 @@ fontsize = 16;                  % fontsize for plots
 [permutation] = permutation(shape_order);
 
 if (N_plot_flag)
-     N_elem = [2, 4, 8, 16, 32, 64, 128];
+     N_elem = [100];
 elseif (k_plot_flag)
      N_elem = 1:500;
 else
@@ -73,7 +73,7 @@ for num_elem = N_elem
          for l = 1:length(qp)
              for i = 1:num_nodes_per_element
                  [N, dN, x_xe, dx_dxe] = shapefunctions(qp(l), shape_order, coordinates, LM, elem);
-
+          
                  % assemble the (elemental) forcing vector
                  f(i) = f(i) - wt(l) * x_xe * (k_freq .^ 3) * cos(gamma * x_xe) * N(i) * dx_dxe;
 
