@@ -1,8 +1,9 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-k_plot_flag = 1;                % 1 - plot the error as a function of order
-N_plot_flag = 0;                % 1 - plot the solutions for various N
+k_plot_flag = 0;                % 1 - plot the error as a function of order
+k_plot_flag_dof = 0;            % 1 - plot the error as a function of DOF
+N_plot_flag = 1;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
 k_freq = 12;                    % forcing frequency
@@ -18,9 +19,9 @@ energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
 
 if (N_plot_flag)
-     N_elem = [1000, 2000];     % num elements to cycle through
-elseif (k_plot_flag)
-     N_elem = 1:100;            % num elements to cycle through
+     N_elem = [16, 32, 64, 128, 256];     % num_elem to cycle through for soln plots
+elseif (k_plot_flag || k_plot_flag_dof)
+     N_elem = 1:5:100;           % num_elem to cycle through for e_N vs. N
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
@@ -133,7 +134,7 @@ end
 energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative));
 energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E .* (solution_derivative_FE - solution_analytical_derivative)));
 energy_norm = energy_norm_top ./ energy_norm_bottom;
-sprintf('energy norm: %f', energy_norm);
+sprintf('energy norm: %f', energy_norm)
 
 if (N_plot_flag)
     plot(physical_domain, solution_FE)
@@ -149,7 +150,7 @@ e = e + 1;
 end
 
 if (N_plot_flag)
-    plot(physical_domain, solution_analytical)
+    plot(physical_domain, solution_analytical, 'k')
     txt = cell(length(N_elem),1);
     for i = 1:length(N_elem)
        txt{i}= sprintf('N = %i', N_elem(i));
@@ -158,28 +159,38 @@ if (N_plot_flag)
     h = legend(txt);
     set(h, 'FontSize', fontsize - 2);
     xlabel('Problem domain', 'FontSize', fontsize)
-    ylabel(sprintf('Solution for k = %i', k_freq), 'FontSize', fontsize)
-    saveas(gcf, sprintf('Nplot_for_k_%i', k_freq), 'jpeg')
-    %close all
+    ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
+    saveas(gcf, sprintf('Nplot_for_order_%i', shape_order - 1), 'jpeg')
+    close all
 end
 
-if (k_plot_flag)
-    loglog(N_elem, e_N, '*-')
+if (k_plot_flag || k_plot_flag_dof)
+    if (k_plot_flag)
+        independent_var = L ./ N_elem;
+        independent_var_str = 'Element size h';
+        filename = 'eN_vs_h';
+    else
+        independent_var = shape_order * N_elem;
+        independent_var_str = 'Degrees of Freedom';
+        filename = 'eN_vs_dof';
+    end
+    
+    loglog(independent_var, e_N, '*-')
     hold on
-    xlabel('Number of elements', 'FontSize', fontsize)
+    xlabel(independent_var_str, 'FontSize', fontsize)
     ylabel('Energy norm', 'FontSize', fontsize)
 end
 
 end
 
-if (k_plot_flag)
+if (k_plot_flag || k_plot_flag_dof)
     txt = cell(length(Order),1);
     for i = 1:length(Order)
        txt{i}= sprintf('Order = %i', Order(i) - 1);
     end
     h2 = legend(txt);
     set(h2, 'FontSize', fontsize);
-    saveas(gcf, 'eN_vs_N', 'jpeg')
+    saveas(gcf, filename, 'jpeg')
 end
 
 

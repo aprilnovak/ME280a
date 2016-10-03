@@ -411,6 +411,8 @@ e^N=\frac{\|u-u^N\|}{\|u\|} \leq 0.04
 
 \subsection{Solution Results and Discussion}
 
+Table \ref{table:orders} shows the number of elements needed to reach the tolerance given by Eq. \eqref{eq:Convergence} as a function of the polynomial order of the approximation functions.
+
 \begin{table}[H]
 \caption{Number of elements needed to reach a tolerance given by Eq. \eqref{eq:Convergence} based on the polynomial order of the approximating functions.}
 \centering
@@ -425,6 +427,45 @@ e^N=\frac{\|u-u^N\|}{\|u\|} \leq 0.04
 \end{tabular}
 \label{table:orders}
 \end{table}
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.48\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{Nplot_for_order_1.jpg}
+  \caption{}
+\end{subfigure}
+\begin{subfigure}{.48\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{Nplot_for_order_2.jpg}
+  \caption{}
+\end{subfigure}
+\begin{subfigure}{.48\textwidth}
+  \centering
+  \includegraphics[width=1.0\linewidth]{Nplot_for_order_3.jpg}
+  \caption{}
+\end{subfigure}
+\caption{Finite element and exact (analytical) solutions for \(N=16, 32, 64, 128, 256\) for (a) linear, (b) quadratic, and (c) cubic approximation functions.}
+\label{fig:Nplots}
+\end{figure}
+
+Fig. \ref{fig:eN_vs_h} shows the error as a function of the element size \(h \equiv L/(\textrm{number of elements})\) for linear (order = 1), quadratic (order = 2), and cubic (order = 3) shape functions. As can be seen, the higher the approximation function order, the faster the energy norm reaches its asymptotic value. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=13cm]{eN_vs_h.jpg}
+  \caption{Energy norm \(e^N\) as a function of \(h\) for different polynomial orders.}
+  \label{fig:eN_vs_h}
+\end{figure}
+
+Fig. \ref{fig:eN_vs_dof} essentially shows the same information as Fig. \ref{fig:eN_vs_h}, except that the independent variable is the number of degrees of freedom. For a linear element, there are two degrees of freedom, for a quadratic element there are three, and for a cubic element there are four. As can seen, the smaller the \(h\), or the greater the number of degrees of freedom, the lower the error when represented as the energy norm.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=13cm]{eN_vs_dof.jpg}
+  \caption{Energy norm \(e^N\) as a function of the number of degrees of freedom for different polynomial orders.}
+  \label{fig:eN_vs_dof}
+\end{figure}
 
 \section{Appendix}
 
