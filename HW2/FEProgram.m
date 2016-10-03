@@ -1,11 +1,11 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-k_plot_flag = 0;                % 1 - plot the error as a function of N
-N_plot_flag = 1;                % 1 - plot the solutions for various N
+k_plot_flag = 1;                % 1 - plot the error as a function of order
+N_plot_flag = 0;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
-k_freq = 2;                     % forcing frequency
+k_freq = 12;                    % forcing frequency
 num_elem = 5;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
 E = 0.2;                        % elastic modulus
@@ -17,20 +17,21 @@ tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
 
-% form the permutation matrix for assembling the global matrices
-[permutation] = permutation(shape_order);
-
 if (N_plot_flag)
-     N_elem = [1000, 2000];
+     N_elem = [1000, 2000];     % num elements to cycle through
 elseif (k_plot_flag)
-     N_elem = 1:100;
+     N_elem = 1:100;            % num elements to cycle through
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-K_freq = [12];
+Order = [2, 3, 4];              % shape function (orders - 1) to cycle thru
 
-for k_freq = K_freq
+for shape_order = Order
+    clearvars permutation
+
+% form the permutation matrix for assembling the global matrices
+[permutation] = permutation(shape_order);    
 
 % index for collecting error
 e = 1;
@@ -87,8 +88,9 @@ for num_elem = N_elem
                  end
              end
          end
-
+         
          % place the elemental k matrix into the global K matrix
+         m = 1;
          for m = 1:length(permutation(:,1))
             i = permutation(m,1);
             j = permutation(m,2);
@@ -131,7 +133,7 @@ end
 energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative));
 energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E .* (solution_derivative_FE - solution_analytical_derivative)));
 energy_norm = energy_norm_top ./ energy_norm_bottom;
-sprintf('energy norm: %f', energy_norm)
+sprintf('energy norm: %f', energy_norm);
 
 if (N_plot_flag)
     plot(physical_domain, solution_FE)
@@ -171,9 +173,9 @@ end
 end
 
 if (k_plot_flag)
-    txt = cell(length(K_freq),1);
-    for i = 1:length(K_freq)
-       txt{i}= sprintf('k = %i', K_freq(i));
+    txt = cell(length(Order),1);
+    for i = 1:length(Order)
+       txt{i}= sprintf('Order = %i', Order(i) - 1);
     end
     h2 = legend(txt);
     set(h2, 'FontSize', fontsize);
