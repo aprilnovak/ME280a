@@ -86,14 +86,14 @@
 \setcounter{tocdepth}{4}
 \begin{document}
 
-\title{ME 280a: HW 1}
+\title{ME 280a: HW 2}
 \author{April Novak}
 
 \maketitle
 
 \section{Introduction and Objectives}
 
-The purpose of this study is to solve a simple finite element (FE) problem and perform a convergence study to determine the number of elements needed to reach a particular error relative to an analytical solution. The Galerkin FE method is used, which for certain classes of problems possesses the ``best approximation property,'' a characteristic that signifies that the FE solution obtained is the best possible solution for a given mesh refinement and choice of shape functions. The mathematical procedure and numerical implementation is described in Section \ref{sec:Procedure}.
+The purpose of this study is to solve a simple finite element (FE) problem and perform a convergence study to determine the number of elements needed to reach a particular error relative to an analytical solution for different shape function orders. The Galerkin FE method is used, which for certain classes of problems possesses the ``best approximation property,'' a characteristic that signifies that the FE solution obtained is the best possible solution for a given mesh refinement and choice of shape functions. The mathematical procedure and numerical implementation is described in Section \ref{sec:Procedure}.
 
 \section{Procedure}
 \label{sec:Procedure}
@@ -106,39 +106,46 @@ This section describes the mathematical process used to solve the following prob
 
 \begin{equation}
 \label{eq:Problem}
-\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=k^2\sin{\left(\frac{2\pi kx}{L}\right)}
+\begin{aligned}
+\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=xk^3\cos{\left(\frac{2\pi kx}{L}\right)}\\
+\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=xk^3\cos{(\gamma x)}\\
+\end{aligned}
 \end{equation}
 
-where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. In order to verify that the program functions correctly, the FE solution to Eq. \eqref{eq:Problem} will be compared with the analytical solution to Eq. \eqref{eq:Problem}. To determine the analytical solution, integrate Eq. \eqref{eq:Problem} once to obtain:
+where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. For simplicity, a constant \(\gamma=2\pi k/L\) is defined. In order to verify that the program functions correctly, the FE solution to Eq. \eqref{eq:Problem} will be compared with the analytical solution to Eq. \eqref{eq:Problem}. To determine the analytical solution, integrate Eq. \eqref{eq:Problem} once to obtain:
 
 \begin{equation}
 \label{eq:Problem2}
-\frac{du}{dx}=-\frac{1}{E}k^2\cos{\left(\frac{2\pi kx}{L}\right)}\frac{L}{2\pi k}+C_1
+\frac{du}{dx}=\frac{1}{E}\left\lbrack \frac{xk^3}{\gamma}\sin{(\gamma x)}+\frac{k^3}{\gamma^2}\cos{(\gamma x)}+C_1\right\rbrack
 \end{equation}
 
 It has been assumed that \(E\) is not a function of \(x\), and hence can be treated as constant in the integration. Integrating once more:
 
 \begin{equation}
-\label{eq:Problem2}
-u(x)=-\frac{1}{E}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\left(\frac{L}{2\pi k}\right)^2+C_1x+C_2
+\label{eq:Problem3}
+u(x)=\frac{1}{E}\left\lbrack\frac{-xk^3}{\gamma^2}\cos{(\gamma x)}+\frac{2k^3}{\gamma^3}\sin{(\gamma x)}+C_1x+C_2\right\rbrack
 \end{equation}
 
 The boundary conditions for this problem are Dirichlet at both endpoints, such that:
 
 \begin{equation}
 \begin{aligned}
-u(0)=0\\
-u(L)=1\\
+u(0)=3\\
+u(L)=-1\\
 \end{aligned}
 \end{equation}
 
-By the first BC, \(C_2=0\), and \(C_1\) based on the second condition equals:
+By applying these boundary conditions:
 
 \begin{equation}
-C_1=\frac{u(L)+k^2\sin{(2\pi k)}\left(\frac{L}{2\pi k E}\right)^2}{L}
+\label{eq:BC}
+\begin{aligned}
+C_1=\frac{1}{L}\left\lbrack(-1)E+\frac{Lk^3}{\gamma^2}\cos{(\gamma L)}-\frac{2k^3}{\gamma^3}\sin{(\gamma L)}-C_2\right\rbrack\\
+C_2=3\\
+\end{aligned}
 \end{equation}
 
-The purpose of this assignment is to solve Eq. \eqref{eq:Problem} with the finite element method (FEM) and then to determine how many elements are needed to obtain a specified error as a function of the frequency \(k\). The solutions for various numbers of elements will also be compared to illustrate how increasing the number of elements ``hones in'' on the analytical solution.
+The purpose of this assignment is to solve Eq. \eqref{eq:Problem} with the finite element method (FEM) and then to determine how many elements are needed to obtain a specified error as a function of the order of the shape functions. The solutions for various numbers of elements will also be compared to illustrate how increasing the number of elements ``hones in'' on the analytical solution. In addition, the convergence rates of the different shape element orders will be plotted to determine the relationship between element order and the rate at which the error decreases as a function of the mesh spacing.
 
 \subsection{Finite Element Implementation}
 
@@ -161,21 +168,21 @@ r^N\cdot u^N=0
 where \(r^N\) is the residual. Hence, to formulate the weak form to Eq. \eqref{eq:Problem}, multiply Eq. \eqref{eq:Problem} through by \(\psi\) and integrate over all space, \(d\Omega\).
 
 \begin{equation}
-\int_{\Omega}^{}\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)\psi d\Omega-\int_{\Omega}^{}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi d\Omega=0
+\int_{\Omega}^{}\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)\psi d\Omega-\int_{\Omega}^{}xk^3\cos{(\gamma x)}\psi d\Omega=0
 \end{equation}
 
 Applying integration by parts to the first term:
 
 \begin{equation}
--\int_{\Omega}^{}E(x)\frac{du}{dx}\frac{d\psi}{dx}d\Omega+\int_{\partial\Omega}^{}E(x)\frac{du}{dx}\psi d(\partial\Omega)-\int_{\Omega}^{}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi d\Omega=0
+-\int_{\Omega}^{}E(x)\frac{du}{dx}\frac{d\psi}{dx}d\Omega+\int_{\partial\Omega}^{}E(x)\frac{du}{dx}\psi d(\partial\Omega)-\int_{\Omega}^{}xk^3\cos{(\gamma x)}\psi d\Omega=0
 \end{equation}
 
 where \(\partial\Omega\) refers to one dimension lower than \(\Omega\), which for this case refers to evaluation at the endpoints of the domain. Hence, for this particular 1-D problem, the above reduces to:
 
 \begin{equation}
 \begin{aligned}
--\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx+ E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi dx=0\\
-\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\psi dx+E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}\\
+-\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx+ E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}-\int_{0}^{L}xk^3\cos{(\gamma x)}\psi dx=0\\
+\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx=-\int_{0}^{L}xk^3\cos{(\gamma x)}\psi dx+E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -183,7 +190,7 @@ Inserting the approximation described in Eq. \eqref{eq:approx}:
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\sum_{i=1}^{N}b_i\phi_idx+E(x)\frac{du}{dx}\sum_{i=1}^{N}b_i\phi_i\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=-\int_{0}^{L}xk^3\cos{(\gamma x)}\sum_{i=1}^{N}b_i\phi_idx+E(x)\frac{du}{dx}\sum_{i=1}^{N}b_i\phi_i\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -191,7 +198,7 @@ Recognizing that \(b_i\) appears in each term, the sum of the remaining terms mu
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}xk^3\cos{(\gamma x)}\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -199,7 +206,7 @@ This equation can be satisfied for each choice of \(j\), and hence can be reduce
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}xk^3\cos{(\gamma x)}\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -217,7 +224,7 @@ where:
 \label{eq:SystemEquations}
 K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\\
 a_j=a_j\\
-F_i=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
+F_i=-\int_{0}^{L}xk^3\cos{(\gamma x)}\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -226,32 +233,45 @@ where the second term in \(F_i\) is only applied at nodes that have Neumann boun
 Quadrature is used to perform the numerical integration because it is much faster, and more general, than symbolic integration of the terms appearing in Eq. \eqref{eq:SystemEquations}. In order for these equations to be useful with Gaussian quadrature, they must be transformed to the master element which exists over \(-1\leq\xi\leq1\):
 
 \begin{equation}
+\label{eq:GoverningEqnsIsoparametric}
 \begin{aligned}
 K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\left(\frac{dx}{d\xi}\frac{dx}{d\xi}\frac{d\xi}{dx}\right)\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{d\xi}\frac{d\phi_j}{d\xi}dx\left(\frac{d\xi}{dx}\right)\\
 a_j=a_j\\
-F_i=-\int_{0}^{L}k^2\sin{\left(\frac{2\pi kx}{L}\right)}\phi_idx\rightarrow-\int_{-1}^{1}k^2\sin{\left(\frac{2\pi kx(\xi)}{L}\right)}\phi_i\frac{dx}{d\xi}d\xi\\
+F_i=-\int_{0}^{L}xk^3\cos{(\gamma x)}\phi_idx\rightarrow-\int_{-1}^{1}x(\xi)k^3\cos{(\gamma x(\xi))}\phi_i\frac{dx}{d\xi}d\xi\\
 \end{aligned}
 \end{equation} 
 
-where the second term in \(F_i\) has been dropped because there are no Neumann boundary conditions in this assignment. For linear elements, the shape functions have the following form over the master element:
+where the second term in \(F_i\) has been dropped because there are no Neumann boundary conditions in this assignment. Three different shape function orders are used in this assignment - linear, quadratic, and cubic. All of these shape functions are Lagrangian shape functions that are determined by requiring them to go to zero at all nodes except the node to which they pertain. For linear elements, the shape functions have the following form and derivative over the master element:
 
 \begin{equation}
 \begin{aligned}
-\phi_1(\xi)=\frac{1-\xi}{2}\\
-\phi_2(\xi)=\frac{1+\xi}{2}\\
+\phi_1(\xi)=\frac{1-\xi}{2},\quad\frac{d\phi_1(\xi)}{d\xi}=-1/2\\
+\phi_2(\xi)=\frac{1+\xi}{2}, \quad\frac{d\phi_2(\xi)}{d\xi}=+1/2\\
 \end{aligned}
 \end{equation}
 
-And the derivative of these functions with respect to the isoparametric coordinate are:
+For quadratic elements, the shape functions have the following form and derivative over the master element:
 
 \begin{equation}
 \begin{aligned}
-\frac{d\phi_1(\xi)}{d\xi}=-1/2\\
-\frac{d\phi_2(\xi)}{d\xi}=1/2\\
+\phi_1(\xi)=\frac{(\xi-1)\xi}{2},\quad\frac{d\phi_1(\xi)}{d\xi}=\xi-1/2\\
+\phi_2(\xi)=(1-\xi)(1+\xi), \hspace{0.9cm}\frac{d\phi_2(\xi)}{d\xi}=-2\xi\\
+\phi_3(\xi)=\frac{(\xi+1)\xi}{2}, \quad\frac{d\phi_3(\xi)}{d\xi}=\xi+1/2\\
 \end{aligned}
 \end{equation}
 
-The transformation from the physical domain (\(x\)) to the parent domain (\(\xi\)) is done with an isoparametric mapping:
+For cubic elements, the shape functions have the following form and derivative over the master element:
+
+\begin{equation}
+\begin{aligned}
+\phi_1(\xi)=\frac{9}{16}\left\lbrack(1-\xi)(1/3-\xi)(-1/3-\xi)\right\rbrack, \quad \frac{d\phi_1(\xi)}{d\xi}=\frac{9}{16}\left(-3\xi^2+2\xi+\frac{1}{9}\right)\\
+\phi_2(\xi)=\frac{-27}{16}\left\lbrack(1-\xi)(1/3-\xi)(-1-\xi)\right\rbrack, \quad \frac{d\phi_2(\xi)}{d\xi}=\frac{-27}{16}\left(-3\xi^2+\frac{2\xi}{3}+1\right)\\
+\phi_3(\xi)=\frac{27}{26}\left\lbrack(1-\xi)(-1/3-\xi)(-1-\xi)\right\rbrack, \quad \frac{d\phi_3(\xi)}{d\xi}=\frac{27}{16}\left(-3\xi^2-\frac{2\xi}{3}+1\right)\\
+\phi_4(\xi)=\frac{-9}{16}\left\lbrack(1/3-\xi)(-1/3-\xi)(-1-\xi)\right\rbrack, \quad \frac{d\phi_4(\xi)}{d\xi}=\frac{-9}{16}\left(-3\xi^2-2\xi+\frac{1}{9}\right)\\
+\end{aligned}
+\end{equation}
+
+where the nodes are spaced equally over \(-1\leq\xi\leq1\) (i.e. nodes at \(\pm 1/3\)). The transformation from the physical domain (\(x\)) to the parent domain (\(\xi\)) is done with an isoparametric mapping:
 
 \begin{equation}
 \label{eq:Mapping}
@@ -264,12 +284,47 @@ where \(X_i\) are the coordinates in each element. This mapping is performed for
 \frac{dx(\xi)}{d\xi}=\sum_{i=1}^{N} X_i\frac{d\phi_i(\xi)}{d\xi}
 \end{equation}
 
-With all these transformations from the physical domain to the isoparametric domain, Gaussian quadrature can be used. For simplicity, a two-point quadrature rule is used, with the following weights \(w\) and sampling points \(x\):
+With all these transformations from the physical domain to the isoparametric domain, Gaussian quadrature can be used. The quadrature used depends on the order of the shape functions. An \(n\) point quadrature rule can exactly integrate a polynomial of order \(2n-1\). From Eq. \eqref{eq:GoverningEqnsIsoparametric}, the integrand in \(K_{ij}\) will be of order \((n-1)(n-1)\), while the integrand in \(F_i\) will be of (technically) infinite order since cosine is not a polynomial, and it would require a summation of an infinite number of polynomials to approximate cosine as a polynomial (i.e. Taylor series). Neglecting the presence of the cosine function, then the integrand in \(F_i\) would be of order \(n^2\). So, the selection of the order of the quadrature rule is not straightforward. Table \ref{table:orders} shows the order of the different matrices and vectors in the governing equations in order to guide the selection of a quadrature rule. The number of quadrature points is selected according to the desire to integrate correctly \(F_{i}\) (neglecting the cosine term), since this is more restrictive than correctly integrating the integrand in \(K_{ij}\). When applicable, the number of quadrature points is rounded up. 
+
+\begin{table}[H]
+\caption{Number of quadrature points needed for exact integration of terms appearing in Eq. \eqref{eq:GoverningEqnsIsoparametric}. The ``order of integrand in \(F_i\)'' neglects the order of the cosine term.}
+\centering
+\begin{tabular}{c c c c}
+\hline\hline
+\(\phi\) order & order of integrand in \(K_{ij}\) & order of integrand in \(F_{i}\) & Quadrature points needed\\ [0.5ex]
+\hline
+1 & 0 & 2 & 2\\
+2 & 1 & 4 & 3\\
+3 & 4 & 9 & 5\\
+\hline
+\end{tabular}
+\label{table:orders}
+\end{table}
+
+Hence, for cubic shape functions, a five-point rule is used, for quadratic a three-point rule, and for linear a two-point rule. These Gauss-Legendre rules are as follows. For the two-point quadrature rule, the weights \(w\) and sampling points \(x\) are:
 
 \begin{equation}
 \begin{aligned}
 w=[1.0, 1.0]\\
 x=[-\sqrt{1/3}, \sqrt{1/3}]\\
+\end{aligned}
+\end{equation} 
+
+For the three-point quadrature rule, the weights \(w\) and sampling points \(x\) are:
+
+\begin{equation}
+\begin{aligned}
+w=[-\sqrt{3/5}, 0, \sqrt{3/5}]\\
+x=[5/9, 8/9, 5/9]\\
+\end{aligned}
+\end{equation} 
+
+For the five-point quadrature rule, the weights \(w\) and sampling points \(x\) are:
+
+\begin{equation}
+\begin{aligned}
+w=\left\lbrack-\frac{1}{3}\sqrt{5-2\sqrt{10/7}}, -\frac{1}{3}\sqrt{5-2\sqrt{10/7}}, 0, \frac{1}{3}\sqrt{5-2\sqrt{10/7}}, \frac{1}{3}\sqrt{5-2\sqrt{10/7}}\right\rbrack\\
+x=\left\lbrack\frac{322-13\sqrt{70}}{900}, \frac{322+13\sqrt{70}}{900}, \frac{128}{225}, \frac{322+13\sqrt{70}}{900}, \frac{322-13\sqrt{70}}{900}\right\rbrack\\
 \end{aligned}
 \end{equation} 
 
@@ -351,77 +406,10 @@ while the derivative of the analytical solution is obtained from Eq. \eqref{eq:P
 
 \begin{equation}
 \label{eq:Convergence}
-e^N=\frac{\|u-u^N\|}{\|u\|} \leq 0.05
+e^N=\frac{\|u-u^N\|}{\|u\|} \leq 0.04
 \end{equation}
 
 \subsection{Solution Results and Discussion}
-
-Table \ref{table:N} shows the number of elements needed to satisfy Eq. \eqref{eq:Convergence} for each \(k\).
-
-\begin{table}[H]
-\caption{Number of elements \(N\) needed to reach convergence according to Eq. \eqref{eq:Convergence}.}
-\centering
-\begin{tabular}{l c}
-\hline\hline
-k & \(N\) to reach convergence\\ [0.5ex]
-\hline
-1 & 28\\
-2 & 67\\
-4 & 142\\
-8 & 289\\
-16 & 580\\
-32 & 1160\\
-\hline
-\end{tabular}
-\label{table:N}
-\end{table}
-
-Fig. \ref{Nplots} shows the FE solutions for \(N=2, 4, 8, 16, 32, 64, \) and \(128\) for \(k=1, 2, 4, 8, 16, 32\). The exact solution is also plotted for comparison. As can be seen, in general, increasing \(N\) improves the finite element solution with respect to better-approximating the analytical solution. It is interesting to note that, for choices of the number of elements \(N\) that are twice the value of \(k\) (i.e. for \(N=2k\)), the finite element solution is a straight line between the two endpoints. This likely occurs because of the highly oscillatory nature of the analytical solution, and the fact that too-few elements fails to place nodes at locations that represent the peaks and valleys of the analytical solution.
-
-\begin{figure}[H]
-\centering
-\begin{subfigure}{.48\textwidth}
-  \centering
-  \includegraphics[width=1.0\linewidth]{Nplot_for_k_1.jpg}
-  \caption{}
-\end{subfigure}
-\begin{subfigure}{.48\textwidth}
-  \centering
-  \includegraphics[width=1.0\linewidth]{Nplot_for_k_2.jpg}
-  \caption{}
-\end{subfigure}
-\begin{subfigure}{.48\textwidth}
-  \centering
-  \includegraphics[width=1.0\linewidth]{Nplot_for_k_4.jpg}
-  \caption{}
-\end{subfigure}
-\begin{subfigure}{.48\textwidth}
-  \centering
-  \includegraphics[width=1.0\linewidth]{Nplot_for_k_8.jpg}
-  \caption{}
-\end{subfigure}
-\begin{subfigure}{.48\textwidth}
-  \centering
-  \includegraphics[width=1.0\linewidth]{Nplot_for_k_16.jpg}
-  \caption{}
-\end{subfigure}
-\begin{subfigure}{.48\textwidth}
-  \centering
-  \includegraphics[width=1.0\linewidth]{Nplot_for_k_32.jpg}
-  \caption{}
-\end{subfigure}
-\caption{Finite element and exact (analytical) solutions for \(N=2, 4, 8, 16, 32, 64, \) and \(128\) for (a) \(k=1\), (b) \(k=2\), (c) \(k=4\), (d) \(k=8\), (e) \(k=16\), and (f) \(k=32\).}
-\label{fig:Nplots}
-\end{figure}
-
-Fig. \ref{fig:eN} shows \(e^N\) as a function of \(N\) for each value of \(k\) represented in the previous figure. \(N\) is allowed to vary from 1 to 128 to obtain a fine-enough plot to observe the convergence behavior. As can be seen, the higher the \(k\), the more elements that are needed to obtain a desired global energy norm. For very oscillatory solutions, for coarser meshes, nodes may happen to consistently \textit{not} ``fall'' in the peaks and valleys of the solution, completely missing the oscillatory behavior. Hence, increasing the mesh resolution for oscillatory solutions with high frequency  does not always reduce the energy norm simply due to where the nodes may happen to lie. However, with a fine-enough mesh, by increasing the number of elements, the energy norm will monotonically decrease. 
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=13cm]{eN_vs_N.jpg}
-  \caption{Energy norm \(e^N\) as a function of \(N\) for \(k=1, 2, 4, 8, 16, \) and \(32\).}
-  \label{fig:eN}
-\end{figure}
 
 \section{Appendix}
 
