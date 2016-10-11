@@ -413,7 +413,7 @@ e^N=\frac{\|u-u^N\|}{\|u\|} \leq 0.04
 
 Table \ref{table:orders} shows the number of elements needed to reach the tolerance given by Eq. \eqref{eq:Convergence} as a function of the polynomial order of the approximation functions. The higher the element order, the less elements that are needed to reach the specified convergence criteria, as expected. The higher the polynomial order of the shape functions, the more degrees of freedom that are available to capture the behavior of the true solution. 
 
-It is important to take the results shown in Table \ref{table:orders} with a ``grain of salt'' because they depend on how exactly I compute the energy norm - I use \texttt{trapz()}, which is sensitive to the mesh I use. I use a very fine mesh, which is perhaps why the numbers of intervals over which I compute the integrals in the energy norm provides a lower energy norm than for students who use quadrature or the \(a^T\textbf{K}a\) method for computing the energy norm. 
+It is important to take the results shown in Table \ref{table:orders} with a ``grain of salt'' because they depend on how exactly I compute the energy norm - I use \texttt{trapz()}, which is sensitive to the mesh I use. I use a very fine mesh, which is perhaps why the numbers of intervals over which I compute the integrals in the energy norm provides a lower energy norm than for students who use quadrature or the \(a^T\textbf{K}a\) method for computing the energy norm. The answer also depends on the quadrature rule used, but I believe the method I used is more accurate because the mesh is made incredibly fine to perform the integration.
 
 \begin{table}[H]
 \caption{Number of elements needed to reach a tolerance given by Eq. \eqref{eq:Convergence} based on the polynomial order of the approximating functions.}
@@ -429,6 +429,8 @@ It is important to take the results shown in Table \ref{table:orders} with a ``g
 \end{tabular}
 \label{table:orders}
 \end{table}
+
+Fig. \ref{fig:Nplots} shows the solutions for linear, quadratic, and cubic approximation functions as a function of various choices for number of elements. The results in this figure confirm the results in the table above - the higher the polynomial order of the approximation functions, the more accurate the answer (relative to the exact solution), and hence the fewer numbers of elements that are needed. 
 
 \begin{figure}[H]
 \centering
@@ -447,11 +449,11 @@ It is important to take the results shown in Table \ref{table:orders} with a ``g
   \includegraphics[width=1.0\linewidth]{Nplot_for_order_3.jpg}
   \caption{}
 \end{subfigure}
-\caption{Finite element and exact (analytical) solutions for \(N=16, 32, 64, 128, 256\) for (a) linear, (b) quadratic, and (c) cubic approximation functions.}
+\caption{Finite element and exact (analytical) solutions for \(N=32, 64, 128, 256\) for (a) linear, (b) quadratic, and (c) cubic approximation functions.}
 \label{fig:Nplots}
 \end{figure}
 
-Fig. \ref{fig:eN_vs_h} shows the error as a function of the element size \(h \equiv L/(\textrm{number of elements})\) for linear (order = 1), quadratic (order = 2), and cubic (order = 3) shape functions. As can be seen, the higher the approximation function order, the faster the energy norm reaches its asymptotic value. 
+Fig. \ref{fig:eN_vs_h} shows the error as a function of the element size \(h \equiv L/(\textrm{number of elements})\) for linear (order = 1), quadratic (order = 2), and cubic (order = 3) shape functions. As can be seen, the higher the approximation function order, both the lower the error, and the faster the error decreases. 
 
 \begin{figure}[H]
   \centering
@@ -460,7 +462,7 @@ Fig. \ref{fig:eN_vs_h} shows the error as a function of the element size \(h \eq
   \label{fig:eN_vs_h}
 \end{figure}
 
-Fig. \ref{fig:eN_vs_dof} essentially shows the same information as Fig. \ref{fig:eN_vs_h}, except that the independent variable is the number of degrees of freedom. For a linear element, there are two degrees of freedom, for a quadratic element there are three, and for a cubic element there are four. As can seen, the smaller the \(h\), or the greater the number of degrees of freedom, the lower the error when represented as the energy norm.
+Fig. \ref{fig:eN_vs_dof} essentially shows the same information as Fig. \ref{fig:eN_vs_h}, except that the independent variable is the number of degrees of freedom. For a linear element, there are two degrees of freedom, for a quadratic element there are three, and for a cubic element there are four. As can seen, the smaller the \(h\), or the greater the number of degrees of freedom, the lower the error and the faster the error decrease.
 
 \begin{figure}[H]
   \centering
@@ -468,6 +470,15 @@ Fig. \ref{fig:eN_vs_dof} essentially shows the same information as Fig. \ref{fig
   \caption{Energy norm \(e^N\) as a function of the number of degrees of freedom for different polynomial orders.}
   \label{fig:eN_vs_dof}
 \end{figure}
+
+The theoretical rates of convergence are dictated by the fundamental interpolation theorem:
+
+\begin{equation}
+\label{eq:Theorem}
+\|u-u^h\|_{E(\Omega)}\leq C(u, p)h^{\min{(r-1, p})}
+\end{equation}
+
+where \(C\) is an unknown constant, \(r\) is the regularity, and \(p\) is the polynomial order of the approximation functions. Hence, when plotted on log-log coordinates, the slopes of the energy norm as a function of \(h\) (Fig. \ref{fig:eN_vs_h}) have values equal to the polynomial order of the approximation function. The slops of the energy norm as a function of the number of degrees of freedom (Fig. \ref{fig:eN_vs_dof}) simply has the negative of this slope. Hence, this homework assignment has shown the validity of Eq. \eqref{eq:Theorem}, and has shown the relationship between the error and the element size for each \(p\). For example, by doubling the number of elements, the error decreases by a factor of 2 for linear elements, 4 for quadratic elements, and 8 for cubic elements. 
 
 \section{Appendix}
 

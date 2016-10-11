@@ -1,9 +1,9 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-k_plot_flag = 1;                % 1 - plot the error as a function of order
+k_plot_flag = 0;                % 1 - plot the error as a function of order
 k_plot_flag_dof = 0;            % 1 - plot the error as a function of DOF
-N_plot_flag = 0;                % 1 - plot the solutions for various N
+N_plot_flag = 1;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
 k_freq = 12;                    % forcing frequency
@@ -26,7 +26,7 @@ else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-Order = [2];              % shape function (orders - 1) to cycle thru
+Order = [2, 3, 4];              % shape function (orders - 1) to cycle thru
 
 for shape_order = Order
     clearvars permutation
@@ -177,7 +177,6 @@ if (k_plot_flag || k_plot_flag_dof)
     
     loglog(independent_var, e_N, '*-')
     hold on
-    loglog(independent_var, (e_N(1) / independent_var(1).^ (shape_order - 1)) .* independent_var .^ (shape_order - 1), 'k-')
     xlabel(independent_var_str, 'FontSize', fontsize)
     ylabel('Energy norm', 'FontSize', fontsize)
 end
@@ -187,7 +186,7 @@ end
 if (k_plot_flag || k_plot_flag_dof)
     txt = cell(length(Order),1);
     for i = 1:(length(Order))
-        txt{i} = sprintf('Order = %i', Order(i) - 1);
+        txt{i} = sprintf('Order = %i, |(slope)| = %i', Order(i) - 1, Order(i) - 1);
     end
     h2 = legend(txt);
     set(h2, 'FontSize', fontsize);
