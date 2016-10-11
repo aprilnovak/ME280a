@@ -1,9 +1,9 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-k_plot_flag = 0;                % 1 - plot the error as a function of order
+k_plot_flag = 1;                % 1 - plot the error as a function of order
 k_plot_flag_dof = 0;            % 1 - plot the error as a function of DOF
-N_plot_flag = 1;                % 1 - plot the solutions for various N
+N_plot_flag = 0;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
 k_freq = 12;                    % forcing frequency
@@ -13,20 +13,20 @@ E = 0.2;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
 left_value = 3.0;               % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
-right_value = -1.0;              % right Dirichlet boundary condition value
+right_value = -1.0;             % right Dirichlet boundary condition value
 tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
 
 if (N_plot_flag)
-     N_elem = [16, 32, 64, 128, 256];     % num_elem to cycle through for soln plots
+     N_elem = [32, 64, 128, 256];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
-     N_elem = 1:5:100;           % num_elem to cycle through for e_N vs. N
+     N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-Order = [2, 3, 4];              % shape function (orders - 1) to cycle thru
+Order = [2];              % shape function (orders - 1) to cycle thru
 
 for shape_order = Order
     clearvars permutation
@@ -38,7 +38,7 @@ for shape_order = Order
 e = 1;
 
 % initial guess for determining number of elements to reach error tol
-% N_elem = 1000;
+%N_elem = 100;
 
 for num_elem = N_elem
 
@@ -47,8 +47,11 @@ for num_elem = N_elem
 %     num_elem = num_elem + 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    % --- ANALYTICAL SOLUTION --- %
-    parent_domain = -1:0.01:1;
+    % define the quadrature rule
+    [wt, qp] = quadrature(shape_order);
+
+    % --- ANALYTICAL SOLUTION --- % (over the physical domain)
+    parent_domain = -1:0.1:1;
     physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
     gamma = 2 * pi * k_freq ./ L;
     term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E .* gamma .^3);
@@ -58,16 +61,13 @@ for num_elem = N_elem
     solution_analytical = C_1 + term1 - term2 + C_2 .* physical_domain;
     term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E .* gamma .^3);
     term2_1 = ((k_freq .^ 3) ./ (E .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
-    solution_analytical_derivative = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E .* gamma .^ 2);
+    solution_analytical_derivative = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E .* gamma .^ 2) + C_2;
     
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
 
     % specify the boundary conditions
     [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
-
-    % define the quadrature rule
-    [wt, qp] = quadrature(shape_order);
 
     K = zeros(num_nodes);
     F = zeros(num_nodes, 1);
@@ -142,7 +142,7 @@ if (N_plot_flag)
 end
 
 % uncomment to find how many elements are needed to reach the error tol   %
-% end
+%end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 e_N(e) = energy_norm;
 e = e + 1;
@@ -177,6 +177,7 @@ if (k_plot_flag || k_plot_flag_dof)
     
     loglog(independent_var, e_N, '*-')
     hold on
+    loglog(independent_var, (e_N(1) / independent_var(1).^ (shape_order - 1)) .* independent_var .^ (shape_order - 1), 'k-')
     xlabel(independent_var_str, 'FontSize', fontsize)
     ylabel('Energy norm', 'FontSize', fontsize)
 end
@@ -185,15 +186,13 @@ end
 
 if (k_plot_flag || k_plot_flag_dof)
     txt = cell(length(Order),1);
-    for i = 1:length(Order)
-       txt{i}= sprintf('Order = %i', Order(i) - 1);
+    for i = 1:(length(Order))
+        txt{i} = sprintf('Order = %i', Order(i) - 1);
     end
     h2 = legend(txt);
     set(h2, 'FontSize', fontsize);
     saveas(gcf, filename, 'jpeg')
 end
 
-
-% uncomment to find out how many elements are needed to reach the error
-% tolerance
-%sprintf('For k = %i, number elements: %i', k_freq, num_elem)
+% uncomment to find out how many elements are needed to reach the error tol
+%sprintf('For order = %i, number elements: %i', shape_order - 1, num_elem)

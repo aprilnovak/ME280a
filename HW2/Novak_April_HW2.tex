@@ -411,7 +411,9 @@ e^N=\frac{\|u-u^N\|}{\|u\|} \leq 0.04
 
 \subsection{Solution Results and Discussion}
 
-Table \ref{table:orders} shows the number of elements needed to reach the tolerance given by Eq. \eqref{eq:Convergence} as a function of the polynomial order of the approximation functions.
+Table \ref{table:orders} shows the number of elements needed to reach the tolerance given by Eq. \eqref{eq:Convergence} as a function of the polynomial order of the approximation functions. The higher the element order, the less elements that are needed to reach the specified convergence criteria, as expected. The higher the polynomial order of the shape functions, the more degrees of freedom that are available to capture the behavior of the true solution. 
+
+It is important to take the results shown in Table \ref{table:orders} with a ``grain of salt'' because they depend on how exactly I compute the energy norm - I use \texttt{trapz()}, which is sensitive to the mesh I use. I use a very fine mesh, which is perhaps why the numbers of intervals over which I compute the integrals in the energy norm provides a lower energy norm than for students who use quadrature or the \(a^T\textbf{K}a\) method for computing the energy norm. 
 
 \begin{table}[H]
 \caption{Number of elements needed to reach a tolerance given by Eq. \eqref{eq:Convergence} based on the polynomial order of the approximating functions.}
@@ -420,9 +422,9 @@ Table \ref{table:orders} shows the number of elements needed to reach the tolera
 \hline\hline
 \(\phi\) order & Number of elements needed\\ [0.5ex]
 \hline
-1 & \\
-2 &\\
-3 & \\
+1 & 543\\
+2 & 73\\
+3 & 24\\
 \hline
 \end{tabular}
 \label{table:orders}
