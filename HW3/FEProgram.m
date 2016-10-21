@@ -11,9 +11,9 @@ num_elem = 5;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
 E = 0.2;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
-left_value = 3.0;               % left Dirichlet boundary condition value
+left_value = -0.3;              % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
-right_value = -1.0;             % right Dirichlet boundary condition value
+right_value = 0.7;              % right Dirichlet boundary condition value
 tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
@@ -28,6 +28,7 @@ else
 end
 
 Order = [3];              % shape function (orders - 1) to cycle thru
+
 
 for shape_order = Order
     clearvars permutation
@@ -66,6 +67,22 @@ for num_elem = N_elem
     
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
+    
+    % specify E over the domain in equally-spaced intervals
+    E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
+    space_blocks = 0.1:0.1:L;
+    
+    % assembly E vector in physical_domain for the analytical solution
+    j = 1;
+    E_physical_domain = zeros(1,length(physical_domain));
+    for i = 1:length(physical_domain)
+        if (physical_domain(i) <= space_blocks(j))
+            E_physical_domain(i) = E_blocks(j);
+        else
+            j = j + 1;
+            E_physical_domain(i) = E_blocks(j);
+        end
+    end
 
     % specify the boundary conditions
     [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
