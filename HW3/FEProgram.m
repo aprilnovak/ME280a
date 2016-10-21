@@ -17,9 +17,10 @@ right_value = -1.0;             % right Dirichlet boundary condition value
 tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
+pcg_error_tol = 0.000001;       % error tolerance for PCG
 
 if (N_plot_flag)
-     N_elem = [50];              % num_elem to cycle through for soln plots
+     N_elem = [100];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
@@ -108,7 +109,8 @@ for num_elem = N_elem
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
 % perform the solve
-a_u_condensed = K_uu \ (F_u - K_uk * dirichlet_nodes(2,:)');
+[a_u_condensed, a_u_condensed_ge] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol);
+%plot(linspace(0, L, length(K_uu(1,:))), a_u_condensed_ge - a_u_condensed)
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);

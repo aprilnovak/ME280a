@@ -349,6 +349,51 @@ while the derivative of the analytical solution is obtained from Eq. \eqref{eq:P
 
 \subsection{The Preconditioned Conjugate Gradient Method}
 
+The Preconditioned Conjugate Gradient (PCG) method is used to perform the numerical solution of the linear algebra system. This method is an iterative method, and computes the solution \(\vv{a}\) at each iteration by adding an update \(\vv{z}\) to the previous iterate, scaled by a constant \(\lambda\):
+
+\begin{equation}
+\label{eq:PCGUpdate}
+\vv{a}^{i+1}=\vv{a}^i+\lambda^i\vv{z}^i
+\end{equation}
+
+where \(i\) denotes the iteration number. This requires an initial guess for \(\vv{a}^1\) (indexing starts at 1). Because the nodes at which Dirichlet boundary conditions apply have already been removed, this initial guess is set, for simplicity, to values of 1 at all nodes. Physics-based preconditioning is a more sophisticated method that takes into account more realistic solutions to provide the initial guess for the solution, but this is not pursued here. Due to the similarity between the PCG method and the Method of Steepest Descent, for simplicity, the initial guess for \(\vv{z}^1\) is chosen to be the residual when evaluate with \(\vv{a}^1\). The residual \(\vv{r}\) is here defined to be:
+
+\begin{equation}
+\vv{r}^i=\vv{F}-\textbf{K}\vv{a}^i
+\end{equation}
+
+The quantity \(\vv{z}^i\) is chosen to be K-conjugate to the previous iterate \(\vv{z}^{i-1}\). This weighted inner product searches, in the next iterate, in the conjugate gradient direction of the previous iterate, while taking into account the structure of the governing equation. In other words, it is required that:
+
+\begin{equation}
+\vv{z}^{i,T}\textbf{K}\vv{z}^{i-1}=0
+\end{equation}
+
+This then gives the following form for \(\theta\):
+
+\begin{equation}
+\theta^i=-\frac{\vv{r}^{T,i}\textbf{K}\vv{z}^{i-1}}{\vv{z}^{T,i-1}\textbf{K}\vv{z}^{i-1}}
+\end{equation}
+
+where \(\theta\) is used in the update of \(\vv{z}\) as:
+
+\begin{equation}
+\vv{z}^i=\vv{r}^i+\theta^i\vv{z}^{i-1}
+\end{equation}
+
+By solving for \(\lambda^i\) in Eq. \eqref{eq:PCGUpdate} and substituting this into the potential function that minimizes the potential energy of the FE solution, the following optimal form for \(\lambda^i\) is found:
+
+\begin{equation}
+\lambda^i=\frac{\vv{z}^{T,i}\vv{r}^i}{\vv{z}^{T,i}\textbf{K}\vv{z}^i}
+\end{equation}
+
+The point at which the iterations are stopped is based on the energy norm discussed in the previous section. The error tolerance for the PCG method is set to 0.000001, and so the iterations are halted once:
+
+\begin{equation}
+\left(\vv{a}^{T,i+1}-\vv{a}^{T,i}\right)\textbf{K}\left(\vv{a}^{i+1}-\vv{a}^i\right)<0.000001
+\end{equation}
+
+
+
 \section{Solution Results and Discussion}
 
 
