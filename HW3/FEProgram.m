@@ -9,7 +9,7 @@ L = 1.0;                        % problem domain
 k_freq = 12;                    % forcing frequency
 num_elem = 5;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
-E = 0.2;                        % elastic modulus
+E = 0.01;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
 left_value = -0.3;              % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
@@ -55,8 +55,8 @@ for num_elem = N_elem
     [wt, qp] = quadrature(shape_order);
     
     % specify E over the domain in equally-spaced intervals
-    E_blocks = [2.5, 1.0, 2.0];
-    space_blocks = [0.5, 0.75, 1.0];
+    E_blocks = [0.01, 0.01];
+    space_blocks = [0.5, 1.0];
 
     % --- ANALYTICAL SOLUTION --- % (over the physical domain)
     gamma = 2 * pi * k_freq ./ L;
@@ -83,7 +83,7 @@ for num_elem = N_elem
     
     % compute C_1 for the last block
     C_1 = (right_value - (-L .* (k_freq .^ 3) .* cos(gamma .* L)./(gamma .^ 2) + 2 * k_freq .^ 3 .* sin(gamma .* L) ./ (gamma .^ 3))/E_blocks(end) - C_2(end))/L;
-    C_1 = C_1 .* ones(1, length(physical_domain));
+    C_1_physical_domain = C_1 .* ones(1, length(physical_domain));
     
     % assembly E vector in physical_domain for the analytical solution
     j = 1;
@@ -99,6 +99,15 @@ for num_elem = N_elem
             C_2_physical_domain(i) = C_2(j);
         end
     end
+    
+    term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^3);
+    term2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^ 2);
+    solution_analytical_blocks = C_2_physical_domain + term1 - term2 + C_1_physical_domain .* physical_domain;
+    
+    term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E_physical_domain .* gamma .^3);
+    term2_1 = ((k_freq .^ 3) ./ (E_physical_domain .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
+    solution_analytical_derivative_blocks = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E_physical_domain .* gamma .^ 2) + C_1_physical_domain;
+    
     
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
