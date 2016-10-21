@@ -48,13 +48,17 @@ for num_elem = N_elem
 % while energy_norm > tolerance
 %     num_elem = num_elem + 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+    parent_domain = -1:0.1:1;
+    physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));    
+
     % define the quadrature rule
     [wt, qp] = quadrature(shape_order);
+    
+    % specify E over the domain in equally-spaced intervals
+    E_blocks = [2.5, 1.0, 2.0];
+    space_blocks = [0.5, 0.75, 1.0];
 
     % --- ANALYTICAL SOLUTION --- % (over the physical domain)
-    parent_domain = -1:0.1:1;
-    physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
     gamma = 2 * pi * k_freq ./ L;
     term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E .* gamma .^3);
     term2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E .* gamma .^ 2);
@@ -65,24 +69,39 @@ for num_elem = N_elem
     term2_1 = ((k_freq .^ 3) ./ (E .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
     solution_analytical_derivative = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E .* gamma .^ 2) + C_2;
     
-    % perform the meshing
-    [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
+    % loop over the domain to find C_2 for each block
+    C_2 = zeros(1, length(E_blocks));
+    % assumes the domain begins at x=0 (also only works for this specific problem)
+    % moves from left to right
+    for i = 1:length(E_blocks) 
+        if i == 1 % first block
+            C_2(i) = left_value;
+        else
+            C_2(i) = (1/E_blocks(i-1)-1/E_blocks(i)) .* (-space_blocks(i) .* (k_freq .^ 3) .* cos(gamma .* space_blocks(i))./(gamma .^ 2) + 2 * k_freq .^ 3 .* sin(gamma .* space_blocks(i)) ./ (gamma .^ 3)) + C_2(i-1);
+        end
+    end
     
-    % specify E over the domain in equally-spaced intervals
-    E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
-    space_blocks = 0.1:0.1:L;
+    % compute C_1 for the last block
+    C_1 = (right_value - (-L .* (k_freq .^ 3) .* cos(gamma .* L)./(gamma .^ 2) + 2 * k_freq .^ 3 .* sin(gamma .* L) ./ (gamma .^ 3))/E_blocks(end) - C_2(end))/L;
+    C_1 = C_1 .* ones(1, length(physical_domain));
     
     % assembly E vector in physical_domain for the analytical solution
     j = 1;
     E_physical_domain = zeros(1,length(physical_domain));
+    C_2_physical_domain = zeros(1,length(physical_domain));
     for i = 1:length(physical_domain)
         if (physical_domain(i) <= space_blocks(j))
             E_physical_domain(i) = E_blocks(j);
+            C_2_physical_domain(i) = C_2(j);
         else
             j = j + 1;
             E_physical_domain(i) = E_blocks(j);
+            C_2_physical_domain(i) = C_2(j);
         end
     end
+    
+    % perform the meshing
+    [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
 
     % specify the boundary conditions
     [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);

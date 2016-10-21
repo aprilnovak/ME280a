@@ -39,6 +39,7 @@
 \usepackage{gensymb}
 \usepackage{longtable}
 \usepackage{listings}
+\usepackage{cancel}
 \lstset{
     frame=single,
     breaklines=true,
@@ -115,14 +116,14 @@ where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a know
 
 \begin{equation}
 \label{eq:Problem2}
-\frac{du}{dx}=\frac{k^3}{E}\left\lbrack \frac{x}{\gamma}\sin{(\gamma x)}+\frac{1}{\gamma^2}\cos{(\gamma x)}\right\rbrack+C_1
+E(x)\frac{du}{dx}=k^3\left\lbrack \frac{x}{\gamma}\sin{(\gamma x)}+\frac{1}{\gamma^2}\cos{(\gamma x)}\right\rbrack+C_1
 \end{equation}
 
 where, even though \(E\) is a function of \(x\), it is constant over particular lengths of the domain. Hence, the analytical solution can be determined by splitting up the domain into sufficiently small regions where \(E\) is constant. So, for the remainder of this section, \(E\) is treated as constant, and it is understood that the analytical solutions obtained are exact only over each individual region where \(E\) is constant. Integrating once more:
 
 \begin{equation}
 \label{eq:Problem3}
-u(x)=\frac{1}{E}\left\lbrack\frac{-xk^3}{\gamma^2}\cos{(\gamma x)}+\frac{2k^3}{\gamma^3}\sin{(\gamma x)}\right\rbrack+C_1x+C_2
+u(x)=\frac{1}{E(x)}\left\lbrack\frac{-xk^3}{\gamma^2}\cos{(\gamma x)}+\frac{2k^3}{\gamma^3}\sin{(\gamma x)}\right\rbrack+C_1x+C_2
 \end{equation}
 
 The boundary conditions for this problem are Dirichlet at both endpoints, such that:
@@ -134,15 +135,38 @@ u(L)=0.7\\
 \end{aligned}
 \end{equation}
 
-By applying these boundary conditions:
+From Eq. \eqref{eq:Problem}, \(E(x)du/dx\) must be continuous in the domain, and must match at inter-block boundaries. For example, for two blocks that share a node at \(x=x_{share}\):
 
 \begin{equation}
-\label{eq:BC}
 \begin{aligned}
-C_1=\frac{1}{L}\left\lbrack(-1)E+\frac{Lk^3}{\gamma^2}\cos{(\gamma L)}-\frac{2k^3}{\gamma^3}\sin{(\gamma L)}-C_2\right\rbrack\\
-C_2=u(0)\\
+k^3\left\lbrack \frac{x_{share}}{\gamma}\sin{(\gamma x_{share})}+\frac{1}{\gamma^2}\cos{(\gamma x_{share})}\right\rbrack+C_1(\text{block 1})=\quad\\
+k^3\left\lbrack \frac{x_{share}}{\gamma}\sin{(\gamma x_{share})}+\frac{1}{\gamma^2}\cos{(\gamma x_{share})}\right\rbrack+C_1(\text{block 2a})\\
 \end{aligned}
 \end{equation}
+
+Because all constants besides \(E\) are constant in the domain, \(C_1\) is the same for each block. The second requirement is that \(u\) be continuous across block edges. From Eq. \eqref{eq:Problem3}:
+
+\begin{equation}
+\begin{aligned}
+\frac{1}{E(\text{block 1})}\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack+\cancel{C_1(\text{block 1})x_{share}}+C_2(\text{block 1})=\quad\\
+\frac{1}{E(\text{block 2})}\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack+\cancel{C_1(\text{block 2})x_{share}}+C_2(\text{block 2})\\
+\end{aligned}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+C_2(\text{block 2})=C_2(\text{block 1})+\left(\frac{1}{E(\text{block 1})}-\frac{1}{E(\text{block 2})}\right)\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack
+\end{aligned}
+\end{equation}
+
+where \(C_1\) is canceled from both sides because it is the same for all blocks. \(C_2\) can be calculated for the first block, since \(C_2(\text{block 1})=u(0)\). Then, the remaining blocks are swept through to compute \(C_2\) for each block. Then, once all the \(C_2\) are obtained, the solution in Eq. \eqref{eq:Problem3} can be used to compute \(C_1\) for the last block.
+
+
+\begin{equation}
+C_1=\frac{1}{L}\left(u(L)-\frac{1}{E(L)}\left\lbrack\frac{-Lk^3}{\gamma^2}\cos{(\gamma L)}+\frac{2k^3}{\gamma^3}\sin{(\gamma L)}\right\rbrack-C_2(\text{last block})\right)
+\end{equation}
+
+
 
 The purpose of this assignment is to solve Eq. \eqref{eq:Problem} with the finite element method (FEM) while using a more sophisticated numerical method for solving the matrix equation. 
 
