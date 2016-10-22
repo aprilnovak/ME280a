@@ -40,6 +40,7 @@
 \usepackage{longtable}
 \usepackage{listings}
 \usepackage{cancel}
+\usepackage{amsmath}
 \lstset{
     frame=single,
     breaklines=true,
@@ -123,7 +124,7 @@ where, even though \(E\) is a function of \(x\), it is constant over particular 
 
 \begin{equation}
 \label{eq:Problem3}
-u(x)=\frac{1}{E(x)}\left\lbrack\frac{-xk^3}{\gamma^2}\cos{(\gamma x)}+\frac{2k^3}{\gamma^3}\sin{(\gamma x)}\right\rbrack+C_1x+C_2
+u(x)=\frac{1}{E(x)}\left\lbrack\frac{-xk^3}{\gamma^2}\cos{(\gamma x)}+\frac{2k^3}{\gamma^3}\sin{(\gamma x)}\right\rbrack+\frac{C_1x}{E(x)}+C_2
 \end{equation}
 
 The boundary conditions for this problem are Dirichlet at both endpoints, such that:
@@ -148,22 +149,29 @@ Because all constants besides \(E\) are constant in the domain, \(C_1\) is the s
 
 \begin{equation}
 \begin{aligned}
-\frac{1}{E(\text{block 1})}\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack+\cancel{C_1(\text{block 1})x_{share}}+C_2(\text{block 1})=\quad\\
-\frac{1}{E(\text{block 2})}\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack+\cancel{C_1(\text{block 2})x_{share}}+C_2(\text{block 2})\\
+\frac{1}{E(\text{block 1})}\underbrace{\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack}_\text{\circled{A}}+\frac{C_1(\text{block 1})x_{share}}{E(\text{block 1})}+C_2(\text{block 1})=\quad\\
+\frac{1}{E(\text{block 2})}\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack+\frac{C_1(\text{block 2})x_{share}}{E(\text{block 2})}+C_2(\text{block 2})\\
 \end{aligned}
 \end{equation}
+
+Rearranging, and recognizing that \(C_1\) is the same for all blocks, the following must be true at each shared location:
 
 \begin{equation}
 \begin{aligned}
-C_2(\text{block 2})=C_2(\text{block 1})+\left(\frac{1}{E(\text{block 1})}-\frac{1}{E(\text{block 2})}\right)\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack
+C_1\left(\frac{x_{share}}{E(\text{left})}-\frac{x_{share}}{E(\text{right})}\right)+C_2(\text{left})-C_2(\text{right})=-\circled{A}\left(\frac{1}{E(\text{left})}-\frac{1}{E(\text{right})}\right)
 \end{aligned}
 \end{equation}
 
-where \(C_1\) is canceled from both sides because it is the same for all blocks. \(C_2\) can be calculated for the first block, since \(C_2(\text{block 1})=u(0)\). Then, the remaining blocks are swept through to compute \(C_2\) for each block. Then, once all the \(C_2\) are obtained, the solution in Eq. \eqref{eq:Problem3} can be used to compute \(C_1\) for the last block.
-
+Then, at the left endpoint:
 
 \begin{equation}
-C_1=\frac{1}{L}\left(u(L)-\frac{1}{E(L)}\left\lbrack\frac{-Lk^3}{\gamma^2}\cos{(\gamma L)}+\frac{2k^3}{\gamma^3}\sin{(\gamma L)}\right\rbrack-C_2(\text{last block})\right)
+C_2(\text{block 1})=u(0)
+\end{equation}
+
+And at the right endpoint:
+
+\begin{equation}
+\frac{C_1(\text{last block})L}{E(L)}+C_2(\text{last block})=u(L)-\frac{1}{E(x)}\left\lbrack\frac{-Lk^3}{\gamma^2}\cos{(\gamma L)}+\frac{2k^3}{\gamma^3}\sin{(\gamma L)}\right\rbrack
 \end{equation}
 
 

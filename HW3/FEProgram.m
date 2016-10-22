@@ -11,7 +11,7 @@ num_elem = 5;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
 E = 0.01;                       % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
-left_value = -0.3;              % left Dirichlet boundary condition value
+left_value = -0.1;              % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
 right_value = 0.7;              % right Dirichlet boundary condition value
 tolerance = 0.04;               % convergence tolerance
@@ -20,7 +20,7 @@ fontsize = 16;                  % fontsize for plots
 pcg_error_tol = 0.000001;       % error tolerance for PCG
 
 if (N_plot_flag)
-     N_elem = [200];              % num_elem to cycle through for soln plots
+     N_elem = [100];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
@@ -30,8 +30,13 @@ end
 Order = [3];              % shape function (orders - 1) to cycle thru
 
 % specify E over the domain in a block structure
-E_blocks = [0.01, 0.5, 0.2];
-space_blocks = [0.2, 0.4, 1.0];
+E_blocks = [1, 2, 0.1];
+space_blocks = [0.5, 0.8, 1.0];
+
+
+if (space_blocks(end) ~= L)
+    disp('Incorrect specifications for space_blocks.')
+end
 
 for shape_order = Order
     clearvars permutation
@@ -57,16 +62,20 @@ for num_elem = N_elem
     % define the quadrature rule
     [wt, qp] = quadrature(shape_order);
 
-    % --- ANALYTICAL SOLUTION --- % (over the physical domain)
+    % --- ANALYTICAL SOLUTION --- % (constant E)
     gamma = 2 * pi * k_freq ./ L;
     term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E .* gamma .^3);
     term2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E .* gamma .^ 2);
     C_1 = left_value;
     C_2 = (right_value - C_1 - (2 * (k_freq .^ 3) * sin(gamma .* L) ./ (E .* gamma .^3)) + ((k_freq .^ 3) * L .* cos(gamma .* L) ./ (E .* gamma .^ 2))) ./ L;
+    C_1_save = C_1;
+    C_2_save = C_2;
     solution_analytical = C_1 + term1 - term2 + C_2 .* physical_domain;
     term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E .* gamma .^3);
     term2_1 = ((k_freq .^ 3) ./ (E .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
     solution_analytical_derivative = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E .* gamma .^ 2) + C_2;
+    
+    % --- ANALYTICAL SOLUTION --- % (non-constant E, hard way)
     
     % loop over the domain to find C_2 for each block
     C_2 = zeros(1, length(E_blocks));
@@ -90,13 +99,17 @@ for num_elem = N_elem
     term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^3);
     term2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^ 2);
     solution_analytical_blocks = C_2_physical_domain + term1 - term2 + C_1_physical_domain .* physical_domain;
-    
+   
     term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E_physical_domain .* gamma .^3);
     term2_1 = ((k_freq .^ 3) ./ (E_physical_domain .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
     solution_analytical_derivative_blocks = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E_physical_domain .* gamma .^ 2) + C_1_physical_domain;
     
+           
+    % --- ANALYTICAL SOLUTION --- % (non-constant E, global way)
+    term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^3);
+    term2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^ 2);
+    solution_analytical_blocks2 = C_1_save + term1 - term2 + C_2_save .* physical_domain;
     
-    % alternative analytical solution that uses global C_1 and C_2
     term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E_physical_domain .* gamma .^3);
     term2_1 = ((k_freq .^ 3) ./ (E_physical_domain .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
     solution_analytical_derivative_global = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E_physical_domain .* gamma .^ 2) + C_1_physical_domain;
@@ -104,6 +117,44 @@ for num_elem = N_elem
     % plot analytical solution
     %plot(physical_domain, solution_analytical_blocks)
     %plot(physical_domain, solution_analytical_derivative_blocks)
+    
+    % --- ANALYTICAL SOLUTION --- % (matrix equation to find coefficients?)
+    C_unknowns = zeros(1, length(space_blocks) + 1);
+    coeff_matrix = zeros(length(space_blocks) + 1, length(space_blocks) + 1);
+    coeff_vector = zeros(length(space_blocks) + 1, 1);
+    
+    % left boundary condition
+    coeff_matrix(1,1) = 1; 
+    coeff_vector(1) = left_value;
+    
+    % right boundary condition
+    coeff_matrix(end, end) = L / E_blocks(end);
+    coeff_matrix(end, end - 1) = 1;
+    coeff_vector(end) = right_value - (1 / E_blocks(end)) * RHSFunction(gamma, k_freq, space_blocks, E_blocks, length(space_blocks));
+    
+    % intermediate conditions
+    for i = 1:(length(space_blocks) - 1)
+        coeff_matrix(i+1, i) = 1;
+        coeff_matrix(i+1, i+1) = -1;
+        coeff_matrix(i+1, end) = (space_blocks(i) / E_blocks(i) - space_blocks(i) / E_blocks(i+1));
+        coeff_vector(i+1) = - RHSFunction(gamma, k_freq, space_blocks, E_blocks, i) * (1/E_blocks(i) -1/E_blocks(i+1));
+    end
+    
+    coeff_soln = coeff_matrix\coeff_vector;
+    
+    % assemble block-oriented E and C_2 into physical_domain structure
+    [C_2_physical_domain2] = PhysicalInterpolation(physical_domain, space_blocks, coeff_soln(1:end-1));
+    C_1_physical_domain2 = coeff_soln(end) .* ones(1, length(physical_domain));
+    
+    term1_2 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^3);
+    term2_2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^ 2);
+    solution_analytical_blocks = C_2_physical_domain2 + term1_2 - term2_2 + C_1_physical_domain2 .* physical_domain ./ E_physical_domain;
+   
+    
+    
+    
+    
+    
     
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
@@ -206,6 +257,7 @@ if (N_plot_flag)
     set(h, 'FontSize', fontsize - 2);
     xlabel('Problem domain', 'FontSize', fontsize)
     ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
+    
     saveas(gcf, sprintf('Nplot_for_order_%i', shape_order - 1), 'jpeg')
     %close all
 end
