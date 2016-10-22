@@ -21,7 +21,7 @@ pcg_error_tol = 0.000001;       % error tolerance for PCG
 precondition = 'precondition';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [1000];              % num_elem to cycle through for soln plots
+     N_elem = [100];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
@@ -150,7 +150,7 @@ for num_elem = N_elem
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
 % perform the solve
-[a_u_condensed, a_u_condensed_ge] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
+[a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);
@@ -204,7 +204,7 @@ if (N_plot_flag)
     ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
     
     saveas(gcf, sprintf('Nplot_for_order_%i', shape_order - 1), 'jpeg')
-    %close all
+    close all
 end
 
 if (k_plot_flag || k_plot_flag_dof)
@@ -240,8 +240,13 @@ end
 %sprintf('For order = %i, number elements: %i', shape_order - 1, num_elem)
 
 % analytical solution plot
-plot(physical_domain, solution_analytical)
-xlabel('Physical Domain')
-ylabel('Solution u(x)')
-saveas(gcf, 'AnalyticalSoln2', 'jpeg')
-close all
+% plot(physical_domain, solution_analytical)
+% xlabel('Physical Domain')
+% ylabel('Solution u(x)')
+% saveas(gcf, 'AnalyticalSoln2', 'jpeg')
+% close all
+
+% plot of error as a function of iteration
+loglog(1:1:length(pcg_error), pcg_error)
+xlabel('Iteration Number', 'FontSize', fontsize)
+ylabel('PCG Error','FontSize', fontsize)

@@ -1,4 +1,4 @@
-function [a_u_condensed, a_u_condensed_ge] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition)
+function [a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition)
 
 % This function solves the system K * a = R
 
@@ -37,8 +37,8 @@ soln_prev = soln_iter;
 soln_iter = soln_prev + lambda * z;
 
 
-
-pcg_error = 1;
+j = 1;
+pcg_error(j) = (transpose(soln_iter) - transpose(soln_prev)) * K * (soln_iter - soln_prev);
 num_updates = 1;
 % perform all subsequent updates
 while pcg_error > pcg_error_tol
@@ -52,8 +52,9 @@ while pcg_error > pcg_error_tol
     lambda = transpose(z) * r / (transpose(z) * K * z);
     soln_iter = soln_prev + lambda * z;
 
-    pcg_error = (transpose(soln_iter) - transpose(soln_prev)) * K * (soln_iter - soln_prev)
+    pcg_error(j+1) = (transpose(soln_iter) - transpose(soln_prev)) * K * (soln_iter - soln_prev);
     num_updates = num_updates + 1;
+    j = j + 1;
 end
 
 a_u_condensed = soln_iter;
