@@ -11,16 +11,17 @@ num_elem = 5;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
 E = 0.01;                       % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
-left_value = -0.1;              % left Dirichlet boundary condition value
+left_value = -0.3;              % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
 right_value = 0.7;              % right Dirichlet boundary condition value
 tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
 pcg_error_tol = 0.000001;       % error tolerance for PCG
+precondition = 'precondition';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [100];              % num_elem to cycle through for soln plots
+     N_elem = [1000];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
@@ -149,8 +150,7 @@ for num_elem = N_elem
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
 % perform the solve
-[a_u_condensed, a_u_condensed_ge] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol);
-%plot(linspace(0, L, length(K_uu(1,:))), a_u_condensed_ge - a_u_condensed)
+[a_u_condensed, a_u_condensed_ge] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);
@@ -238,3 +238,10 @@ end
 
 % uncomment to find out how many elements are needed to reach the error tol
 %sprintf('For order = %i, number elements: %i', shape_order - 1, num_elem)
+
+% analytical solution plot
+plot(physical_domain, solution_analytical)
+xlabel('Physical Domain')
+ylabel('Solution u(x)')
+saveas(gcf, 'AnalyticalSoln2', 'jpeg')
+close all

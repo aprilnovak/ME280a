@@ -192,16 +192,16 @@ Eq. \eqref{eq:Left} and Eq. \eqref{eq:Right} provide two boundary conditions, wh
 \hline\hline
 Domain & \(C_1\) & \(C_2\)\\ [0.5ex]
 \hline
-\(0.0\leq x< 0.1\) & 1.6057  & -0.1000\\
-\(0.1\leq x< 0.2\) & 1.6057  & -0.1953\\
-\(0.2\leq x< 0.3\) & 1.6057  & -0.0346 \\
-\(0.3\leq x< 0.4\) & 1.6057  & -0.1605\\
-\(0.4\leq x< 0.5\) & 1.6057  &  0.1001\\
-\(0.5\leq x< 0.6\) & 1.6057  &  0.1632\\
-\(0.6\leq x< 0.7\) & 1.6057  &  0.0006\\
-\(0.7\leq x< 0.8\) & 1.6057  &  -1.1558\\
-\(0.8\leq x< 0.9\) & 1.6057  &  0.0747\\
-\(0.9\leq x< 1.0\) & 1.6057  &  -0.6018\\
+\(0.0\leq x< 0.1\) & 1.9052  & -0.3000\\
+\(0.1\leq x< 0.2\) & 1.9052  & -0.4133\\
+\(0.2\leq x< 0.3\) & 1.9052  & -0.2269 \\
+\(0.3\leq x< 0.4\) & 1.9052  & -0.3733\\
+\(0.4\leq x< 0.5\) & 1.9052  & -0.0605\\
+\(0.5\leq x< 0.6\) & 1.9052  &  0.0171\\
+\(0.6\leq x< 0.7\) & 1.9052  & -0.1774\\
+\(0.7\leq x< 0.8\) & 1.9052  & -1.5201\\
+\(0.8\leq x< 0.9\) & 1.9052  & -0.0900\\
+\(0.9\leq x< 1.0\) & 1.9052  & -0.9012\\
 \hline
 \end{tabular}
 \label{table:orders}
@@ -455,7 +455,44 @@ The point at which the iterations are stopped is based on the energy norm discus
 \left(\vv{a}^{T,i+1}-\vv{a}^{T,i}\right)\textbf{K}\left(\vv{a}^{i+1}-\vv{a}^i\right)<0.000001
 \end{equation}
 
+The PCG method has convergence behavior dictated by:
 
+\begin{equation}
+\|\vv{a}-\vv{a}^{i}\|_K\leq\left(\frac{\sqrt{C(\textbf{K})}-1}{\sqrt{C(\textbf{K})}+1}\right)^i\|\vv{a}-\vv{a}^1\|_K
+\end{equation}
+
+In other words, the convergence speed is governed by the condition number. The identity matrix has the lowest possible condition number of 1, but real physical problems tend to have much larger condition numbers. The higher the condition number, then the slower the rate of convergence. Preconditioning can be used to transform the linear system \(\textbf{K}\vv{a}=\vv{R}\) to a different domain in which the condition number is higher. The preconditioning matrix \textbf{T} is used to introduce this change of variables:
+
+\begin{equation}
+\label{eq:Transformation}
+\textbf{K}\vv{a}=\vv{R}\quad\rightarrow\hat{\textbf{K}}\hat{\vv{a}}=\hat{\vv{R}}
+\end{equation}
+
+where
+
+\begin{equation}
+\label{eq:TransformationSpecs}
+\begin{aligned}
+\hat{\vv{a}}=\textbf{T}^{-1}\vv{a}\\
+\hat{\textbf{K}}=\textbf{T}^{T}\textbf{K}\textbf{T}\\
+\hat{\vv{R}}=\textbf{T}^T\vv{R}\\
+\end{aligned}
+\end{equation}
+
+Then, it is the condition number of \(\hat{\textbf{K}}\) that controls the convergence. The best possible preconditioner is to set \(\textbf{T}=\textbf{L}^{-T}\), where \(\textbf{L}\textbf{L}^T=\textbf{K}\) and \textbf{L} is a lower-triangular matrix. With this preconditioner, Eq. \eqref{eq:Transformation} becomes:
+
+\begin{equation}
+\label{eq:Transformation2}
+\underbrace{\textbf{L}^{-1}\textbf{L}}_\text{\textbf{I}}\underbrace{\textbf{L}^T\textbf{L}^{-T}}_\text{\textbf{I}}\hat{\vv{a}}=\hat{\vv{R}}
+\end{equation}
+
+which then gives \(\textbf{I}\hat{\vv{a}}=\hat{\vv{R}}\), which is an incredibly easy system to solve numerically, since then \(\hat{\vv{a}}=\hat{\vv{R}}\). However, the cost to form \(\textbf{L}\) is of order \(N^3\), and hence defeats the purpose of using the PCG method, since standard Gaussian elimination also scales as approximately \(N^3\). Hence, a simpler preconditioner is selected here. For this assignment, a diagonal preconditioner is used:
+
+\begin{equation}
+T_{ij}=\frac{1}{\sqrt{K_{ij}}}\delta_{ij}
+\end{equation}
+
+where \(\delta_{ij}\) is the Kronecker delta. With this preconditioner, the transformations described in Eq. \eqref{eq:TransformationSpecs} are made. Then, the PCG method described earlier is performed on this preconditioned system. Once reaching an acceptable error tolerance, the result is transformed back to the actual problem domain to give the final result.
 
 \section{Solution Results and Discussion}
 
