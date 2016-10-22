@@ -466,35 +466,54 @@ The point at which the iterations are stopped is based on the energy norm discus
 This section contains the code used for this modeling. The main program is \texttt{FEProgram.m}, and functions perform specialized tasks for a high degree of modularity.
 
 \subsection{\texttt{FEProgram.m}}
+This is the main code used for the problem solving.
 \lstinputlisting[language=Matlab]{FEProgram.m}
-
-\subsection{\texttt{permutation.m}}
-This function determines the permutation matrix for use with the connectivity matrix.
-\lstinputlisting[language=Matlab]{permutation.m}
-
-\subsection{\texttt{mesh.m}}
-This function performs the meshing.
-\lstinputlisting[language=Matlab]{mesh.m}
 
 \subsection{\texttt{BCnodes.m}}
 This function applies boundary conditions.
 \lstinputlisting[language=Matlab]{BCnodes.m}
 
-\subsection{\texttt{shapefunctions.m}}
-This function contains the library of shape functions.
-\lstinputlisting[language=Matlab]{shapefunctions.m}
+\subsection{\texttt{condensation.m}}
+This function separates out the matrix equation as in Eq. \eqref{eq:condensation}.
+\lstinputlisting[language=Matlab]{condensation.m}
+
+\subsection{\texttt{ElementInterpolation.m}}
+This function interpolates the block-structure of \(E\) into an elemental basis (\(E\) as a function of the element number).
+\lstinputlisting[language=Matlab]{ElementInterpolation.m}
+
+\subsection{\texttt{mesh.m}}
+This function performs the meshing.
+\lstinputlisting[language=Matlab]{mesh.m}
+
+\subsection{\texttt{PCG.m}}
+This function performs the Preconditioned Conjugate Gradient solve of the matrix system.
+\lstinputlisting[language=Matlab]{PCG.m}
+
+\subsection{\texttt{permutation.m}}
+This function determines the permutation matrix for use with the connectivity matrix.
+\lstinputlisting[language=Matlab]{permutation.m}
+
+\subsection{\texttt{PhysicalInterpolation.m}}
+This function interpolates a block-structure \(E\) into the physical domain (\(E\) as a function of position).
+\lstinputlisting[language=Matlab]{PhysicalInterpolation.m}
+
+\subsection{\texttt{postprocess.m}}
+This function postprocesses the FE solution and transforms it back to the physical domain using a linear system solve as described in Eq. \eqref{eq:LinearSolve}.
+\lstinputlisting[language=Matlab]{postprocess.m}
 
 \subsection{\texttt{quadrature.m}}
 This function selects the quadrature rule.
 \lstinputlisting[language=Matlab]{quadrature.m}
 
-\subsection{\texttt{condensation.m}}
-This function separates out the matrix equation as in Eq. \eqref{eq:condensation}.
-\lstinputlisting[language=Matlab]{condensation.m}
+\subsection{\texttt{RHSFunction.m}}
+This function repeatedly evaluates \circled{A} for determination of the analytical solution.
+\lstinputlisting[language=Matlab]{RHSFunction.m}
 
-\subsection{\texttt{postprocess.m}}
-This function postprocesses the FE solution and transforms it back to the physical domain using a linear system solve as described in Eq. \eqref{eq:LinearSolve}.
-\lstinputlisting[language=Matlab]{postprocess.m}
+\subsection{\texttt{shapefunctions.m}}
+This function contains the library of shape functions.
+\lstinputlisting[language=Matlab]{shapefunctions.m}
+
+
 
 
 \end{document}

@@ -1,6 +1,6 @@
 function [wt, qp] = quadrature(shape_order)
 
-shape_order = 4
+shape_order = 4; % forces a five-point quadrature rule for this problem
 switch shape_order
     case 2
         wt = [1.0, 1.0];
