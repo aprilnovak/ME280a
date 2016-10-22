@@ -158,6 +158,7 @@ Rearranging, and recognizing that \(C_1\) is the same for all blocks, the follow
 
 \begin{equation}
 \begin{aligned}
+\label{eq:Shared}
 C_1\left(\frac{x_{share}}{E(\text{left})}-\frac{x_{share}}{E(\text{right})}\right)+C_2(\text{left})-C_2(\text{right})=-\circled{A}\left(\frac{1}{E(\text{left})}-\frac{1}{E(\text{right})}\right)
 \end{aligned}
 \end{equation}
@@ -165,18 +166,48 @@ C_1\left(\frac{x_{share}}{E(\text{left})}-\frac{x_{share}}{E(\text{right})}\righ
 Then, at the left endpoint:
 
 \begin{equation}
+\label{eq:Left}
 C_2(\text{block 1})=u(0)
 \end{equation}
 
 And at the right endpoint:
 
 \begin{equation}
+\label{eq:Right}
 \frac{C_1(\text{last block})L}{E(L)}+C_2(\text{last block})=u(L)-\frac{1}{E(x)}\left\lbrack\frac{-Lk^3}{\gamma^2}\cos{(\gamma L)}+\frac{2k^3}{\gamma^3}\sin{(\gamma L)}\right\rbrack
 \end{equation}
 
+Eq. \eqref{eq:Left} and Eq. \eqref{eq:Right} provide two boundary conditions, while Eq. \eqref{eq:Shared} provides one boundary condition at each shared location (locations at which \(E\) changes). This, combined with the fact that \(C_1\) is the same for each element, provides a system of linear equations that can be solved to obtain \(C_1\) and \(C_2(\text{block 1}, \text{block 2}, \text{block 3}, \text{block 4}, \cdots, \text{block 10})\). This is the method used in this assignment to determine the analytical solution. The method is made very general so that any number of piecewise-constant regions of \(E\) can be solved both analytically and with the FEM. The analytical solution is plotted below, and the values for the coefficients \(C_1\) and \(C_2\) in each block are given in the following table.
+
+\begin{figure}[H]
+\begin{center}  \includegraphics[width=0.75\linewidth]{AnalyticalSoln2.jpg}
+\caption{Analytical solution.}
+\end{center}
+\end{figure}
+
+\begin{table}[H]
+\caption{Coefficients \(C_1\) and \(C_2\) over each domain of the problem.}
+\centering
+\begin{tabular}{c c r}
+\hline\hline
+Domain & \(C_1\) & \(C_2\)\\ [0.5ex]
+\hline
+\(0.0\leq x< 0.1\) & 1.6057  & -0.1000\\
+\(0.1\leq x< 0.2\) & 1.6057  & -0.1953\\
+\(0.2\leq x< 0.3\) & 1.6057  & -0.0346 \\
+\(0.3\leq x< 0.4\) & 1.6057  & -0.1605\\
+\(0.4\leq x< 0.5\) & 1.6057  &  0.1001\\
+\(0.5\leq x< 0.6\) & 1.6057  &  0.1632\\
+\(0.6\leq x< 0.7\) & 1.6057  &  0.0006\\
+\(0.7\leq x< 0.8\) & 1.6057  &  -1.1558\\
+\(0.8\leq x< 0.9\) & 1.6057  &  0.0747\\
+\(0.9\leq x< 1.0\) & 1.6057  &  -0.6018\\
+\hline
+\end{tabular}
+\label{table:orders}
+\end{table}
 
 
-The purpose of this assignment is to solve Eq. \eqref{eq:Problem} with the finite element method (FEM) while using a more sophisticated numerical method for solving the matrix equation. 
 
 \subsection{Finite Element Implementation}
 
