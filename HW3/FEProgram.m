@@ -27,12 +27,11 @@ else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-Order = [3];              % shape function (orders - 1) to cycle thru
+Order = [4];              % shape function (orders - 1) to cycle thru
 
 % specify E over the domain in a block structure
-E_blocks = [1, 2, 0.1];
-space_blocks = [0.5, 0.8, 1.0];
-
+E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
+space_blocks = 0.1:0.1:L;
 
 if (space_blocks(end) ~= L)
     disp('Incorrect specifications for space_blocks.')
@@ -61,50 +60,12 @@ for num_elem = N_elem
 
     % define the quadrature rule
     [wt, qp] = quadrature(shape_order);
-
-    % --- ANALYTICAL SOLUTION --- % (constant E)
-    gamma = 2 * pi * k_freq ./ L;
-    term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E .* gamma .^3);
-    term2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E .* gamma .^ 2);
-    C_1 = left_value;
-    C_2 = (right_value - C_1 - (2 * (k_freq .^ 3) * sin(gamma .* L) ./ (E .* gamma .^3)) + ((k_freq .^ 3) * L .* cos(gamma .* L) ./ (E .* gamma .^ 2))) ./ L;
-    C_1_save = C_1;
-    C_2_save = C_2;
-    solution_analytical = C_1 + term1 - term2 + C_2 .* physical_domain;
-    term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E .* gamma .^3);
-    term2_1 = ((k_freq .^ 3) ./ (E .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
-    solution_analytical_derivative = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E .* gamma .^ 2) + C_2;
     
-    % --- ANALYTICAL SOLUTION --- % (non-constant E, hard way)
-    
-    % loop over the domain to find C_2 for each block
-    C_2 = zeros(1, length(E_blocks));
-    % assumes the domain begins at x=0 (also only works for this specific problem)
-    for i = 1:length(E_blocks) 
-        if i == 1 % first block
-            C_2(i) = left_value;
-        else
-            C_2(i) = (1/E_blocks(i-1)-1/E_blocks(i)) .* (-space_blocks(i-1) .* (k_freq .^ 3) .* cos(gamma .* space_blocks(i-1))./(gamma .^ 2) + 2 * k_freq .^ 3 .* sin(gamma .* space_blocks(i-1)) ./ (gamma .^ 3)) + C_2(i-1);
-        end
-    end
-    
-    % compute C_1 for the last block
-    C_1 = (right_value - (-L .* (k_freq .^ 3) .* cos(gamma .* L)./(gamma .^ 2) + 2 * k_freq .^ 3 .* sin(gamma .* L) ./ (gamma .^ 3))/E_blocks(end) - C_2(end))/L;
-    C_1_physical_domain = C_1 .* ones(1, length(physical_domain));
-    
-    % assemble block-oriented E and C_2 into physical_domain structure
+    % interpolate E into the physical domain
     [E_physical_domain] = PhysicalInterpolation(physical_domain, space_blocks, E_blocks);
-    [C_2_physical_domain] = PhysicalInterpolation(physical_domain, space_blocks, C_2);
-    
-    term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^3);
-    term2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^ 2);
-    solution_analytical_blocks = C_2_physical_domain + term1 - term2 + C_1_physical_domain .* physical_domain;
-   
-    term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E_physical_domain .* gamma .^3);
-    term2_1 = ((k_freq .^ 3) ./ (E_physical_domain .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
-    solution_analytical_derivative_blocks = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E_physical_domain .* gamma .^ 2) + C_1_physical_domain;
-    
-    % --- ANALYTICAL SOLUTION --- % (matrix equation to find coefficients?)
+ 
+    % --- ANALYTICAL SOLUTION --- %
+    gamma = 2 * pi * k_freq ./ L;
     C_unknowns = zeros(1, length(space_blocks) + 1);
     coeff_matrix = zeros(length(space_blocks) + 1, length(space_blocks) + 1);
     coeff_vector = zeros(length(space_blocks) + 1, 1);
@@ -134,13 +95,11 @@ for num_elem = N_elem
     
     term1_2 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^3);
     term2_2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^ 2);
-    solution_analytical_blocks = C_2_physical_domain2 + term1_2 - term2_2 + C_1_physical_domain2 .* physical_domain ./ E_physical_domain;
+    solution_analytical = C_2_physical_domain2 + term1_2 - term2_2 + C_1_physical_domain2 .* physical_domain ./ E_physical_domain;
    
-    
-    
-    
-    
-    
+    term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E_physical_domain .* gamma .^3);
+    term2_1 = ((k_freq .^ 3) ./ (E_physical_domain .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
+    solution_analytical_derivative = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E_physical_domain .* gamma .^ 2) + C_1_physical_domain2 ./ E_physical_domain;
     
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
@@ -233,7 +192,7 @@ e = e + 1;
 end
 
 if (N_plot_flag)
-    plot(physical_domain, solution_analytical_blocks, 'k')
+    plot(physical_domain, solution_analytical, 'k')
     txt = cell(length(N_elem),1);
     for i = 1:length(N_elem)
        txt{i}= sprintf('N = %i', N_elem(i));
