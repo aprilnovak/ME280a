@@ -104,20 +104,6 @@ for num_elem = N_elem
     term2_1 = ((k_freq .^ 3) ./ (E_physical_domain .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
     solution_analytical_derivative_blocks = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E_physical_domain .* gamma .^ 2) + C_1_physical_domain;
     
-           
-    % --- ANALYTICAL SOLUTION --- % (non-constant E, global way)
-    term1 = 2 * (k_freq .^ 3) * sin(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^3);
-    term2 = (k_freq .^ 3) * physical_domain .* cos(gamma .* physical_domain) ./ (E_physical_domain .* gamma .^ 2);
-    solution_analytical_blocks2 = C_1_save + term1 - term2 + C_2_save .* physical_domain;
-    
-    term1_1 = 2 * (k_freq .^ 3) * cos(gamma .* physical_domain) .* gamma ./ (E_physical_domain .* gamma .^3);
-    term2_1 = ((k_freq .^ 3) ./ (E_physical_domain .* gamma .^ 2)) .* (physical_domain .* gamma .* - sin(gamma .* physical_domain) + cos(gamma .* physical_domain));
-    solution_analytical_derivative_global = (k_freq^3) * (gamma .* physical_domain .* sin(gamma .* physical_domain) + cos(gamma .* physical_domain)) ./ (E_physical_domain .* gamma .^ 2) + C_1_physical_domain;
-    
-    % plot analytical solution
-    %plot(physical_domain, solution_analytical_blocks)
-    %plot(physical_domain, solution_analytical_derivative_blocks)
-    
     % --- ANALYTICAL SOLUTION --- % (matrix equation to find coefficients?)
     C_unknowns = zeros(1, length(space_blocks) + 1);
     coeff_matrix = zeros(length(space_blocks) + 1, length(space_blocks) + 1);
