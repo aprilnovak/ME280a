@@ -21,14 +21,14 @@ pcg_error_tol = 0.000001;       % error tolerance for PCG
 precondition = 'nopreconditi';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [40];              % num_elem to cycle through for soln plots
+     N_elem = [70];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-Order = [3];              % shape function (orders - 1) to cycle thru
+Order = [2];              % shape function (orders - 1) to cycle thru
 
 % specify E over the domain in a block structure
 E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
@@ -77,7 +77,6 @@ for num_elem = N_elem
     % specify the boundary conditions
     [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
 
-    % cell arrays
     K_cell = cell([1, num_elem]);
     F_cell = cell([1, num_elem]);
     K = zeros(num_nodes);
@@ -103,8 +102,7 @@ for num_elem = N_elem
          
          % store elemental values into cells
          K_cell{1, elem} = k;
-         F_cell{1, elem} = f;
-        
+         F_cell{1, elem} = f;   
     end
     
 % assemble into the global matrices
@@ -118,15 +116,106 @@ for elem = 1:num_elem
      
      for i = 1:length(f)
         F(LM(elem, i)) = F((LM(elem, i))) + F_cell{1,elem}(i);
-     end
-    
+     end 
 end
 
 % perform static condensation to remove known Dirichlet nodes from solve
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
 % perform the solve
-[a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
+%[a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
+
+
+
+
+
+
+
+
+
+% This function solves the system K * a = R
+
+K = K_uu;
+R = F_u - K_uk * dirichlet_nodes(2,:)';
+
+% Gaussian elimination method (for comparison)
+a_u_condensed_ge = K_uu \ R;
+
+if (precondition == 'precondition')
+    % diagonal preconditioner
+    T = diag(ones(1,length(K)));
+    for i = 1:length(K(1,:))
+        T(i,i) = 1 ./ sqrt(K(i,i));
+    end
+
+    % transform to the preconditioned regime
+    K = transpose(T) * K * T;
+    R = transpose(T) * R;
+end
+
+% pick the initial guess for the solution
+soln_iter = ones(1, length(K_uu))';
+
+% compute the initial z from the residual
+r = R - K * soln_iter;
+z = r;
+
+r = R - K_multiplication(K, soln_iter);
+
+
+
+% compute the initial lambda
+lambda = transpose(z) * r / (transpose(z) * K_multiplication(K, z));
+
+% store the previous iteration for convergence estimates
+soln_prev = soln_iter;
+
+% perform the first update
+soln_iter = soln_prev + lambda * z;
+
+
+j = 1;
+pcg_error(j) = (transpose(soln_iter) - transpose(soln_prev)) * K_multiplication(K, soln_iter - soln_prev);
+num_updates = 1;
+% perform all subsequent updates
+while pcg_error > pcg_error_tol
+    z_prev = z;
+    soln_prev = soln_iter;
+
+    r = R - K * soln_iter;
+    theta = - transpose(r) * K_multiplication(K, z_prev) / (transpose(z_prev) * K_multiplication(K, z_prev));
+
+    z = r + theta * z_prev;
+    lambda = transpose(z) * r / (transpose(z) * K_multiplication(K, z));
+    soln_iter = soln_prev + lambda * z;
+
+    pcg_error(j+1) = (transpose(soln_iter) - transpose(soln_prev)) * K_multiplication(K, soln_iter - soln_prev);
+    num_updates = num_updates + 1;
+    j = j + 1;
+end
+
+a_u_condensed = soln_iter;
+
+if (precondition == 'precondition')
+    % transform back from the preconditioned regime
+    a_u_condensed = T * a_u_condensed;
+end
+
+sprintf('Number of PCG iterations: %i', num_updates)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);
@@ -180,7 +269,7 @@ if (N_plot_flag)
     ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
     
     saveas(gcf, sprintf('Nplot_for_order_%i', shape_order - 1), 'jpeg')
-    close all
+    %close all
 end
 
 if (k_plot_flag || k_plot_flag_dof)
@@ -224,7 +313,7 @@ end
 % close all
 
 % plot of error as a function of iteration
-loglog(1:1:length(pcg_error), pcg_error)
-xlabel('Iteration Number', 'FontSize', fontsize)
-ylabel('PCG Error','FontSize', fontsize)
-close all
+% loglog(1:1:length(pcg_error), pcg_error)
+% xlabel('Iteration Number', 'FontSize', fontsize)
+% ylabel('PCG Error','FontSize', fontsize)
+% close all
