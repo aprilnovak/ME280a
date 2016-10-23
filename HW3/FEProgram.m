@@ -18,17 +18,17 @@ tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
 pcg_error_tol = 0.000001;       % error tolerance for PCG
-precondition = 'precondition';  % 'nopreconditi' for no preconditioning
+precondition = 'nopreconditi';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [100];              % num_elem to cycle through for soln plots
+     N_elem = [4];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-Order = [2];              % shape function (orders - 1) to cycle thru
+Order = [3];              % shape function (orders - 1) to cycle thru
 
 % specify E over the domain in a block structure
 E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
@@ -114,6 +114,12 @@ for num_elem = N_elem
     K = zeros(num_nodes);
     F = zeros(num_nodes, 1);
 
+    % cell arrays
+    K_cell = cell([1, num_elem]);
+    F_cell = cell([1, num_elem]);
+    K_cell_global = zeros(num_nodes);
+    F_cell_global = zeros(num_nodes, 1);
+    
     for elem = 1:num_elem
         k = zeros(num_nodes_per_element);
         f = zeros(num_nodes_per_element, 1);
@@ -132,6 +138,10 @@ for num_elem = N_elem
              end
          end
          
+         % store elemental values into cells
+         K_cell{1, elem} = k;
+         F_cell{1, elem} = f;
+         
          % place the elemental k matrix into the global K matrix
          m = 1;
          for m = 1:length(permutation(:,1))
@@ -145,6 +155,21 @@ for num_elem = N_elem
             F(LM(elem, i)) = F((LM(elem, i))) + f(i);
          end
     end
+    
+% assemble into the global matrices
+for elem = 1:num_elem
+     m = 1;
+     for m = 1:length(permutation(:,1))
+        i = permutation(m,1);
+        j = permutation(m,2);
+        K_cell_global(LM(elem, i), LM(elem, j)) = K_cell{1, elem}(i, j) + K_cell_global(LM(elem, i), LM(elem, j));
+     end
+     
+     for i = 1:length(f)
+        F_cell_global(LM(elem, i)) = F_cell_global((LM(elem, i))) + F_cell{1,elem}(i);
+     end
+    
+end
 
 % perform static condensation to remove known Dirichlet nodes from solve
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
@@ -234,6 +259,7 @@ if (k_plot_flag || k_plot_flag_dof)
     h2 = legend(txt);
     set(h2, 'FontSize', fontsize);
     saveas(gcf, filename, 'jpeg')
+    close all
 end
 
 % uncomment to find out how many elements are needed to reach the error tol
@@ -250,3 +276,4 @@ end
 loglog(1:1:length(pcg_error), pcg_error)
 xlabel('Iteration Number', 'FontSize', fontsize)
 ylabel('PCG Error','FontSize', fontsize)
+close all
