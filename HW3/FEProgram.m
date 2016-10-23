@@ -21,7 +21,7 @@ pcg_error_tol = 0.000001;       % error tolerance for PCG
 precondition = 'nopreconditi';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [3];              % num_elem to cycle through for soln plots
+     N_elem = [4];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
@@ -123,146 +123,7 @@ end
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
 % perform the solve
-%[a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
-
-
-
-
-
-% multiplication of K_uu * a should give the same result as K_simp * a once 
-% I've written the script to automate skipping the Dirichlet nodes
-
-
-
-
-K_row = 1;
-result = zeros(1, length(K(:,1)));
-
-% do the multiplication
-a = [1 2 3 4 5 6 7]';
-for i = 1:length(K(:,1)) % row index
-    if (find(dirichlet_nodes(1,:) == i))
-        %sprintf('skip row %i',i)
-    else
-        for j = 1:length(K(1,:)) % column index
-            if (find(dirichlet_nodes(1,:) == j))
-                %sprintf('skip column %i',j)
-            else
-                result(i) = result(i) + K(i,j) * a(j);
-            end
-        end
-    end
-end
-
-% remove the dirichlet node positions from result
-new_result = ones(length(K(1,:)) - length(dirichlet_nodes(1,:)), 1);
-
-m = 1;
-for i = 1:length(result)
-    if (find(dirichlet_nodes(1,:) == i))
-        % skip copying
-    else
-        new_result(m) = result(i);
-        m = m + 1;
-    end
-end
-
-a_uu = [2 3 4 5 6]';
-K_uu * a_uu;
-
-
-
-
-
-
-
-
-
-
-
-% This function solves the system K * a = R
-
-K = K_uu;
-R = F_u - K_uk * dirichlet_nodes(2,:)';
-
-% Gaussian elimination method (for comparison)
-a_u_condensed_ge = K_uu \ R;
-
-if (precondition == 'precondition')
-    % diagonal preconditioner
-    T = diag(ones(1,length(K)));
-    for i = 1:length(K(1,:))
-        T(i,i) = 1 ./ sqrt(K(i,i));
-    end
-
-    % transform to the preconditioned regime
-    K = transpose(T) * K * T;
-    R = transpose(T) * R;
-end
-
-% pick the initial guess for the solution
-soln_iter = ones(1, length(K_uu))';
-
-% compute the initial z from the residual
-r = R - K * soln_iter;
-z = r;
-
-r = R - K_multiplication(K, soln_iter);
-
-
-
-% compute the initial lambda
-lambda = transpose(z) * r / (transpose(z) * K_multiplication(K, z));
-
-% store the previous iteration for convergence estimates
-soln_prev = soln_iter;
-
-% perform the first update
-soln_iter = soln_prev + lambda * z;
-
-
-j = 1;
-pcg_error(j) = (transpose(soln_iter) - transpose(soln_prev)) * K_multiplication(K, soln_iter - soln_prev);
-num_updates = 1;
-% perform all subsequent updates
-while pcg_error > pcg_error_tol
-    z_prev = z;
-    soln_prev = soln_iter;
-
-    r = R - K * soln_iter;
-    theta = - transpose(r) * K_multiplication(K, z_prev) / (transpose(z_prev) * K_multiplication(K, z_prev));
-
-    z = r + theta * z_prev;
-    lambda = transpose(z) * r / (transpose(z) * K_multiplication(K, z));
-    soln_iter = soln_prev + lambda * z;
-
-    pcg_error(j+1) = (transpose(soln_iter) - transpose(soln_prev)) * K_multiplication(K, soln_iter - soln_prev);
-    num_updates = num_updates + 1;
-    j = j + 1;
-end
-
-a_u_condensed = soln_iter;
-
-if (precondition == 'precondition')
-    % transform back from the preconditioned regime
-    a_u_condensed = T * a_u_condensed;
-end
-
-sprintf('Number of PCG iterations: %i', num_updates)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+[a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);
@@ -290,10 +151,10 @@ energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution
 energy_norm = energy_norm_top ./ energy_norm_bottom;
 %sprintf('energy norm: %f', energy_norm)
 
-% if (N_plot_flag)
-%     plot(physical_domain, solution_FE)
-%     hold on
-% end
+if (N_plot_flag)
+    plot(physical_domain, solution_FE)
+    hold on
+end
 
 % uncomment to find how many elements are needed to reach the error tol   %
 %end
@@ -303,21 +164,21 @@ e = e + 1;
 
 end
 
-% if (N_plot_flag)
-%     plot(physical_domain, solution_analytical, 'k')
-%     txt = cell(length(N_elem),1);
-%     for i = 1:length(N_elem)
-%        txt{i}= sprintf('N = %i', N_elem(i));
-%     end
-%     txt{i+1} = 'analytical';
-%     h = legend(txt);
-%     set(h, 'FontSize', fontsize - 2);
-%     xlabel('Problem domain', 'FontSize', fontsize)
-%     ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
-%     
-%     saveas(gcf, sprintf('Nplot_for_order_%i', shape_order - 1), 'jpeg')
-%     %close all
-% end
+if (N_plot_flag)
+    plot(physical_domain, solution_analytical, 'k')
+    txt = cell(length(N_elem),1);
+    for i = 1:length(N_elem)
+       txt{i}= sprintf('N = %i', N_elem(i));
+    end
+    txt{i+1} = 'analytical';
+    h = legend(txt);
+    set(h, 'FontSize', fontsize - 2);
+    xlabel('Problem domain', 'FontSize', fontsize)
+    ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
+    
+    saveas(gcf, sprintf('Nplot_for_order_%i', shape_order - 1), 'jpeg')
+    %close all
+end
 
 if (k_plot_flag || k_plot_flag_dof)
     if (k_plot_flag)
@@ -358,7 +219,7 @@ end
 % ylabel('Solution u(x)')
 % saveas(gcf, 'AnalyticalSoln2', 'jpeg')
 % close all
-
+% 
 % plot of error as a function of iteration
 % loglog(1:1:length(pcg_error), pcg_error)
 % xlabel('Iteration Number', 'FontSize', fontsize)
