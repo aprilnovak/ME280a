@@ -21,14 +21,14 @@ pcg_error_tol = 0.000001;       % error tolerance for PCG
 precondition = 'nopreconditi';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [70];              % num_elem to cycle through for soln plots
+     N_elem = [3];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-Order = [2];              % shape function (orders - 1) to cycle thru
+Order = [3];              % shape function (orders - 1) to cycle thru
 
 % specify E over the domain in a block structure
 E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
@@ -124,6 +124,53 @@ end
 
 % perform the solve
 %[a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
+
+
+
+
+
+% multiplication of K_uu * a should give the same result as K_simp * a once 
+% I've written the script to automate skipping the Dirichlet nodes
+
+
+
+
+K_row = 1;
+result = zeros(1, length(K(:,1)));
+
+% do the multiplication
+a = [1 2 3 4 5 6 7]';
+for i = 1:length(K(:,1)) % row index
+    if (find(dirichlet_nodes(1,:) == i))
+        %sprintf('skip row %i',i)
+    else
+        for j = 1:length(K(1,:)) % column index
+            if (find(dirichlet_nodes(1,:) == j))
+                %sprintf('skip column %i',j)
+            else
+                result(i) = result(i) + K(i,j) * a(j);
+            end
+        end
+    end
+end
+
+% remove the dirichlet node positions from result
+new_result = ones(length(K(1,:)) - length(dirichlet_nodes(1,:)), 1);
+
+m = 1;
+for i = 1:length(result)
+    if (find(dirichlet_nodes(1,:) == i))
+        % skip copying
+    else
+        new_result(m) = result(i);
+        m = m + 1;
+    end
+end
+
+a_uu = [2 3 4 5 6]';
+K_uu * a_uu;
+
+
 
 
 
@@ -243,10 +290,10 @@ energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution
 energy_norm = energy_norm_top ./ energy_norm_bottom;
 %sprintf('energy norm: %f', energy_norm)
 
-if (N_plot_flag)
-    plot(physical_domain, solution_FE)
-    hold on
-end
+% if (N_plot_flag)
+%     plot(physical_domain, solution_FE)
+%     hold on
+% end
 
 % uncomment to find how many elements are needed to reach the error tol   %
 %end
@@ -256,21 +303,21 @@ e = e + 1;
 
 end
 
-if (N_plot_flag)
-    plot(physical_domain, solution_analytical, 'k')
-    txt = cell(length(N_elem),1);
-    for i = 1:length(N_elem)
-       txt{i}= sprintf('N = %i', N_elem(i));
-    end
-    txt{i+1} = 'analytical';
-    h = legend(txt);
-    set(h, 'FontSize', fontsize - 2);
-    xlabel('Problem domain', 'FontSize', fontsize)
-    ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
-    
-    saveas(gcf, sprintf('Nplot_for_order_%i', shape_order - 1), 'jpeg')
-    %close all
-end
+% if (N_plot_flag)
+%     plot(physical_domain, solution_analytical, 'k')
+%     txt = cell(length(N_elem),1);
+%     for i = 1:length(N_elem)
+%        txt{i}= sprintf('N = %i', N_elem(i));
+%     end
+%     txt{i+1} = 'analytical';
+%     h = legend(txt);
+%     set(h, 'FontSize', fontsize - 2);
+%     xlabel('Problem domain', 'FontSize', fontsize)
+%     ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
+%     
+%     saveas(gcf, sprintf('Nplot_for_order_%i', shape_order - 1), 'jpeg')
+%     %close all
+% end
 
 if (k_plot_flag || k_plot_flag_dof)
     if (k_plot_flag)
