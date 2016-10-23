@@ -111,14 +111,11 @@ for num_elem = N_elem
     % specify the boundary conditions
     [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
 
-    K = zeros(num_nodes);
-    F = zeros(num_nodes, 1);
-
     % cell arrays
     K_cell = cell([1, num_elem]);
     F_cell = cell([1, num_elem]);
-    K_cell_global = zeros(num_nodes);
-    F_cell_global = zeros(num_nodes, 1);
+    K = zeros(num_nodes);
+    F = zeros(num_nodes, 1);
     
     for elem = 1:num_elem
         k = zeros(num_nodes_per_element);
@@ -141,19 +138,7 @@ for num_elem = N_elem
          % store elemental values into cells
          K_cell{1, elem} = k;
          F_cell{1, elem} = f;
-         
-         % place the elemental k matrix into the global K matrix
-         m = 1;
-         for m = 1:length(permutation(:,1))
-            i = permutation(m,1);
-            j = permutation(m,2);
-            K(LM(elem, i), LM(elem, j)) = K(LM(elem, i), LM(elem, j)) + k(i,j);
-         end
-
-         % place the elemental f matrix into the global F matrix
-         for i = 1:length(f)
-            F(LM(elem, i)) = F((LM(elem, i))) + f(i);
-         end
+        
     end
     
 % assemble into the global matrices
@@ -162,11 +147,11 @@ for elem = 1:num_elem
      for m = 1:length(permutation(:,1))
         i = permutation(m,1);
         j = permutation(m,2);
-        K_cell_global(LM(elem, i), LM(elem, j)) = K_cell{1, elem}(i, j) + K_cell_global(LM(elem, i), LM(elem, j));
+        K(LM(elem, i), LM(elem, j)) = K_cell{1, elem}(i, j) + K(LM(elem, i), LM(elem, j));
      end
      
      for i = 1:length(f)
-        F_cell_global(LM(elem, i)) = F_cell_global((LM(elem, i))) + F_cell{1,elem}(i);
+        F(LM(elem, i)) = F((LM(elem, i))) + F_cell{1,elem}(i);
      end
     
 end
