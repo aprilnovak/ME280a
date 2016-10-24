@@ -7,7 +7,8 @@ result = zeros(1, num_nodes);
 for elem = 1:num_elem
     for i = 1:num_nodes_per_element
     	for j = 1:num_nodes_per_element
-            if find(dirichlet_nodes(1,:) == LM(elem, j))
+            %if find(dirichlet_nodes(1,:) == LM(elem, j))
+            if ((LM(elem, j) == 1) || (LM(elem, j) == num_nodes)) % works good enough for only 2 dirichlet points
             else
                 result(LM(elem,i)) = K_cell{1,elem}(i,j) * vector(LM(elem, j)) + result(LM(elem,i));
             end
