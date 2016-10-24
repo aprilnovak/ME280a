@@ -18,17 +18,17 @@ tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
 pcg_error_tol = 0.000001;       % error tolerance for PCG
-precondition = 'nopreconditi';  % 'nopreconditi' for no preconditioning
+precondition = 'precondition';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [4];              % num_elem to cycle through for soln plots
+     N_elem = [300];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-Order = [3];              % shape function (orders - 1) to cycle thru
+Order = [2];              % shape function (orders - 1) to cycle thru
 
 % specify E over the domain in a block structure
 E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
@@ -122,8 +122,52 @@ end
 % perform static condensation to remove known Dirichlet nodes from solve
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
-% perform the solve
+tic
+% perform the solve using the static condensation method
 [a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
+toc
+
+% vector of non-dirichlet node numbers
+non_dn = zeros(1, length(K(:,1)) - length(dirichlet_nodes(1,:)));
+
+j = 1;
+for i = 1:length(K(:,1))
+    if (find(dirichlet_nodes(1,:) == i))
+    else
+        non_dn(j) = i;
+        j = j + 1;
+    end
+end
+
+tic
+% perform the solve using the improved multiplication method
+[a_u_condensed_new, pcg_error] = PCG_better(K, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition, non_dn);
+toc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);
