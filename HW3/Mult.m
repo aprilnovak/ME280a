@@ -3,7 +3,7 @@ function [result] = Mult(K_cell, num_elem, vector, num_nodes, num_nodes_per_elem
 % explicitly form the global K and by avoiding unnecessary multiplication
 % of zeros. You don't need to cut out the Dirichlet nodes.
 
-result = zeros(1, num_nodes);
+result = zeros(num_nodes, 1);
 for elem = 1:num_elem
     for i = 1:num_nodes_per_element
     	for j = 1:num_nodes_per_element
@@ -16,7 +16,8 @@ for elem = 1:num_elem
     end
 end
 
-result = CutoffDirichlet(result, dirichlet_nodes);
+%result = result';
+%result = CutoffDirichlet(result, dirichlet_nodes);
 
 end
 
