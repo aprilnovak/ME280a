@@ -18,7 +18,7 @@ tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
 pcg_error_tol = 0.000001;       % error tolerance for PCG
-precondition = 'precondition';  % 'nopreconditi' for no preconditioning
+precondition = 'nopreconditi';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
      N_elem = [300];              % num_elem to cycle through for soln plots
@@ -33,10 +33,6 @@ Order = [2];              % shape function (orders - 1) to cycle thru
 % specify E over the domain in a block structure
 E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
 space_blocks = 0.1:0.1:L;
-
-if (space_blocks(end) ~= L)
-    disp('Incorrect specifications for space_blocks.')
-end
 
 for shape_order = Order
     clearvars permutation
@@ -79,7 +75,9 @@ for num_elem = N_elem
 
     K_cell = cell([1, num_elem]);
     F_cell = cell([1, num_elem]);
-    K = zeros(num_nodes);
+    
+    %K = spalloc(num_nodes, num_nodes, num_elem * Order ^ 2);
+    K = zeros(num_nodes, num_nodes);
     F = zeros(num_nodes, 1);
     
     for elem = 1:num_elem
@@ -127,22 +125,18 @@ tic
 [a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
 toc
 
-% vector of non-dirichlet node numbers
-non_dn = zeros(1, length(K(:,1)) - length(dirichlet_nodes(1,:)));
-
-j = 1;
-for i = 1:length(K(:,1))
-    if (find(dirichlet_nodes(1,:) == i))
-    else
-        non_dn(j) = i;
-        j = j + 1;
-    end
-end
-
 tic
-% perform the solve using the improved multiplication method
-[a_u_condensed_new, pcg_error] = PCG_better(K, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition, non_dn);
+[a_u_condensed_new] = PCG_best(F_u, K_uk, K_cell, LM, num_nodes, dirichlet_nodes, num_elem, num_nodes_per_element, pcg_error_tol, precondition);
 toc
+
+
+
+
+
+
+
+
+
 
 
 
@@ -197,6 +191,7 @@ energy_norm = energy_norm_top ./ energy_norm_bottom;
 
 if (N_plot_flag)
     plot(physical_domain, solution_FE)
+    %plot(coordinates(:,1), a, '.')
     hold on
 end
 
@@ -220,8 +215,8 @@ if (N_plot_flag)
     xlabel('Problem domain', 'FontSize', fontsize)
     ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
     
-    saveas(gcf, sprintf('Nplot_for_order_%i', shape_order - 1), 'jpeg')
-    %close all
+    saveas(gcf, sprintf('Nplot', shape_order - 1), 'jpeg')
+    close all
 end
 
 if (k_plot_flag || k_plot_flag_dof)
@@ -257,14 +252,14 @@ end
 % uncomment to find out how many elements are needed to reach the error tol
 %sprintf('For order = %i, number elements: %i', shape_order - 1, num_elem)
 
-% analytical solution plot
+% % analytical solution plot
 % plot(physical_domain, solution_analytical)
-% xlabel('Physical Domain')
-% ylabel('Solution u(x)')
+% xlabel('Physical Domain', 'FontSize', fontsize)
+% ylabel('Solution u(x)', 'FontSize', fontsize)
 % saveas(gcf, 'AnalyticalSoln2', 'jpeg')
 % close all
 % 
-% plot of error as a function of iteration
+% %plot of error as a function of iteration
 % loglog(1:1:length(pcg_error), pcg_error)
 % xlabel('Iteration Number', 'FontSize', fontsize)
 % ylabel('PCG Error','FontSize', fontsize)

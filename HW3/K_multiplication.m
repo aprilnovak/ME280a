@@ -9,5 +9,6 @@ for i = 1:length(K(:,1)) % row index
 end
 
 result = CutoffDirichlet(result, dirichlet_nodes);
+
 end
 
