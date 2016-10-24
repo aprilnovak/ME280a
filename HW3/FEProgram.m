@@ -21,7 +21,7 @@ pcg_error_tol = 0.000001;       % error tolerance for PCG
 precondition = 'nopreconditi';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [300];              % num_elem to cycle through for soln plots
+     N_elem = [100];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else

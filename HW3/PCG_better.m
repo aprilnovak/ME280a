@@ -1,4 +1,4 @@
-function [a_u_condensed, pcg_error] = PCG_better(K, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition, non_dn)
+function [a_u_condensed, pcg_error] = PCG_better(K, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition)
 
 % This function solves the system K * a = R without using the statically-
 % condensed matrices.
@@ -19,8 +19,11 @@ if (precondition == 'precondition')
     R = transpose(T) * AddDirichlet(R, dirichlet_nodes);
 end
 
+%size(R)
 R = CutoffDirichlet(R, dirichlet_nodes);
-r = R - K_multiplication(K, soln_iter, dirichlet_nodes, non_dn);
+%size(R)
+%size(K_multiplication(K, soln_iter, dirichlet_nodes))
+r = R - K_multiplication(K, soln_iter, dirichlet_nodes);
 z = r;
 
 % compute the initial lambda
@@ -43,21 +46,21 @@ end
 
 j = 1;
 % error should only be evaluated with the non-Dirichlet nodes
-pcg_error(j) = transpose(CutoffDirichlet(soln_iter - soln_prev, dirichlet_nodes)) * K_multiplication(K, soln_iter - soln_prev, dirichlet_nodes, non_dn);
+pcg_error(j) = transpose(CutoffDirichlet(soln_iter - soln_prev, dirichlet_nodes)) * K_multiplication(K, soln_iter - soln_prev, dirichlet_nodes);
 
 num_updates = 1;
 while pcg_error(j) > pcg_error_tol
     z_prev = z;
     soln_prev = soln_iter;
 
-    K_soln_prev = K_multiplication(K, soln_prev, dirichlet_nodes, non_dn);
-    K_z_prev = K_multiplication(K, AddDirichlet(z_prev, dirichlet_nodes), dirichlet_nodes, non_dn);
+    K_soln_prev = K_multiplication(K, soln_prev, dirichlet_nodes);
+    K_z_prev = K_multiplication(K, AddDirichlet(z_prev, dirichlet_nodes), dirichlet_nodes);
     
     r = R - K_soln_prev;
     theta = - transpose(r) * K_z_prev / (transpose(z_prev) * K_z_prev);
 
     z = r + theta * z_prev;
-    lambda = transpose(z) * r / (transpose(z) * K_multiplication(K, AddDirichlet(z, dirichlet_nodes), dirichlet_nodes, non_dn));
+    lambda = transpose(z) * r / (transpose(z) * K_multiplication(K, AddDirichlet(z, dirichlet_nodes), dirichlet_nodes));
     
     j = 1;
     % perform update (only need to add the update term to the non-Dirichlet nodes)
@@ -70,7 +73,7 @@ while pcg_error(j) > pcg_error_tol
         end
     end
     
-    K_soln_iter = K_multiplication(K, soln_iter, dirichlet_nodes, non_dn);
+    K_soln_iter = K_multiplication(K, soln_iter, dirichlet_nodes);
     
     pcg_error(j+1) = transpose(CutoffDirichlet(soln_iter - soln_prev, dirichlet_nodes)) * (K_soln_iter - K_soln_prev);
     num_updates = num_updates + 1;
