@@ -529,6 +529,15 @@ where \(C\) is an unknown constant, \(r\) is the regularity, and \(p\) is the po
   \label{fig:eN_vs_N}
 \end{figure}
 
+Fig. \ref{fig:PCGIterations} shows the number of PCG iterations needed to reach a stopping tolerance of 0.000001 as a function of the number of elements. Because the PCG method converges as \(N\), it was found that, for any value of \(N\), the PCG solver converges in \(N\) iterations. This behavior is even observed (with small deviations) with higher-order elements. For instance, with 100 quadratic elements, 211 PCG iterations are required, while there are 201 nodes. For cubic elements, a similar scaling is observed, but for linear elements, it was always observed that \(N\) iterations were required. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=11cm]{PCGIterations.jpg}
+  \caption{Number of PCG iterations required to reach a stopping tolerance of 0.000001. For \(N=100\), 100 iterations are required; for \(N=1000\), 1000 iterations, and for \(N=10000\), 10000 iterations are needed.}
+  \label{fig:PCGIterations}
+\end{figure}
+
 \section{Appendix}
 
 This section contains the code used for this modeling. The main program is \texttt{FEProgram.m}, and functions perform specialized tasks for a high degree of modularity.

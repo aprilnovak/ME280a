@@ -28,7 +28,7 @@ else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
 
-Order = [2];              % shape function (orders - 1) to cycle thru
+Order = [3];              % shape function (orders - 1) to cycle thru
 
 % specify E over the domain in a block structure
 E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
@@ -229,6 +229,13 @@ close all
 % xlabel('Iteration Number', 'FontSize', fontsize)
 % ylabel('PCG Error','FontSize', fontsize)
 % close all
+
+% --- plot of number of iterations as a function of N_elem --- %
+plot([100, 1000:1000:10000], [100, 1000:1000:10000], '*-')
+xlabel('Number of Elements', 'FontSize', fontsize)
+ylabel('PCG Iterations', 'FontSize', fontsize)
+saveas(gcf, 'PCGIterations', 'jpeg')
+close all
 
 
 
