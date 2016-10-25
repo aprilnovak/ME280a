@@ -40,9 +40,6 @@ soln_iter = soln_prev + lambda * z;
 
 j = 1;
 % only calculate error using the non-Dirichlet nodes
-%disp('New method:')
-%transpose(CutoffDirichlet(soln_iter - soln_prev, dirichlet_nodes))
-%CutoffDirichlet(Mult(K_cell, num_elem, soln_iter - soln_prev, num_nodes, num_nodes_per_element, dirichlet_nodes, LM), dirichlet_nodes)
 K_soln_iter = Mult(K_cell, num_elem, soln_iter - soln_prev, num_nodes, num_nodes_per_element, dirichlet_nodes, LM);
 pcg_error(j) = transpose(soln_iter(2:(end-1)) - soln_prev(2:(end-1))) * K_soln_iter(2:(end-1));
 num_updates = 1;

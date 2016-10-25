@@ -1,12 +1,13 @@
 function [a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition)
 
-% This function solves the system K * a = R
-
 K = K_uu;
 R = F_u - K_uk * dirichlet_nodes(2,:)';
 
 % Gaussian elimination method (for comparison)
 a_u_condensed_ge = K_uu \ R;
+
+% pick the initial guess for the solution
+soln_iter = ones(1, length(K_uu))';
 
 if (precondition == 'precondition')
     % diagonal preconditioner
@@ -19,9 +20,6 @@ if (precondition == 'precondition')
     K = transpose(T) * K * T;
     R = transpose(T) * R;
 end
-
-% pick the initial guess for the solution
-soln_iter = ones(1, length(K_uu))';
 
 % compute the initial z from the residual
 r = R - K * soln_iter;
@@ -36,9 +34,8 @@ soln_prev = soln_iter;
 % perform the first update
 soln_iter = soln_prev + lambda * z;
 
-
 j = 1;
-pcg_error(j) = (transpose(soln_iter) - transpose(soln_prev)) * K * (soln_iter - soln_prev);
+pcg_error(j) = transpose(soln_iter - soln_prev) * K * (soln_iter - soln_prev);%/(transpose(soln_prev) * K * soln_prev);
 num_updates = 1;
 % perform all subsequent updates
 while pcg_error > pcg_error_tol
@@ -46,13 +43,14 @@ while pcg_error > pcg_error_tol
     soln_prev = soln_iter;
 
     r = R - K * soln_iter;
-    theta = - transpose(r) * K * z_prev / (transpose(z_prev) * K * z_prev);
+    K_z_prev = K * z_prev;
+    theta = - transpose(r) * K_z_prev / (transpose(z_prev) * K_z_prev);
 
     z = r + theta * z_prev;
     lambda = transpose(z) * r / (transpose(z) * K * z);
     soln_iter = soln_prev + lambda * z;
-
-    pcg_error(j+1) = (transpose(soln_iter) - transpose(soln_prev)) * K * (soln_iter - soln_prev);
+    
+    pcg_error(j+1) = transpose(soln_iter - soln_prev) * K * (soln_iter - soln_prev);% / (transpose(soln_prev) * K * soln_prev);
     num_updates = num_updates + 1;
     j = j + 1;
 end

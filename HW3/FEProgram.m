@@ -18,10 +18,10 @@ tolerance = 0.04;               % convergence tolerance
 energy_norm = tolerance + 1;    % arbitrary initialization value
 fontsize = 16;                  % fontsize for plots
 pcg_error_tol = 0.000001;       % error tolerance for PCG
-precondition = 'nopreconditi';  % 'nopreconditi' for no preconditioning
+precondition = 'precondition';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [100];              % num_elem to cycle through for soln plots
+     N_elem = [3000];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
@@ -76,7 +76,6 @@ for num_elem = N_elem
     K_cell = cell([1, num_elem]);
     F_cell = cell([1, num_elem]);
     
-    %K = spalloc(num_nodes, num_nodes, num_elem * Order ^ 2);
     K = zeros(num_nodes, num_nodes);
     F = zeros(num_nodes, 1);
     
@@ -117,19 +116,20 @@ for elem = 1:num_elem
      end 
 end
 
+K = sparse(K);
+
 % perform static condensation to remove known Dirichlet nodes from solve
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
-tic
 % perform the solve using the static condensation method
+disp('Beginning PCG iterations')
+tic
 [a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
 toc
 
-tic
-[a_u_condensed_new] = PCG_best(F_u, K_uk, K_cell, LM, num_nodes, dirichlet_nodes, num_elem, num_nodes_per_element, pcg_error_tol, precondition);
-toc
-
-
+% tic
+% [a_u_condensed_new] = PCG_best(F_u, K_uk, K_cell, LM, num_nodes, dirichlet_nodes, num_elem, num_nodes_per_element, pcg_error_tol, precondition);
+% toc
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);
@@ -158,8 +158,8 @@ energy_norm = energy_norm_top ./ energy_norm_bottom;
 %sprintf('energy norm: %f', energy_norm)
 
 if (N_plot_flag)
-    %plot(physical_domain, solution_FE)
-    plot(coordinates(:,1), a, '.')
+    plot(physical_domain, solution_FE)
+    %plot(coordinates(:,1), a, '.')
     hold on
 end
 
@@ -172,19 +172,19 @@ e = e + 1;
 end
 
 if (N_plot_flag)
-    %plot(physical_domain, solution_analytical, 'k')
+    plot(physical_domain, solution_analytical, 'k')
     txt = cell(length(N_elem),1);
     for i = 1:length(N_elem)
        txt{i}= sprintf('N = %i', N_elem(i));
     end
-    %txt{i+1} = 'analytical';
+    txt{i+1} = 'analytical';
     h = legend(txt);
     set(h, 'FontSize', fontsize - 2);
     xlabel('Problem domain', 'FontSize', fontsize)
     ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
     
     saveas(gcf, sprintf('Nplot', shape_order - 1), 'jpeg')
-    close all
+    %close all
 end
 
 if (k_plot_flag || k_plot_flag_dof)
@@ -217,18 +217,19 @@ if (k_plot_flag || k_plot_flag_dof)
     close all
 end
 
-% uncomment to find out how many elements are needed to reach the error tol
-%sprintf('For order = %i, number elements: %i', shape_order - 1, num_elem)
-
-% % analytical solution plot
+% --- analytical solution plot --- %
 % plot(physical_domain, solution_analytical)
 % xlabel('Physical Domain', 'FontSize', fontsize)
 % ylabel('Solution u(x)', 'FontSize', fontsize)
 % saveas(gcf, 'AnalyticalSoln2', 'jpeg')
 % close all
-% 
-%plot of error as a function of iteration
+
+
+% --- plot of error as a function of iteration --- %
 % loglog(1:1:length(pcg_error), pcg_error)
 % xlabel('Iteration Number', 'FontSize', fontsize)
 % ylabel('PCG Error','FontSize', fontsize)
 % close all
+
+
+
