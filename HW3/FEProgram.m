@@ -21,7 +21,7 @@ pcg_error_tol = 0.000001;       % error tolerance for PCG
 precondition = 'nopreconditi';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [300];              % num_elem to cycle through for soln plots
+     N_elem = [100];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
@@ -131,38 +131,6 @@ toc
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);
 
@@ -190,8 +158,8 @@ energy_norm = energy_norm_top ./ energy_norm_bottom;
 %sprintf('energy norm: %f', energy_norm)
 
 if (N_plot_flag)
-    plot(physical_domain, solution_FE)
-    %plot(coordinates(:,1), a, '.')
+    %plot(physical_domain, solution_FE)
+    plot(coordinates(:,1), a, '.')
     hold on
 end
 
@@ -204,12 +172,12 @@ e = e + 1;
 end
 
 if (N_plot_flag)
-    plot(physical_domain, solution_analytical, 'k')
+    %plot(physical_domain, solution_analytical, 'k')
     txt = cell(length(N_elem),1);
     for i = 1:length(N_elem)
        txt{i}= sprintf('N = %i', N_elem(i));
     end
-    txt{i+1} = 'analytical';
+    %txt{i+1} = 'analytical';
     h = legend(txt);
     set(h, 'FontSize', fontsize - 2);
     xlabel('Problem domain', 'FontSize', fontsize)
@@ -259,7 +227,7 @@ end
 % saveas(gcf, 'AnalyticalSoln2', 'jpeg')
 % close all
 % 
-% %plot of error as a function of iteration
+%plot of error as a function of iteration
 % loglog(1:1:length(pcg_error), pcg_error)
 % xlabel('Iteration Number', 'FontSize', fontsize)
 % ylabel('PCG Error','FontSize', fontsize)
