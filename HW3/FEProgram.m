@@ -2,8 +2,8 @@ clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
 k_plot_flag = 0;                % 1 - plot the error as a function of order
-k_plot_flag_dof = 0;            % 1 - plot the error as a function of DOF
-N_plot_flag = 1;                % 1 - plot the solutions for various N
+e_plot_flag = 1;                % 1 - plot the energy norm as a function of N
+N_plot_flag = 0;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
 k_freq = 12;                    % forcing frequency
@@ -21,9 +21,9 @@ pcg_error_tol = 0.000001;       % error tolerance for PCG
 precondition = 'precondition';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [100];              % num_elem to cycle through for soln plots
-elseif (k_plot_flag || k_plot_flag_dof)
-     N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
+     N_elem = [100, 1000, 10000];              % num_elem to cycle through for soln plots
+elseif (k_plot_flag || e_plot_flag)
+     N_elem = [100, 1000, 2500, 5000, 7500, 10000];        % num_elem to cycle through for e_N vs. N
 else
     disp('Either N_plot_flag or k_plot_flag has to equal 1.');
 end
@@ -122,13 +122,13 @@ K = sparse(K);
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
 % perform the solve using Gaussian elimination for comparison
-a_u_condensed_ge = K_uu \ (F_u - K_uk * dirichlet_nodes(2,:)');
+a_u_condensed = K_uu \ (F_u - K_uk * dirichlet_nodes(2,:)');
 
 % perform the solve using the global matrices
-[a_u_condensed, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
+%[a_u_condensed, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
 
 % perform the solve element-by-element
-%[a_u_condensed_new] = PCG_element_by_element(F_u, K_uk, K_cell, LM, num_nodes, dirichlet_nodes, num_elem, num_nodes_per_element, pcg_error_tol, precondition);
+%[a_u_condensed] = PCG_element_by_element(F_u, K_uk, K_cell, LM, num_nodes, dirichlet_nodes, num_elem, num_nodes_per_element, pcg_error_tol, precondition);
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);
@@ -154,11 +154,11 @@ end
 energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative));
 energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E .* (solution_derivative_FE - solution_analytical_derivative)));
 energy_norm = energy_norm_top ./ energy_norm_bottom;
-%sprintf('energy norm: %f', energy_norm)
+sprintf('energy norm: %f', energy_norm)
 
 if (N_plot_flag)
-    plot(physical_domain, solution_FE)
-    %plot(coordinates(:,1), a, '.')
+    %plot(physical_domain, solution_FE)
+    plot(coordinates(:,1), a, '.')
     hold on
 end
 
@@ -171,30 +171,30 @@ e = e + 1;
 end
 
 if (N_plot_flag)
-    plot(physical_domain, solution_analytical, 'k')
+    %plot(physical_domain, solution_analytical, 'k')
     txt = cell(length(N_elem),1);
     for i = 1:length(N_elem)
        txt{i}= sprintf('N = %i', N_elem(i));
     end
-    txt{i+1} = 'analytical';
+    %txt{i+1} = 'analytical';
     h = legend(txt);
     set(h, 'FontSize', fontsize - 2);
     xlabel('Problem domain', 'FontSize', fontsize)
     ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
     
     saveas(gcf, sprintf('Nplot', shape_order - 1), 'jpeg')
-    %close all
+    close all
 end
 
-if (k_plot_flag || k_plot_flag_dof)
+if (k_plot_flag || e_plot_flag)
     if (k_plot_flag)
         independent_var = L ./ N_elem;
         independent_var_str = 'Element size h';
         filename = 'eN_vs_h';
     else
-        independent_var = shape_order * N_elem;
-        independent_var_str = 'Degrees of Freedom';
-        filename = 'eN_vs_dof';
+        independent_var = N_elem;
+        independent_var_str = 'Number of Elements';
+        filename = 'eN_vs_N';
     end
     
     loglog(independent_var, e_N, '*-')
@@ -205,13 +205,13 @@ end
 
 end
 
-if (k_plot_flag || k_plot_flag_dof)
-    txt = cell(length(Order),1);
-    for i = 1:(length(Order))
-        txt{i} = sprintf('Order = %i, |(slope)| = %i', Order(i) - 1, Order(i) - 1);
-    end
-    h2 = legend(txt);
-    set(h2, 'FontSize', fontsize);
+if (k_plot_flag || e_plot_flag)
+%     txt = cell(length(Order),1);
+%     for i = 1:(length(Order))
+%         txt{i} = sprintf('Order = %i, |(slope)| = %i', Order(i) - 1, Order(i) - 1);
+%     end
+%     h2 = legend(txt);
+%     set(h2, 'FontSize', fontsize);
     saveas(gcf, filename, 'jpeg')
     close all
 end

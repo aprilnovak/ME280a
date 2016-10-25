@@ -456,6 +456,7 @@ The point at which the iterations are stopped is based on the energy norm discus
 The PCG method has convergence behavior dictated by:
 
 \begin{equation}
+\label{eq:PCGConvergence}
 \|\vv{a}-\vv{a}^{i}\|_K\leq\left(\frac{\sqrt{C(\textbf{K})}-1}{\sqrt{C(\textbf{K})}+1}\right)^i\|\vv{a}-\vv{a}^1\|_K
 \end{equation}
 
@@ -496,13 +497,36 @@ It should be noted that this assignment was completed in two different ways. The
 
 \section{Solution Results and Discussion}
 
-Fig. \ref{fig:NodalValues} shows the nodal values (the solution) for \(N=100, 1000, \) and \(10000\). 
+Fig. \ref{fig:NodalValues} shows the nodal values (the solution) for \(N=\) 100, 1000, and 10000. Because it is very difficult to see any differences between the nodal values for these choices of elements, Fig. \ref{fig:NodalValues2} shows the difference between the analytical solution and the solutions for \(N=\) 100, 1000, and 10000 elements. As can be seen, with more elements, the solution is much closer to the true solution. This is to be expected because the greater the number of elements, the greater the number of degrees of freedom that can be used to capture the behavior of the true solution. 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=13cm]{Nplot.jpg}
+  \includegraphics[width=11cm]{Nplot.jpg}
   \caption{Nodal values (the solution) for \(N=100, 1000, \) and \(10000\).}
   \label{fig:NodalValues}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=11cm]{Nplot2.jpg}
+  \caption{Difference between the analytical solution and the solutions for \(N=\) 100, 1000, and 10000 elements.}
+  \label{fig:NodalValues2}
+\end{figure}
+
+Fig. \ref{fig:eN_vs_N} shows the energy norm as a function of the number of elements. As can be seen, the energy norm decreases linearly with the number of elements when plotted on a log-log scale. The energy norm converges according to the fundamental interpolation theorem from functional analysis:
+
+\begin{equation}
+\label{eq:Theorem}
+\|u-u^h\|_{E(\Omega)}\leq C(u, p)h^{\min{(r-1, p})}
+\end{equation}
+
+where \(C\) is an unknown constant, \(r\) is the regularity, and \(p\) is the polynomial order of the approximation functions. Hence, because linear elements are used in this assignment, the solution converges as a first-order method when measured in the energy norm, and hence the slope of the line in Fig. \ref{fig:eN_vs_N} should have a magnitude of 1 for linear elements. This slope is observed in the figure below, demonstrating the validity of the fundamental interpolation theorem.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=11cm]{eN_vs_N.jpg}
+  \caption{Energy norm as a function of the number of elements. For \(N=100\) elements, \(e^N=0.2263\), for \(N=1000\), \(e^N=0.0228\) and for \(N=10000\), \(e^N=0.0023\).}
+  \label{fig:eN_vs_N}
 \end{figure}
 
 \section{Appendix}
