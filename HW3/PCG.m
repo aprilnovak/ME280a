@@ -1,10 +1,7 @@
-function [a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition)
+function [a_u_condensed, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition)
 
 K = K_uu;
 R = F_u - K_uk * dirichlet_nodes(2,:)';
-
-% Gaussian elimination method (for comparison)
-a_u_condensed_ge = K_uu \ R;
 
 % pick the initial guess for the solution
 soln_iter = ones(1, length(K_uu))';

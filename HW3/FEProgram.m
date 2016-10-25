@@ -21,7 +21,7 @@ pcg_error_tol = 0.000001;       % error tolerance for PCG
 precondition = 'precondition';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
-     N_elem = [3000];              % num_elem to cycle through for soln plots
+     N_elem = [10000];              % num_elem to cycle through for soln plots
 elseif (k_plot_flag || k_plot_flag_dof)
      N_elem = 50:10:1000;        % num_elem to cycle through for e_N vs. N
 else
@@ -121,15 +121,14 @@ K = sparse(K);
 % perform static condensation to remove known Dirichlet nodes from solve
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 
-% perform the solve using the static condensation method
-disp('Beginning PCG iterations')
-tic
-[a_u_condensed, a_u_condensed_ge, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
-toc
+% perform the solve using Gaussian elimination for comparison
+a_u_condensed_ge = K_uu \ (F_u - K_uk * dirichlet_nodes(2,:)');
 
-% tic
+% perform the solve using the global matrices
+[a_u_condensed, pcg_error] = PCG(K_uu, F_u, K_uk, dirichlet_nodes, pcg_error_tol, precondition);
+
+% perform the solve element-by-element
 % [a_u_condensed_new] = PCG_best(F_u, K_uk, K_cell, LM, num_nodes, dirichlet_nodes, num_elem, num_nodes_per_element, pcg_error_tol, precondition);
-% toc
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);
