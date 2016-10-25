@@ -207,8 +207,6 @@ Domain & \(C_1\) & \(C_2\)\\ [0.5ex]
 \label{table:orders}
 \end{table}
 
-
-
 \subsection{Finite Element Implementation}
 
 The Galerkin FEM achieves the best approximation property by approximating the true solution \(u(x)\) as \(u^N(x)\), where both \(u^N(x)\) and the test function \(\psi\) are expanded in the same set of \(N\) basis functions \(\phi\):
@@ -494,9 +492,18 @@ T_{ij}=\frac{1}{\sqrt{K_{ij}}}\delta_{ij}
 
 where \(\delta_{ij}\) is the Kronecker delta. With this preconditioner, the transformations described in Eq. \eqref{eq:TransformationSpecs} are made. Then, the PCG method described earlier is performed on this preconditioned system. Once reaching an acceptable error tolerance, the result is transformed back to the actual problem domain to give the final result.
 
+It should be noted that this assignment was completed in two different ways. The first of these ways takes advantage of the sparse matrix system in Matlab to perform the PCG solve. The function to perform the PCG solve using this method is shown in \texttt{PCG.m}. On the other hand, because the problem prompted us to perform the multiplication element-by-element, that is also performed as an alternative to the sparse PCG solve. This is about two times slower than simply using the sparse system in Matlab, likely due to code inefficiencies. This element-by-element method is shown in \texttt{PCG\_element\_by\_element.m}.
+
 \section{Solution Results and Discussion}
 
+Fig. \ref{fig:NodalValues} shows the nodal values (the solution) for \(N=100, 1000, \) and \(10000\). 
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=13cm]{Nplot.jpg}
+  \caption{Nodal values (the solution) for \(N=100, 1000, \) and \(10000\).}
+  \label{fig:NodalValues}
+\end{figure}
 
 \section{Appendix}
 

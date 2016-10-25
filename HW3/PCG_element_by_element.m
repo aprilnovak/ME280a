@@ -1,4 +1,4 @@
-function [a_u_condensed] = PCG_best(F_u, K_uk, K_cell, LM, num_nodes, dirichlet_nodes, num_elem, num_nodes_per_element, pcg_error_tol, precondition)
+function [a_u_condensed] = PCG_element_by_element(F_u, K_uk, K_cell, LM, num_nodes, dirichlet_nodes, num_elem, num_nodes_per_element, pcg_error_tol, precondition)
 
 % figure out how to eliminate the CutoffDirichlet and AddDirichlet
 % functions
