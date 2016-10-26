@@ -41,6 +41,7 @@
 \usepackage{listings}
 \usepackage{cancel}
 \usepackage{amsmath}
+\usepackage[mathscr]{euscript}
 \lstset{
     frame=single,
     breaklines=true,
@@ -406,7 +407,22 @@ The derivatives of the FE solution are determined according to:
 \frac{du^N}{dx}=\frac{d}{dx}\sum_{j=1}^{N}a_j\phi_j(x)=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{dx}=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{d\xi}\frac{d\xi}{dx}
 \end{equation}
 
-while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}. 
+while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}. The accuracy of the finite element solution can also be estimated by calculation of the potential energy \(\mathscr{J}\) of the solution:
+
+\begin{equation}
+\mathscr{J}(u^N)=\frac{1}{2}B(u^N, u^N)-L(u^N)
+\end{equation}
+
+where:
+
+\begin{equation}
+\begin{aligned}
+B(u^N, u^N)=\int_{0}^{L}\frac{du^N}{dx}E\frac{du^N}{dx}dx\\
+L(u^N)=-\int_{0}^{L}xk^3\cos{(\gamma x)}u^Ndx\\
+\end{aligned}
+\end{equation}
+
+The Neumann boundary component of \(L(u^N)\) has been omitted because it is not present for this problem.
 
 \subsection{The Preconditioned Conjugate Gradient Method}
 
@@ -450,6 +466,7 @@ By solving for \(\lambda^i\) in Eq. \eqref{eq:PCGUpdate} and substituting this i
 The point at which the iterations are stopped is based on the energy norm discussed in the previous section. The error tolerance for the PCG method is set to 0.000001, and so the iterations are halted once:
 
 \begin{equation}
+\label{eq:PCGError}
 \left(\vv{a}^{T,i+1}-\vv{a}^{T,i}\right)\textbf{K}\left(\vv{a}^{i+1}-\vv{a}^i\right)<0.000001
 \end{equation}
 
@@ -501,14 +518,14 @@ Fig. \ref{fig:NodalValues} shows the nodal values (the solution) for \(N=\) 100,
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=11cm]{Nplot.jpg}
+  \includegraphics[width=10cm]{Nplot.jpg}
   \caption{Nodal values (the solution) for \(N=100, 1000, \) and \(10000\).}
   \label{fig:NodalValues}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=11cm]{Nplot2.jpg}
+  \includegraphics[width=10cm]{Nplot2.jpg}
   \caption{Difference between the analytical solution and the solutions for \(N=\) 100, 1000, and 10000 elements.}
   \label{fig:NodalValues2}
 \end{figure}
@@ -524,16 +541,16 @@ where \(C\) is an unknown constant, \(r\) is the regularity, and \(p\) is the po
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=11cm]{eN_vs_N.jpg}
+  \includegraphics[width=10cm]{eN_vs_N.jpg}
   \caption{Energy norm as a function of the number of elements. For \(N=100\) elements, \(e^N=0.2263\), for \(N=1000\), \(e^N=0.0228\) and for \(N=10000\), \(e^N=0.0023\).}
   \label{fig:eN_vs_N}
 \end{figure}
 
-Fig. \ref{fig:PCGIterations} shows the number of PCG iterations needed to reach a stopping tolerance of 0.000001 as a function of the number of elements. Because the PCG method converges as \(N\), it was found that, for any value of \(N\), the PCG solver converges in \(N\) iterations. This behavior is even observed (with small deviations) with higher-order elements. For instance, with 100 quadratic elements, 211 PCG iterations are required, while there are 201 nodes. For cubic elements, a similar scaling is observed, but for linear elements, it was always observed that \(N\) iterations were required. 
+Fig. \ref{fig:PCGIterations} shows the number of PCG iterations needed to reach a stopping tolerance of 0.000001 as a function of the number of elements. Because the PCG method converges as \(N\), it was found that, for any value of \(N\), the PCG solver converges in \(N\) iterations. This behavior is even observed (with small deviations) with higher-order elements. For instance, with 100 quadratic elements, 211 PCG iterations are required, while there are 201 nodes. For cubic elements, a similar scaling is observed, but for linear elements, it was always observed that \(N\) iterations were required. This occurs due to the relatively poor choice of a preconditioner. PCG methods, while used as iterative methods, are technically direct methods if allowed to perform \(N\) iterations. Because the preconditioner is so poor, the PCG method then performs poorly, and requires all \(N\) theoretical iterations to converge to the solution. This is why, in the last iteration, there is a drop of about 10 orders of magnitude in the PCG error as measured by Eq. \eqref{eq:PCGError} - it is precisely due to the fact that the PCG method is a direct method if allowed to have \(N\) iterations.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=11cm]{PCGIterations.jpg}
+  \includegraphics[width=10cm]{PCGIterations.jpg}
   \caption{Number of PCG iterations required to reach a stopping tolerance of 0.000001. For \(N=100\), 100 iterations are required; for \(N=1000\), 1000 iterations, and for \(N=10000\), 10000 iterations are needed.}
   \label{fig:PCGIterations}
 \end{figure}
