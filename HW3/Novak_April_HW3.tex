@@ -542,7 +542,7 @@ where \(C\) is an unknown constant, \(r\) is the regularity, and \(p\) is the po
 \begin{figure}[H]
   \centering
   \includegraphics[width=10cm]{eN_vs_N.jpg}
-  \caption{Energy norm as a function of the number of elements. For \(N=100\) elements, \(e^N=0.2263\), for \(N=1000\), \(e^N=0.0228\) and for \(N=10000\), \(e^N=0.0023\).}
+  \caption{Energy norm as a function of the number of elements. For \(N=100\) elements, \(e^N=0.2199\), for \(N=1000\), \(e^N=0.0222\) and for \(N=10000\), \(e^N=0.0022\).}
   \label{fig:eN_vs_N}
 \end{figure}
 
@@ -602,10 +602,6 @@ This function postprocesses the FE solution and transforms it back to the physic
 \subsection{\texttt{quadrature.m}}
 This function selects the quadrature rule.
 \lstinputlisting[language=Matlab]{quadrature.m}
-
-\subsection{\texttt{RHSFunction.m}}
-This function repeatedly evaluates \circled{A} for determination of the analytical solution.
-\lstinputlisting[language=Matlab]{RHSFunction.m}
 
 \subsection{\texttt{shapefunctions.m}}
 This function contains the library of shape functions.

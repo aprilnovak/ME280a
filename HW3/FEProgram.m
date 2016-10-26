@@ -1,15 +1,12 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-k_plot_flag = 0;                % 1 - plot the error as a function of order
+pe_plot_flag = 0;               % 1 - plot the potential energy as a function of N
 e_plot_flag = 1;                % 1 - plot the energy norm as a function of N
 N_plot_flag = 0;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
 k_freq = 12;                    % forcing frequency
-num_elem = 5;                   % number of finite elements (initial guess)
-shape_order = 2;                % number of nodes per element
-E = 0.01;                       % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
 left_value = -0.3;              % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
@@ -22,13 +19,13 @@ precondition = 'precondition';  % 'nopreconditi' for no preconditioning
 
 if (N_plot_flag)
      N_elem = [100, 1000, 10000];              % num_elem to cycle through for soln plots
-elseif (k_plot_flag || e_plot_flag)
-     N_elem = [100, 1000, 2500, 5000, 7500, 10000];        % num_elem to cycle through for e_N vs. N
+elseif (pe_plot_flag || e_plot_flag)
+     N_elem = [100, 1000:1000:10000];        % num_elem to cycle through for e_N vs. N
 else
-    disp('Either N_plot_flag or k_plot_flag has to equal 1.');
+    disp('Either N_plot_flag or pe_plot_flag has to equal 1.');
 end
 
-Order = [3];              % shape function (orders - 1) to cycle thru
+Order = [2];              % shape function (orders - 1) to cycle thru
 
 % specify E over the domain in a block structure
 E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
@@ -43,15 +40,8 @@ for shape_order = Order
 % index for collecting error
 e = 1;
 
-% initial guess for determining number of elements to reach error tol
-%N_elem = 100;
-
 for num_elem = N_elem
 
-% uncomment to find how many elements are required to reach the error tol %
-% while energy_norm > tolerance
-%     num_elem = num_elem + 1;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     parent_domain = -1:0.1:1;
     physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));    
 
@@ -151,10 +141,15 @@ end
 [solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_element, shape_order, coordinates, physical_domain);
 
 % compute the energy norm
-energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative));
-energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E .* (solution_derivative_FE - solution_analytical_derivative)));
+energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative .* E_physical_domain .* solution_analytical_derivative));
+energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E_physical_domain .* (solution_derivative_FE - solution_analytical_derivative)));
 energy_norm = energy_norm_top ./ energy_norm_bottom;
-sprintf('energy norm: %f', energy_norm)
+
+% compute the potential energy
+B_uNuN = trapz(physical_domain, solution_derivative_FE .* E_physical_domain .* solution_derivative_FE);
+L_uN =  trapz(physical_domain, physical_domain .* k_freq .^3 .* cos(gamma .* physical_domain) .* solution_FE);
+potential_energy = 0.5 .* B_uNuN - L_uN;
+sprintf('Potential energy: %.4f', potential_energy)
 
 if (N_plot_flag)
     %plot(physical_domain, solution_FE)
@@ -162,10 +157,8 @@ if (N_plot_flag)
     hold on
 end
 
-% uncomment to find how many elements are needed to reach the error tol   %
-%end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 e_N(e) = energy_norm;
+pe(e) = potential_energy;
 e = e + 1;
 
 end
@@ -186,42 +179,37 @@ if (N_plot_flag)
     close all
 end
 
-if (k_plot_flag || e_plot_flag)
-    if (k_plot_flag)
-        independent_var = L ./ N_elem;
-        independent_var_str = 'Element size h';
-        filename = 'eN_vs_h';
+if (pe_plot_flag || e_plot_flag)
+    if (pe_plot_flag)
+        independent_var = N_elem;
+        dependent_var = abs(pe);
+        ylabel_str = 'Potential Energy';
+        independent_var_str = 'Number of Elements';
+        filename = 'pe_vs_N';
     else
         independent_var = N_elem;
+        dependent_var = e_N;
+        ylabel_str = 'Energy Norm';
         independent_var_str = 'Number of Elements';
         filename = 'eN_vs_N';
     end
     
-    loglog(independent_var, e_N, '*-')
+    loglog(independent_var, dependent_var, '*-')
     hold on
     xlabel(independent_var_str, 'FontSize', fontsize)
-    ylabel('Energy norm', 'FontSize', fontsize)
-end
-
-end
-
-if (k_plot_flag || e_plot_flag)
-%     txt = cell(length(Order),1);
-%     for i = 1:(length(Order))
-%         txt{i} = sprintf('Order = %i, |(slope)| = %i', Order(i) - 1, Order(i) - 1);
-%     end
-%     h2 = legend(txt);
-%     set(h2, 'FontSize', fontsize);
+    ylabel(ylabel_str, 'FontSize', fontsize)
     saveas(gcf, filename, 'jpeg')
     close all
 end
 
+end
+
 % --- analytical solution plot --- %
-plot(physical_domain, solution_analytical)
-xlabel('Physical Domain', 'FontSize', fontsize)
-ylabel('Solution u(x)', 'FontSize', fontsize)
-saveas(gcf, 'AnalyticalSoln2', 'jpeg')
-close all
+% plot(physical_domain, solution_analytical)
+% xlabel('Physical Domain', 'FontSize', fontsize)
+% ylabel('Solution u(x)', 'FontSize', fontsize)
+% saveas(gcf, 'AnalyticalSoln2', 'jpeg')
+% close all
 
 
 % --- plot of error as a function of iteration --- %
@@ -231,11 +219,11 @@ close all
 % close all
 
 % --- plot of number of iterations as a function of N_elem --- %
-plot([100, 1000:1000:10000], [100, 1000:1000:10000], '*-')
-xlabel('Number of Elements', 'FontSize', fontsize)
-ylabel('PCG Iterations', 'FontSize', fontsize)
-saveas(gcf, 'PCGIterations', 'jpeg')
-close all
+% plot([100, 1000:1000:10000], [100, 1000:1000:10000], '*-')
+% xlabel('Number of Elements', 'FontSize', fontsize)
+% ylabel('PCG Iterations', 'FontSize', fontsize)
+% saveas(gcf, 'PCGIterations', 'jpeg')
+% close all
 
 
 
