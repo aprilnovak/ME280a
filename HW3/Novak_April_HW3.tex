@@ -636,6 +636,10 @@ This section contains the code used for this modeling. The main program is \text
 This is the main code used for the problem solving.
 \lstinputlisting[language=Matlab]{FEProgram.m}
 
+\subsection{\texttt{AddDirichlet.m}}
+This function adds in dummy Dirichlet node placeholders.
+\lstinputlisting[language=Matlab]{AddDirichlet.m}
+
 \subsection{\texttt{AnalyticalSolution.m}}
 This function computes the analytical solution.
 \lstinputlisting[language=Matlab]{AnalyticalSolution.m}
@@ -648,6 +652,10 @@ This function applies boundary conditions.
 This function separates out the matrix equation as in Eq. \eqref{eq:condensation}.
 \lstinputlisting[language=Matlab]{condensation.m}
 
+\subsection{\texttt{CutoffDirichlet.m}}
+This function removes Dirichlet nodes from a vector.
+\lstinputlisting[language=Matlab]{CutoffDirichlet.m}
+
 \subsection{\texttt{ElementInterpolation.m}}
 This function interpolates the block-structure of \(E\) into an elemental basis (\(E\) as a function of the element number).
 \lstinputlisting[language=Matlab]{ElementInterpolation.m}
@@ -656,9 +664,21 @@ This function interpolates the block-structure of \(E\) into an elemental basis 
 This function performs the meshing.
 \lstinputlisting[language=Matlab]{mesh.m}
 
+\subsection{\texttt{Mult.m}}
+This functions performs multiplication element-by-element of a matrix and a vector.
+\lstinputlisting[language=Matlab]{Mult.m}
+
+\subsection{\texttt{NodalInterpolation.m}}
+This function interpolates a vector defined over the physical domain into one defined over a nodal domain.
+\lstinputlisting[language=Matlab]{NodalInterpolation.m}
+
 \subsection{\texttt{PCG.m}}
-This function performs the Preconditioned Conjugate Gradient solve of the matrix system.
+This function performs the Preconditioned Conjugate Gradient solve of the matrix system (not element-by-element).
 \lstinputlisting[language=Matlab]{PCG.m}
+
+\subsection{\texttt{PCG\_element\_by\_element.m}}
+This function performs the Preconditioned Conjugate Gradient solve of the matrix system (element-by-element).
+\lstinputlisting[language=Matlab]{PCG_element_by_element.m}
 
 \subsection{\texttt{permutation.m}}
 This function determines the permutation matrix for use with the connectivity matrix.

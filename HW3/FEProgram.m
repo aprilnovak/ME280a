@@ -1,9 +1,9 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-pe_plot_flag = 0;               % 1 - plot the potential energy as a function of N
+pe_plot_flag = 1;               % 1 - plot the potential energy as a function of N
 e_plot_flag = 0;                % 1 - plot the energy norm as a function of N
-N_plot_flag = 1;                % 1 - plot the solutions for various N
+N_plot_flag = 0;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
 k_freq = 12;                    % forcing frequency
