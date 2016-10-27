@@ -410,6 +410,7 @@ The derivatives of the FE solution are determined according to:
 while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}. The accuracy of the finite element solution can also be estimated by calculation of the potential energy \(\mathscr{J}\) of the solution:
 
 \begin{equation}
+\label{eq:PotentialEnergy}
 \mathscr{J}(u^N)=\frac{1}{2}B(u^N, u^N)-L(u^N)
 \end{equation}
 
@@ -518,14 +519,14 @@ Fig. \ref{fig:NodalValues} shows the nodal values (the solution) for \(N=\) 100,
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=10cm]{Nplot.jpg}
+  \includegraphics[width=10cm]{Nplot.jpg} % versioned
   \caption{Nodal values (the solution) for \(N=100, 1000, \) and \(10000\).}
   \label{fig:NodalValues}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=10cm]{Nplot2.jpg}
+  \includegraphics[width=10cm]{Nplot2.jpg} % versioned
   \caption{Difference between the analytical solution and the solutions for \(N=\) 100, 1000, and 10000 elements.}
   \label{fig:NodalValues2}
 \end{figure}
@@ -541,19 +542,91 @@ where \(C\) is an unknown constant, \(r\) is the regularity, and \(p\) is the po
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=10cm]{eN_vs_N.jpg}
+  \includegraphics[width=10cm]{eN_vs_N.jpg} % versioned
   \caption{Energy norm as a function of the number of elements. For \(N=100\) elements, \(e^N=0.2199\), for \(N=1000\), \(e^N=0.0222\) and for \(N=10000\), \(e^N=0.0022\).}
   \label{fig:eN_vs_N}
 \end{figure}
 
-Fig. \ref{fig:PCGIterations} shows the number of PCG iterations needed to reach a stopping tolerance of 0.000001 as a function of the number of elements. Because the PCG method converges as \(N\), it was found that, for any value of \(N\), the PCG solver converges in \(N\) iterations. This behavior is even observed (with small deviations) with higher-order elements. For instance, with 100 quadratic elements, 211 PCG iterations are required, while there are 201 nodes. For cubic elements, a similar scaling is observed, but for linear elements, it was always observed that \(N\) iterations were required. This occurs due to the relatively poor choice of a preconditioner. PCG methods, while used as iterative methods, are technically direct methods if allowed to perform \(N\) iterations. Because the preconditioner is so poor, the PCG method then performs poorly, and requires all \(N\) theoretical iterations to converge to the solution. This is why, in the last iteration, there is a drop of about 10 orders of magnitude in the PCG error as measured by Eq. \eqref{eq:PCGError} - it is precisely due to the fact that the PCG method is a direct method if allowed to have \(N\) iterations.
+Fig. \ref{fig:PCGIterations} shows the number of PCG iterations needed to reach a stopping tolerance of 0.000001 as a function of the number of elements. While used in this assignment as an iterative method, the PCG method is also technically a direct method when allowed to perform \(N\) iterations. After \(N\) iterations, the PCG method will give nearly the exact solution, and because we required such a stringent stopping tolerance, this was essentially requiring the PCG method to find the exact solution, hence why \(N\) iterations were required. So, for any value of \(N\) for a stopping tolerance of 0.000001, the PCG solver converges in \(N\) iterations. This behavior is even observed (with small deviations) with higher-order elements. For instance, with 100 quadratic elements, 211 PCG iterations are required, while there are 201 nodes. For cubic elements, a similar scaling is observed, but for linear elements, it was always observed that \(N\) iterations were required. This occurs due to the relatively poor choice of a preconditioner. Because the preconditioner is so poor, the PCG method then performs poorly, and requires all \(N\) theoretical iterations to converge to the solution. This is why, in the last iteration, there is a drop of about 10 orders of magnitude in the PCG error as measured by Eq. \eqref{eq:PCGError} - it is precisely due to the fact that the PCG method is a direct method if allowed to have \(N\) iterations.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=10cm]{PCGIterations.jpg}
+  \includegraphics[width=10cm]{PCGIterations.jpg} % versioned
   \caption{Number of PCG iterations required to reach a stopping tolerance of 0.000001. For \(N=100\), 100 iterations are required; for \(N=1000\), 1000 iterations, and for \(N=10000\), 10000 iterations are needed.}
   \label{fig:PCGIterations}
 \end{figure}
+
+For example, for 1000 elements, Fig. \ref{fig:PCGerror} shows the error as computed from Eq. \eqref{eq:PCGError}. As can be seen, in the last iteration, a significant drop in the error occurs because we're essentially requiring the PCG method to provide the exact answer, which requires \(N\) iterations because the PCG method is technically a direct method.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{PCGerror.jpg} % versioned
+  \caption{PCG error as computed from Eq. \eqref{eq:PCGError} as a function of the iteration number.}
+  \label{fig:PCGerror}
+\end{figure}
+
+Fig. \ref{fig:PotentialEnergy} shows the potential energy as calculated from Eq. \eqref{eq:PotentialEnergy} for the analytical and finite element solutions. As can be seen, as the accuracy of the finite element solution improves, the potential energy asymptotically approaches the potential energy of the true solution. This feature of the ``best approximation property'' is a significant advantage for problems with symmetric stiffness matrices because it means that the finite element solution will monotonically approach the exact solution as the mesh is refined, and that the error for any other kinematically admissible solution will be greater than that of the finite element solution (for the same number of unknowns).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{pe_vs_N.jpg} % versioned
+  \caption{Potential energy as a function of number of elements. }
+  \label{fig:PotentialEnergy}
+\end{figure}
+
+When plotted on log-log coordinates, where the absolute value of the potential energies must be taken (in order to avoid problems associated with logarithms of negative numbers), the above plot can similarly be shown as follows. It is not clear why the potential energies of both the true and finite element solutions are negative, but the plots show the correct trend in that as the mesh is refined, the potential energy of the finite element solution approaches that of the analytical solution, but never becomes lower than that of the analytical solution. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{pe_vs_N2.jpg} % versioned
+  \caption{Potential energy as a function of number of elements. }
+  \label{fig:PotentialEnergy2}
+\end{figure}
+
+To further illustrate how the difference between the analytical and finite element solution potential energies goes to zero as the mesh is refined, Fig. \ref{fig:PotentialEnergy3} shows the difference between the finite element and analytical potential energies (finite element - analytical) as the mesh is refined. Except for oscillations that occur at relatively coarse meshes that are not able to fully capture the material information, the difference in the potential energy decreases linearly when plotted on a log-log plot. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{pe_vs_N_diff.jpg} % versioned
+  \caption{Difference between the finite element and analytical potential energies (finite element - analytical) as a function of number of elements.}
+  \label{fig:PotentialEnergy3}
+\end{figure}
+
+Because the potential energy is defined such that:
+
+\begin{equation}
+\|u-u^N\|_{E(\Omega}^2=2\left(\mathscr{J}(u^N)-\mathscr{J}(u)\right)
+\end{equation}
+
+and from the fundamental interpolation theorem in Eq. \eqref{eq:Theorem}, the difference in the potential energies can be related to \(h\) by:
+
+\begin{equation}
+2\left(\mathscr{J}(u^N)-\mathscr{J}(u)\right)\leq \left(C(u, p)h^{\min{(r-1, p})}\right)^2
+\end{equation}
+
+This can equivalently be stated as:
+
+\begin{equation}
+2\left(\mathscr{J}(u^N)-\mathscr{J}(u)\right)\leq C(u, p)^2h^{2\min{(r-1, p})}
+\end{equation}
+
+Since the quantity \(\left(\mathscr{J}(u^N)-\mathscr{J}(u)\right)\) is plotted in Fig. \ref{fig:PotentialEnergy3}, it is expected that for linear elements for a sufficiently smooth solution, that the difference in the potential energy converge with a slope of 2 when plotted on a log-log plot. This slope is observed in Fig. \ref{fig:PotentialEnergy3}, and hence the utility of the potential energy in serving as a convergence estimate (if the true solution is known) has been shown to be valid.
+
+To summarize, the potential energy, energy norm, and number of PCG iterations for 100, 1000, and 10000 elements is given in the table below. Again, the potential energy of the analytical solution was computed to be -30.61, and hence the finite element solution approaches this value as the mesh becomes more and more refined.
+
+\begin{table}[H]
+\caption{Requested information for 100, 1000, and 10000 elements. }
+\centering
+\begin{tabular}{c c c c}
+\hline\hline
+Number of elements & Potential energy & Energy norm & PCG iterations\\ [0.5ex]
+\hline
+100 		& -29.0434  & 0.2199 		& 100\\
+1000 	& -30.5996  & 0.0222		& 1000\\
+10000 	& -30.6155  & 0.0022	 	& 10000\\
+\hline
+\end{tabular}
+\end{table}
 
 \section{Appendix}
 
