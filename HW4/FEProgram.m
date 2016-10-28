@@ -125,7 +125,7 @@ end
 
 % uncomment to find out how many elements are needed to reach the error
 % tolerance
-%end
+% end
 e_N(e) = energy_norm;
 e = e + 1;
 
@@ -161,4 +161,4 @@ end
 
 % uncomment to find out how many elements are needed to reach the error
 % tolerance
-%sprintf('For k = %i, number elements: %i', k_freq, num_elem)
+%sprintf('Number elements needed: %i', num_elem)

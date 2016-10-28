@@ -319,6 +319,7 @@ Each element is looped over to obtain the coefficients on the shape functions in
 The accuracy of the FE solution is estimated using the energy norm \(e^N\), defined as:
 
 \begin{equation}
+\label{eq:EnergyNorm}
 e^N=\frac{\|u-u^N\|}{\|u\|}
 \end{equation}
 
@@ -342,11 +343,11 @@ while the derivative of the analytical solution is obtained from Eq. \eqref{eq:P
 
 \section{Solution Results and Discussion}
 
-Fig. \ref{fig:Analytical} shows the FE and analytical solutions for various numbers of elements. 
+Fig. \ref{fig:Analytical} shows the FE and analytical solutions for various numbers of elements. To reach a tolerance of 0.05 in Eq. \eqref{eq:EnergyNorm} (\(e^N\leq 0.05\)), 100 elements are needed.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=10cm]{Nplot.jpg}
+  \includegraphics[width=10cm]{Nplot.jpg} % versioned
   \caption{FE and analytical solutions for various numbers of elements.}
   \label{fig:Analytical}
 \end{figure}
