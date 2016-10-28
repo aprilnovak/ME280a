@@ -19,7 +19,7 @@ fontsize = 16;                      % fontsize for plots
 [permutation] = permutation(shape_order);
 
 if (N_plot_flag)
-     N_elem = [10, 100, 1000];
+     N_elem = [10, 50, 75, 100];
 elseif (k_plot_flag)
      N_elem = 1:128;
 else
@@ -132,7 +132,7 @@ e = e + 1;
 end
 
 if (N_plot_flag)
-    plot(physical_domain, solution_analytical)
+    plot(physical_domain, solution_analytical, 'k')
     txt = cell(length(N_elem),1);
     for i = 1:length(N_elem)
        txt{i}= sprintf('N = %i', N_elem(i));
@@ -141,7 +141,7 @@ if (N_plot_flag)
     h = legend(txt);
     xlabel('Problem domain', 'FontSize', fontsize)
     ylabel('Solution', 'FontSize', fontsize)
-    saveas(gcf, sprintf('Nplot_%i', N_elem), 'jpeg')
+    saveas(gcf, 'Nplot', 'jpeg')
     %close all
 end
 
