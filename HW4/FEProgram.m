@@ -19,7 +19,7 @@ fontsize = 16;                      % fontsize for plots
 [permutation] = permutation(shape_order);
 
 if (N_plot_flag)
-     N_elem = [10, 50, 75, 100];
+     N_elem = [20];
 elseif (k_plot_flag)
      N_elem = 1:128;
 else
@@ -131,19 +131,6 @@ for i = 1:length(physical_domain)
     end
 end
 
-eN_per_elem = zeros(1, length(num_elem)); % works only for linear elements
-elem_length = zeros(1, length(num_elem));
-for i = 1:num_elem
-    elem_length(i) = coordinates(i+1, 1) - coordinates(i,1);
-    spatial_domain = physical_domain(bounds(i):bounds(i+1));
-    dFE = solution_derivative_FE(bounds(i):bounds(i+1));
-    dAN = solution_analytical_derivative(bounds(i):bounds(i+1));
-    eN_per_elem(i) = trapz(spatial_domain, (dFE - dAN) .* E .* (dFE - dAN));
-end
-
-%plot(1:1:length(eN_per_elem), eN_per_elem, '*')
-A_I = (1 ./ elem_length) .* eN_per_elem ./ ((1 / L) .* energy_norm_bottom .^ 2);
-
 if (N_plot_flag)
     plot(physical_domain, solution_FE)
     hold on
@@ -167,8 +154,8 @@ if (N_plot_flag)
     h = legend(txt);
     xlabel('Problem domain', 'FontSize', fontsize)
     ylabel('Solution', 'FontSize', fontsize)
-    saveas(gcf, 'Nplot', 'jpeg')
-    %close all
+    %saveas(gcf, 'Nplot', 'jpeg')
+    close all
 end
 
 if (k_plot_flag)
@@ -184,6 +171,22 @@ if (k_plot_flag)
     saveas(gcf, 'eN_vs_N', 'jpeg')
 end
 
+eN_per_elem = zeros(1, length(num_elem)); % works only for linear elements
+elem_length = zeros(1, length(num_elem));
+for i = 1:num_elem
+    elem_length(i) = coordinates(i+1, 1) - coordinates(i,1);
+    spatial_domain = physical_domain(bounds(i):bounds(i+1));
+    dFE = solution_derivative_FE(bounds(i):bounds(i+1));
+    dAN = solution_analytical_derivative(bounds(i):bounds(i+1));
+    eN_per_elem(i) = trapz(spatial_domain, (dFE - dAN) .* E .* (dFE - dAN));
+end
+
+% plot A_I as a function of the element number
+A_I = sqrt((1 ./ elem_length) .* eN_per_elem ./ ((1 / L) .* energy_norm_bottom .^ 2));
+plot(1:1:length(eN_per_elem), A_I, '*')
+xlabel('Element Number' , 'FontSize', fontsize)
+ylabel(sprintf('A_I for %i Elements', num_elem), 'FontSize', fontsize)
+saveas(gcf, 'A_I_NoRefinement', 'jpeg')
 
 % uncomment to find out how many elements are needed to reach the error
 % tolerance
