@@ -89,14 +89,14 @@
 \setcounter{tocdepth}{4}
 \begin{document}
 
-\title{ME 280a: HW 3}
+\title{ME 280a: HW 4}
 \author{April Novak}
 
 \maketitle
 
 \section{Introduction and Objectives}
 
-The purpose of this study is to solve a simple finite element (FE) problem using a Preconditioned Conjugate-Gradient (PCG) solver, with a diagonal preconditioner. This involves the storage of the information element-by-element. So, while the problem to be solved is similar to past assignments, the numerical solution method is modified. In addition, the elastic modulus is allowed to be a function of position. The Galerkin FE method is used, which for certain classes of problems possesses the ``best approximation property,'' a characteristic that signifies that the FE solution obtained is the best possible solution for a given mesh refinement and choice of shape functions. The mathematical procedure and numerical implementation is described in Section \ref{sec:Procedure}.
+The purpose of this study is to solve a simple finite element (FE) problem and perform Adaptive Mesh Refinement (AMR) in order to refine the mesh in locations where the solution is highly-varying. AMR is an important technique for reducing the necessary run-time of a simulation, and is especially important for large simulations where every method possible to reduce the computational cost is needed.
 
 \section{Procedure}
 \label{sec:Procedure}
@@ -110,103 +110,34 @@ This section describes the mathematical process used to solve the following prob
 \begin{equation}
 \label{eq:Problem}
 \begin{aligned}
-\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=xk^3\cos{\left(\frac{2\pi kx}{L}\right)}\\
+\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=f(x)\\
 \end{aligned}
 \end{equation}
 
-where \(E\) is the modulus of elasticity, \(u\) is the solution, \(k\) is a known constant, \(L\) is the problem domain length, and \(x\) is the spatial variable. For simplicity, a constant \(\gamma=2\pi k/L\) is defined. In order to verify that the program functions correctly, the FE solution to Eq. \eqref{eq:Problem} will be compared with the analytical solution to Eq. \eqref{eq:Problem}. To determine the analytical solution, integrate Eq. \eqref{eq:Problem} once to obtain:
+where \(E\) is the modulus of elasticity, \(u\) is the solution, \(x\) is the spatial variable, and \(f(x)\) is a forcing function whose form is to be determined in order to obtain the solution \(u(x)=\cos{(10\pi x^5)}\). In order to determine the form of \(f(x)\), substitute the manufactured solution into Eq. \eqref{eq:Problem} to give:
 
 \begin{equation}
 \label{eq:Problem2}
-E(x)\frac{du}{dx}=k^3\left\lbrack \frac{x}{\gamma}\sin{(\gamma x)}+\frac{1}{\gamma^2}\cos{(\gamma x)}\right\rbrack+C_1
+\cancel{\frac{dE(x)}{dx}\frac{du}{dx}}+E(x)\frac{d^2u}{dx^2}=f(x)\quad\rightarrow\quad E\frac{d^2}{dx^2}\left(\cos{(10\pi x^5)}\right)=f(x)
 \end{equation}
 
-where, even though \(E\) is a function of \(x\), it is constant over particular lengths of the domain. Hence, the analytical solution can be determined by splitting up the domain into sufficiently small regions where \(E\) is constant. So, for the remainder of this section, \(E\) is treated as constant, and it is understood that the analytical solutions obtained are exact only over each individual region where \(E\) is constant. Integrating once more:
+where the fact that \(E(x)\) is constant has been implemented. This gives the following form for \(f(x)\):
 
 \begin{equation}
 \label{eq:Problem3}
-u(x)=\frac{1}{E(x)}\left\lbrack\frac{-xk^3}{\gamma^2}\cos{(\gamma x)}+\frac{2k^3}{\gamma^3}\sin{(\gamma x)}\right\rbrack+\frac{C_1x}{E(x)}+C_2
+f(x)=-E\left(200\pi x^3\sin{(10\pi x^5)}+2500\pi^2x^8\cos{(10\pi x^5)} \right)
 \end{equation}
 
-The boundary conditions for this problem are Dirichlet at both endpoints, such that:
+The boundary conditions for this problem are Dirichlet at both endpoints such that the assumed solution is satisfied. At \(x=0\), \(u(0)=\cos{(0)}=1\). At \(x=L\), \(u(L)=\cos{(10\pi L^5)}\). 
 
 \begin{equation}
 \begin{aligned}
-u(0)=-0.1\\
-u(L)=0.7\\
+u(0)=1\\
+u(L)=\cos{(10\pi L^5)}\\
 \end{aligned}
 \end{equation}
 
-From Eq. \eqref{eq:Problem}, \(E(x)du/dx\) must be continuous in the domain, and must match at inter-block boundaries. For example, for two blocks that share a node at \(x=x_{share}\):
-
-\begin{equation}
-\begin{aligned}
-k^3\left\lbrack \frac{x_{share}}{\gamma}\sin{(\gamma x_{share})}+\frac{1}{\gamma^2}\cos{(\gamma x_{share})}\right\rbrack+C_1(\text{block 1})=\quad\\
-k^3\left\lbrack \frac{x_{share}}{\gamma}\sin{(\gamma x_{share})}+\frac{1}{\gamma^2}\cos{(\gamma x_{share})}\right\rbrack+C_1(\text{block 2a})\\
-\end{aligned}
-\end{equation}
-
-Because all constants besides \(E\) are constant in the domain, \(C_1\) is the same for each block. The second requirement is that \(u\) be continuous across block edges. From Eq. \eqref{eq:Problem3}:
-
-\begin{equation}
-\begin{aligned}
-\frac{1}{E(\text{block 1})}\underbrace{\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack}_\text{\circled{A}}+\frac{C_1(\text{block 1})x_{share}}{E(\text{block 1})}+C_2(\text{block 1})=\quad\\
-\frac{1}{E(\text{block 2})}\left\lbrack\frac{-x_{share}k^3}{\gamma^2}\cos{(\gamma x_{share})}+\frac{2k^3}{\gamma^3}\sin{(\gamma x_{share})}\right\rbrack+\frac{C_1(\text{block 2})x_{share}}{E(\text{block 2})}+C_2(\text{block 2})\\
-\end{aligned}
-\end{equation}
-
-Rearranging, and recognizing that \(C_1\) is the same for all blocks, the following must be true at each shared location:
-
-\begin{equation}
-\begin{aligned}
-\label{eq:Shared}
-C_1\left(\frac{x_{share}}{E(\text{left})}-\frac{x_{share}}{E(\text{right})}\right)+C_2(\text{left})-C_2(\text{right})=-\circled{A}\left(\frac{1}{E(\text{left})}-\frac{1}{E(\text{right})}\right)
-\end{aligned}
-\end{equation}
-
-Then, at the left endpoint:
-
-\begin{equation}
-\label{eq:Left}
-C_2(\text{block 1})=u(0)
-\end{equation}
-
-And at the right endpoint:
-
-\begin{equation}
-\label{eq:Right}
-\frac{C_1(\text{last block})L}{E(L)}+C_2(\text{last block})=u(L)-\frac{1}{E(x)}\left\lbrack\frac{-Lk^3}{\gamma^2}\cos{(\gamma L)}+\frac{2k^3}{\gamma^3}\sin{(\gamma L)}\right\rbrack
-\end{equation}
-
-Eq. \eqref{eq:Left} and Eq. \eqref{eq:Right} provide two boundary conditions, while Eq. \eqref{eq:Shared} provides one boundary condition at each shared location (locations at which \(E\) changes). This, combined with the fact that \(C_1\) is the same for each element, provides a system of linear equations that can be solved to obtain \(C_1\) and \(C_2(\text{block 1}, \text{block 2}, \text{block 3}, \text{block 4}, \cdots, \text{block 10})\). This is the method used in this assignment to determine the analytical solution. The method is made very general so that any number of piecewise-constant regions of \(E\) can be solved both analytically and with the FEM. The analytical solution is plotted below, and the values for the coefficients \(C_1\) and \(C_2\) in each block are given in the following table.
-
-\begin{figure}[H]
-\begin{center}  \includegraphics[width=0.75\linewidth]{AnalyticalSoln2.jpg}
-\caption{Analytical solution.}
-\end{center}
-\end{figure}
-
-\begin{table}[H]
-\caption{Coefficients \(C_1\) and \(C_2\) over each domain of the problem.}
-\centering
-\begin{tabular}{c c r}
-\hline\hline
-Domain & \(C_1\) & \(C_2\)\\ [0.5ex]
-\hline
-\(0.0\leq x< 0.1\) & 1.9052  & -0.3000\\
-\(0.1\leq x< 0.2\) & 1.9052  & -0.4133\\
-\(0.2\leq x< 0.3\) & 1.9052  & -0.2269 \\
-\(0.3\leq x< 0.4\) & 1.9052  & -0.3733\\
-\(0.4\leq x< 0.5\) & 1.9052  & -0.0605\\
-\(0.5\leq x< 0.6\) & 1.9052  &  0.0171\\
-\(0.6\leq x< 0.7\) & 1.9052  & -0.1774\\
-\(0.7\leq x< 0.8\) & 1.9052  & -1.5201\\
-\(0.8\leq x< 0.9\) & 1.9052  & -0.0900\\
-\(0.9\leq x< 1.0\) & 1.9052  & -0.9012\\
-\hline
-\end{tabular}
-\label{table:orders}
-\end{table}
+This problem will be solved using the FE method, and AMR will be performed in order to most effectively solve the problem.
 
 \subsection{Finite Element Implementation}
 
@@ -517,121 +448,16 @@ It should be noted that this assignment was completed in two different ways. The
 
 Fig. \ref{fig:NodalValues} shows the nodal values (the solution) for \(N=\) 100, 1000, and 10000. Because it is very difficult to see any differences between the nodal values for these choices of elements, Fig. \ref{fig:NodalValues2} shows the difference between the analytical solution and the solutions for \(N=\) 100, 1000, and 10000 elements. As can be seen, with more elements, the solution is much closer to the true solution. This is to be expected because the greater the number of elements, the greater the number of degrees of freedom that can be used to capture the behavior of the true solution. 
 
+\begin{comment}
 \begin{figure}[H]
   \centering
   \includegraphics[width=10cm]{Nplot.jpg} % versioned
   \caption{Nodal values (the solution) for \(N=100, 1000, \) and \(10000\).}
   \label{fig:NodalValues}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{Nplot2.jpg} % versioned
-  \caption{Difference between the analytical solution and the solutions for \(N=\) 100, 1000, and 10000 elements.}
-  \label{fig:NodalValues2}
-\end{figure}
-
-Fig. \ref{fig:eN_vs_N} shows the energy norm as a function of the number of elements. As can be seen, the energy norm decreases linearly with the number of elements when plotted on a log-log scale. The energy norm converges according to the fundamental interpolation theorem from functional analysis:
-
-\begin{equation}
-\label{eq:Theorem}
-\|u-u^h\|_{E(\Omega)}\leq C(u, p)h^{\min{(r-1, p})}
-\end{equation}
-
-where \(C\) is an unknown constant, \(r\) is the regularity, and \(p\) is the polynomial order of the approximation functions. Hence, because linear elements are used in this assignment, the solution converges as a first-order method when measured in the energy norm, and hence the slope of the line in Fig. \ref{fig:eN_vs_N} should have a magnitude of 1 for linear elements. This slope is observed in the figure below, demonstrating the validity of the fundamental interpolation theorem.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{eN_vs_N.jpg} % versioned
-  \caption{Energy norm as a function of the number of elements. For \(N=100\) elements, \(e^N=0.2199\), for \(N=1000\), \(e^N=0.0222\) and for \(N=10000\), \(e^N=0.0022\).}
-  \label{fig:eN_vs_N}
-\end{figure}
-
-Fig. \ref{fig:PCGIterations} shows the number of PCG iterations needed to reach a stopping tolerance of 0.000001 as a function of the number of elements. While used in this assignment as an iterative method, the PCG method is also technically a direct method when allowed to perform \(N\) iterations. After \(N\) iterations, the PCG method will give nearly the exact solution, and because we required such a stringent stopping tolerance, this was essentially requiring the PCG method to find the exact solution, hence why \(N\) iterations were required. So, for any value of \(N\) for a stopping tolerance of 0.000001, the PCG solver converges in \(N\) iterations. This behavior is even observed (with small deviations) with higher-order elements. For instance, with 100 quadratic elements, 211 PCG iterations are required, while there are 201 nodes. For cubic elements, a similar scaling is observed, but for linear elements, it was always observed that \(N\) iterations were required. This occurs due to the relatively poor choice of a preconditioner. Because the preconditioner is so poor, the PCG method then performs poorly, and requires all \(N\) theoretical iterations to converge to the solution. This is why, in the last iteration, there is a drop of about 10 orders of magnitude in the PCG error as measured by Eq. \eqref{eq:PCGError} - it is precisely due to the fact that the PCG method is a direct method if allowed to have \(N\) iterations.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{PCGIterations.jpg} % versioned
-  \caption{Number of PCG iterations required to reach a stopping tolerance of 0.000001. For \(N=100\), 100 iterations are required; for \(N=1000\), 1000 iterations, and for \(N=10000\), 10000 iterations are needed.}
-  \label{fig:PCGIterations}
-\end{figure}
-
-For example, for 1000 elements, Fig. \ref{fig:PCGerror} shows the error as computed from Eq. \eqref{eq:PCGError}. As can be seen, in the last iteration, a significant drop in the error occurs because we're essentially requiring the PCG method to provide the exact answer, which requires \(N\) iterations because the PCG method is technically a direct method.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{PCGerror.jpg} % versioned
-  \caption{PCG error as computed from Eq. \eqref{eq:PCGError} as a function of the iteration number.}
-  \label{fig:PCGerror}
-\end{figure}
-
-Fig. \ref{fig:PotentialEnergy} shows the potential energy as calculated from Eq. \eqref{eq:PotentialEnergy} for the analytical and finite element solutions. As can be seen, as the accuracy of the finite element solution improves, the potential energy asymptotically approaches the potential energy of the true solution. This feature of the ``best approximation property'' is a significant advantage for problems with symmetric stiffness matrices because it means that the finite element solution will monotonically approach the exact solution as the mesh is refined, and that the error for any other kinematically admissible solution will be greater than that of the finite element solution (for the same number of unknowns).
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{pe_vs_N.jpg} % versioned
-  \caption{Potential energy as a function of number of elements. }
-  \label{fig:PotentialEnergy}
-\end{figure}
-
-When plotted on log-log coordinates, where the absolute value of the potential energies must be taken (in order to avoid problems associated with logarithms of negative numbers), the above plot can similarly be shown as follows. It is not clear why the potential energies of both the true and finite element solutions are negative, but the plots show the correct trend in that as the mesh is refined, the potential energy of the finite element solution approaches that of the analytical solution, but never becomes lower than that of the analytical solution. 
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{pe_vs_N2.jpg} % versioned
-  \caption{Potential energy as a function of number of elements. }
-  \label{fig:PotentialEnergy2}
-\end{figure}
-
-To further illustrate how the difference between the analytical and finite element solution potential energies goes to zero as the mesh is refined, Fig. \ref{fig:PotentialEnergy3} shows the difference between the finite element and analytical potential energies (finite element - analytical) as the mesh is refined. Except for oscillations that occur at relatively coarse meshes that are not able to fully capture the material information, the difference in the potential energy decreases linearly when plotted on a log-log plot. 
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{pe_vs_N_diff.jpg} % versioned
-  \caption{Difference between the finite element and analytical potential energies (finite element - analytical) as a function of number of elements.}
-  \label{fig:PotentialEnergy3}
-\end{figure}
-
-Because the potential energy is defined such that:
-
-\begin{equation}
-\|u-u^N\|_{E(\Omega}^2=2\left(\mathscr{J}(u^N)-\mathscr{J}(u)\right)
-\end{equation}
-
-and from the fundamental interpolation theorem in Eq. \eqref{eq:Theorem}, the difference in the potential energies can be related to \(h\) by:
-
-\begin{equation}
-2\left(\mathscr{J}(u^N)-\mathscr{J}(u)\right)\leq \left(C(u, p)h^{\min{(r-1, p})}\right)^2
-\end{equation}
-
-This can equivalently be stated as:
-
-\begin{equation}
-2\left(\mathscr{J}(u^N)-\mathscr{J}(u)\right)\leq C(u, p)^2h^{2\min{(r-1, p})}
-\end{equation}
-
-Since the quantity \(\left(\mathscr{J}(u^N)-\mathscr{J}(u)\right)\) is plotted in Fig. \ref{fig:PotentialEnergy3}, it is expected that for linear elements for a sufficiently smooth solution, that the difference in the potential energy converge with a slope of 2 when plotted on a log-log plot. This slope is observed in Fig. \ref{fig:PotentialEnergy3}, and hence the utility of the potential energy in serving as a convergence estimate (if the true solution is known) has been shown to be valid.
-
-To summarize, the potential energy, energy norm, and number of PCG iterations for 100, 1000, and 10000 elements is given in the table below. Again, the potential energy of the analytical solution was computed to be -30.61, and hence the finite element solution approaches this value as the mesh becomes more and more refined.
-
-\begin{table}[H]
-\caption{Requested information for 100, 1000, and 10000 elements. }
-\centering
-\begin{tabular}{c c c c}
-\hline\hline
-Number of elements & Potential energy & Energy norm & PCG iterations\\ [0.5ex]
-\hline
-100 		& -29.0434  & 0.2199 		& 100\\
-1000 	& -30.5996  & 0.0222		& 1000\\
-10000 	& -30.6155  & 0.0022	 	& 10000\\
-\hline
-\end{tabular}
-\end{table}
+\end{figure}\end{comment}
 
 \section{Appendix}
-
-This section contains the code used for this modeling. The main program is \texttt{FEProgram.m}, and functions perform specialized tasks for a high degree of modularity.
-
+\begin{comment}
 \subsection{\texttt{FEProgram.m}}
 This is the main code used for the problem solving.
 \lstinputlisting[language=Matlab]{FEProgram.m}
@@ -699,7 +525,7 @@ This function selects the quadrature rule.
 \subsection{\texttt{shapefunctions.m}}
 This function contains the library of shape functions.
 \lstinputlisting[language=Matlab]{shapefunctions.m}
-
+\end{comment}
 
 
 
