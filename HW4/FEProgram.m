@@ -1,35 +1,31 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-k_plot_flag = 1;                % 1 - plot the error as a function of N
-N_plot_flag = 0;                % 1 - plot the solutions for various N
+k_plot_flag = 0;                    % 1 - plot the error as a function of N
+N_plot_flag = 1;                    % 1 - plot the solutions for various N
 
-L = 1.0;                        % problem domain
-k_freq = 2;                     % forcing frequency
-num_elem = 5;                   % number of finite elements (initial guess)
-shape_order = 2;                % number of nodes per element
-E = 0.1;                        % elastic modulus
-left = 'Dirichlet';             % left boundary condition 
-left_value = 0.0;               % left Dirichlet boundary condition value
-right = 'Dirichlet';            % right boundary condition type
-right_value = 1.0;              % right Dirichlet boundary condition value
-tolerance = 0.05;               % convergence tolerance
-energy_norm = tolerance + 1;    % arbitrary initialization value
-fontsize = 16;                  % fontsize for plots
+L = 1.0;                            % problem domain
+shape_order = 2;                    % number of nodes per element
+E = 1.0;                            % elastic modulus
+left = 'Dirichlet';                 % left BC 
+left_value = 1.0;                   % left Dirichlet BC value
+right = 'Dirichlet';                % right BC type
+right_value = cos(10 * pi * L^5);   % right Dirichlet BC value
+tolerance = 0.05;                   % convergence tolerance
+energy_norm = tolerance + 1;        % arbitrary initialization value
+fontsize = 16;                      % fontsize for plots
 
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(shape_order);
 
 if (N_plot_flag)
-     N_elem = [2, 4, 8, 16, 32, 64, 128];
+     N_elem = [10, 100, 1000];
 elseif (k_plot_flag)
      N_elem = 1:128;
 else
-    disp('Either N_plot_flag or k_plot_flag has to equal 1.');
+    N_elem = 10;
 end
 
-
-for k_freq = [1, 2, 4, 8, 16, 32]
 
 % index for collecting error
 e = 1;
@@ -43,9 +39,8 @@ for num_elem = N_elem
     % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
     physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
-    C_1 = (right_value + (k_freq^2 * sin(2 * pi * k_freq) * (L / (2 * pi * k_freq))^2 / E)) / L;
-    solution_analytical = (1 ./ E) .* -k_freq.^2 .* sin(2 .* pi .* k_freq .* physical_domain ./ L) .* (L ./ (2 .* pi .* k_freq)).^2 + C_1 .* physical_domain + left_value;
-    solution_analytical_derivative = -(1 ./ E) * k_freq * k_freq * cos(2 * pi * k_freq * physical_domain ./ L) * L ./ (2 * pi * k_freq) + C_1;
+    solution_analytical = cos(10 .* pi .* physical_domain .^ 5);
+    solution_analytical_derivative = - 10 .* pi .* 5 .* physical_domain .^ 4 .* sin(10 .* pi .* physical_domain .^ 5);
 
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
@@ -69,7 +64,7 @@ for num_elem = N_elem
                  [N, dN, x_xe, dx_dxe] = shapefunctions(qp(l), shape_order, coordinates, LM, elem);
 
                  % assemble the (elemental) forcing vector
-                 f(i) = f(i) - wt(l) * k_freq * k_freq * sin(2 * pi * k_freq * x_xe / L) * N(i) * dx_dxe;
+                 f(i) = f(i) - wt(l) * - E * (200 * pi * x_xe ^3 * sin(10 * pi * x_xe ^ 5) + 2500 * pi^2 * x_xe^8 * cos(10 * pi * x_xe^5)) * N(i) * dx_dxe;
 
                  for j = 1:num_nodes_per_element
                      % assemble the (elemental) stiffness matrix
@@ -138,13 +133,16 @@ end
 
 if (N_plot_flag)
     plot(physical_domain, solution_analytical)
-    h = legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128','analytical', 'Location', 'southeast');
-    set(h, 'FontSize', fontsize - 2);
+    txt = cell(length(N_elem),1);
+    for i = 1:length(N_elem)
+       txt{i}= sprintf('N = %i', N_elem(i));
+    end
+    txt{i+1} = 'analytical';
+    h = legend(txt);
     xlabel('Problem domain', 'FontSize', fontsize)
-    ylabel(sprintf('Solution for k = %i', k_freq), 'FontSize', fontsize)
-    text(0.85, 0.5, sprintf('k = %i', k_freq), 'FontSize', fontsize, 'FontWeight', 'bold', 'EdgeColor', [0 0 0])
-    saveas(gcf, sprintf('Nplot_for_k_%i', k_freq), 'jpeg')
-    close all
+    ylabel('Solution', 'FontSize', fontsize)
+    saveas(gcf, sprintf('Nplot_%i', N_elem), 'jpeg')
+    %close all
 end
 
 if (k_plot_flag)
@@ -152,8 +150,6 @@ if (k_plot_flag)
     hold on
     xlabel('Number of elements', 'FontSize', fontsize)
     ylabel('Energy norm', 'FontSize', fontsize)
-end
-
 end
 
 if (k_plot_flag)
