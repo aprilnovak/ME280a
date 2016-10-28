@@ -116,7 +116,33 @@ end
 energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative));
 energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E .* (solution_derivative_FE - solution_analytical_derivative)));
 energy_norm = energy_norm_top ./ energy_norm_bottom;
-sprintf('energy norm: %f', energy_norm)
+
+% compute the energy norm for each element
+
+% determine the indices for the physical_domain to line up with coordinates
+k = 1;
+j = 1;
+bounds = zeros(1, length(coordinates));
+for i = 1:length(physical_domain)
+    if (abs(coordinates(j) - physical_domain(i)) < 1e-10)
+        bounds(k) = i;
+        j = j + 1;
+        k = k + 1;
+    end
+end
+
+eN_per_elem = zeros(1, length(num_elem)); % works only for linear elements
+elem_length = zeros(1, length(num_elem));
+for i = 1:num_elem
+    elem_length(i) = coordinates(i+1, 1) - coordinates(i,1);
+    spatial_domain = physical_domain(bounds(i):bounds(i+1));
+    dFE = solution_derivative_FE(bounds(i):bounds(i+1));
+    dAN = solution_analytical_derivative(bounds(i):bounds(i+1));
+    eN_per_elem(i) = trapz(spatial_domain, (dFE - dAN) .* E .* (dFE - dAN));
+end
+
+%plot(1:1:length(eN_per_elem), eN_per_elem, '*')
+A_I = (1 ./ elem_length) .* eN_per_elem ./ ((1 / L) .* energy_norm_bottom .^ 2);
 
 if (N_plot_flag)
     plot(physical_domain, solution_FE)
