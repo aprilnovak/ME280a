@@ -160,21 +160,21 @@ r^N\cdot u^N=0
 where \(r^N\) is the residual. Hence, to formulate the weak form to Eq. \eqref{eq:Problem}, multiply Eq. \eqref{eq:Problem} through by \(\psi\) and integrate over all space, \(d\Omega\).
 
 \begin{equation}
-\int_{\Omega}^{}\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)\psi d\Omega-\int_{\Omega}^{}xk^3\cos{(\gamma x)}\psi d\Omega=0
+\int_{\Omega}^{}\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)\psi d\Omega-\int_{\Omega}^{}f(x)\psi d\Omega=0
 \end{equation}
 
 Applying integration by parts to the first term:
 
 \begin{equation}
--\int_{\Omega}^{}E(x)\frac{du}{dx}\frac{d\psi}{dx}d\Omega+\int_{\partial\Omega}^{}E(x)\frac{du}{dx}\psi d(\partial\Omega)-\int_{\Omega}^{}xk^3\cos{(\gamma x)}\psi d\Omega=0
+-\int_{\Omega}^{}E(x)\frac{du}{dx}\frac{d\psi}{dx}d\Omega+\int_{\partial\Omega}^{}E(x)\frac{du}{dx}\psi d(\partial\Omega)-\int_{\Omega}^{}f(x)\psi d\Omega=0
 \end{equation}
 
 where \(\partial\Omega\) refers to one dimension lower than \(\Omega\), which for this case refers to evaluation at the endpoints of the domain. Hence, for this particular 1-D problem, the above reduces to:
 
 \begin{equation}
 \begin{aligned}
--\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx+ E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}-\int_{0}^{L}xk^3\cos{(\gamma x)}\psi dx=0\\
-\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx=-\int_{0}^{L}xk^3\cos{(\gamma x)}\psi dx+E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}\\
+-\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx+ E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}-\int_{0}^{L}f(x)\psi dx=0\\
+\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx=-\int_{0}^{L}f(x)\psi dx+E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -182,7 +182,7 @@ Inserting the approximation described in Eq. \eqref{eq:approx}:
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=-\int_{0}^{L}xk^3\cos{(\gamma x)}\sum_{i=1}^{N}b_i\phi_idx+E(x)\frac{du}{dx}\sum_{i=1}^{N}b_i\phi_i\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=-\int_{0}^{L}f(x)\sum_{i=1}^{N}b_i\phi_idx+E(x)\frac{du}{dx}\sum_{i=1}^{N}b_i\phi_i\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -190,7 +190,7 @@ Recognizing that \(b_i\) appears in each term, the sum of the remaining terms mu
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}xk^3\cos{(\gamma x)}\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}f(x)\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -198,7 +198,7 @@ This equation can be satisfied for each choice of \(j\), and hence can be reduce
 
 \begin{equation}
 \begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}xk^3\cos{(\gamma x)}\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
+\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}f(x)\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -216,7 +216,7 @@ where:
 \label{eq:SystemEquations}
 K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\\
 a_j=a_j\\
-F_i=-\int_{0}^{L}xk^3\cos{(\gamma x)}\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
+F_i=-\int_{0}^{L}f(x)\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 
@@ -229,7 +229,7 @@ Quadrature is used to perform the numerical integration because it is much faste
 \begin{aligned}
 K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\left(\frac{dx}{d\xi}\frac{dx}{d\xi}\frac{d\xi}{dx}\right)\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{d\xi}\frac{d\phi_j}{d\xi}dx\left(\frac{d\xi}{dx}\right)\\
 a_j=a_j\\
-F_i=-\int_{0}^{L}xk^3\cos{(\gamma x)}\phi_idx\rightarrow-\int_{-1}^{1}x(\xi)k^3\cos{(\gamma x(\xi))}\phi_i\frac{dx}{d\xi}d\xi\\
+F_i=-\int_{0}^{L}f(x)\phi_idx\rightarrow-\int_{-1}^{1}f(x(\xi))\phi_i\frac{dx}{d\xi}d\xi\\
 \end{aligned}
 \end{equation} 
 
@@ -255,7 +255,7 @@ where \(X_i\) are the coordinates in each element. This mapping is performed for
 \frac{dx(\xi)}{d\xi}=\sum_{i=1}^{N} X_i\frac{d\phi_i(\xi)}{d\xi}
 \end{equation}
 
-With all these transformations from the physical domain to the isoparametric domain, Gaussian quadrature can be used. A 5-point quadrature rule is used (given in the problem statement). For the five-point quadrature rule, the weights \(w\) and sampling points \(x\) are:
+With all these transformations from the physical domain to the isoparametric domain, Gaussian quadrature can be used. A 5-point quadrature rule is used. For the five-point quadrature rule, the weights \(w\) and sampling points \(x\) are:
 
 \begin{equation}
 \begin{aligned}
@@ -264,7 +264,7 @@ x=\left\lbrack-\frac{1}{3}\sqrt{5+2\sqrt{10/7}}, -\frac{1}{3}\sqrt{5-2\sqrt{10/7
 \end{aligned}
 \end{equation} 
 
-Transformation to the isoparametric domain therefore easily allows construction of the local stiffness matrix and local force matrix. The actual numerical algorithm computes the elemental \(k(i,j)\) and \(b(i)\) by looping over \(i, j\), and the quadrature points. Because each calculation is computed over a single element, a connectivity matrix is used to populate the global stiffness matrix and the global forcing vector with the elemental matrices and vectors. See the Appendix for the full code used in this assignment. After the global matrix and vector are formed, the global matrix has a banded-diagonal structure. However, this approach is only needed for direct methods such as Gaussian elimination. Because a PCG method is used here, there is no need to assemble the global \(\textbf{K}\). This will be explained in more detail in \ref{sec:PCG}.
+Transformation to the isoparametric domain therefore easily allows construction of the local stiffness matrix and local force matrix. The actual numerical algorithm computes the elemental \(k(i,j)\) and \(b(i)\) by looping over \(i, j\), and the quadrature points. Because each calculation is computed over a single element, a connectivity matrix is used to populate the global stiffness matrix and the global forcing vector with the elemental matrices and vectors. After the global matrix and vector are formed, the global matrix has a banded-diagonal structure. 
 
 In order to apply the boundary conditions within the numerical context of the finite element method, the matrix equation in Eq. \eqref{eq:MatrixEqn} must be rewritten to reflect that some of the nodal values are actually already specified through the Dirichlet boundary conditions. 
 
@@ -294,9 +294,9 @@ K_{uk}x_k+K_{uu}x_u=F_u\\
 \end{aligned}
 \end{equation}
 
-Solving this matrix system is sometimes referred to as ``static condensation,'' since the original matrix system in Eq. \eqref{eq:MatrixEqn} must be separated into its components. The nodes at which Dirichlet conditions are specified are ``known,'' while all other nodes, including Neumann condition nodes, are ``unknown,'' since it is the value of \(u\) that we are looking to find at each node. The second of these equations is the one that is solved in this assignment, since there are no natural boundary conditions. So, while the global \textbf{K} matrix is not formed, in principle the Dirichlet boundary conditions are stilled applied in this manner, by removing certain rows and columns of \textbf{K} and \(\vv{F}\) from the PCG solve.
+Solving this matrix system is sometimes referred to as ``static condensation,'' since the original matrix system in Eq. \eqref{eq:MatrixEqn} must be separated into its components. The nodes at which Dirichlet conditions are specified are ``known,'' while all other nodes, including Neumann condition nodes, are ``unknown,'' since it is the value of \(u\) that we are looking to find at each node. The second of these equations is the one that is solved in this assignment, since there are no natural boundary conditions.
 
-Once the solution is obtained by the PCG method, the solution is transformed back to the physical domain (from the isoparametric domain) by solving a linear matrix system to determine the coefficients on the basis functions over each element (in the physical domain). For example, for a quadratic shape function, over one element with coordinates \(x_1, x_2,\) and \(x_3\), with solution values \(a_1, a_2,\) and \(a_3\), the following linear system solves for the coordinates on the shape function in the physical domain, in that element:
+Once the solution is obtained, the solution is transformed back to the physical domain (from the isoparametric domain) by solving a linear matrix system to determine the coefficients on the basis functions over each element (in the physical domain). For example, for a quadratic shape function, over one element with coordinates \(x_1, x_2,\) and \(x_3\), with solution values \(a_1, a_2,\) and \(a_3\), the following linear system solves for the coordinates on the shape function in the physical domain, in that element:
 
 \begin{equation}
 \label{eq:LinearSolve}
@@ -338,115 +338,9 @@ The derivatives of the FE solution are determined according to:
 \frac{du^N}{dx}=\frac{d}{dx}\sum_{j=1}^{N}a_j\phi_j(x)=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{dx}=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{d\xi}\frac{d\xi}{dx}
 \end{equation}
 
-while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}. The accuracy of the finite element solution can also be estimated by calculation of the potential energy \(\mathscr{J}\) of the solution:
-
-\begin{equation}
-\label{eq:PotentialEnergy}
-\mathscr{J}(u^N)=\frac{1}{2}B(u^N, u^N)-L(u^N)
-\end{equation}
-
-where:
-
-\begin{equation}
-\begin{aligned}
-B(u^N, u^N)=\int_{0}^{L}\frac{du^N}{dx}E\frac{du^N}{dx}dx\\
-L(u^N)=-\int_{0}^{L}xk^3\cos{(\gamma x)}u^Ndx\\
-\end{aligned}
-\end{equation}
-
-The Neumann boundary component of \(L(u^N)\) has been omitted because it is not present for this problem. The potential energy of the finite element solution must always be greater than that of the finite element solution. This statement is directly related to the ``best approximation property'' of finite elements that holds for symmetric stiffness matrices. So, as the mesh becomes finer and finer and the finite element solution better approximates the true solution, the potential energy of the finite element solution should decrease and asymptotically approach that of the true solution.
-
-\subsection{The Preconditioned Conjugate Gradient Method}
-
-The Preconditioned Conjugate Gradient (PCG) method is used to perform the numerical solution of the linear algebra system. This method is an iterative method, and computes the solution \(\vv{a}\) at each iteration by adding an update \(\vv{z}\) to the previous iterate, scaled by a constant \(\lambda\):
-
-\begin{equation}
-\label{eq:PCGUpdate}
-\vv{a}^{i+1}=\vv{a}^i+\lambda^i\vv{z}^i
-\end{equation}
-
-where \(i\) denotes the iteration number. This requires an initial guess for \(\vv{a}^1\) (indexing starts at 1). Because the nodes at which Dirichlet boundary conditions apply have already been removed, this initial guess is set, for simplicity, to values of 1 at all nodes. Physics-based preconditioning is a more sophisticated method that takes into account more realistic solutions to provide the initial guess for the solution, but this is not pursued here. Due to the similarity between the PCG method and the Method of Steepest Descent, for simplicity, the initial guess for \(\vv{z}^1\) is chosen to be the residual when evaluate with \(\vv{a}^1\). The residual \(\vv{r}\) is here defined to be:
-
-\begin{equation}
-\vv{r}^i=\vv{F}-\textbf{K}\vv{a}^i
-\end{equation}
-
-The quantity \(\vv{z}^i\) is chosen to be K-conjugate to the previous iterate \(\vv{z}^{i-1}\). This weighted inner product searches, in the next iterate, in the conjugate gradient direction of the previous iterate, while taking into account the structure of the governing equation. In other words, it is required that:
-
-\begin{equation}
-\vv{z}^{i,T}\textbf{K}\vv{z}^{i-1}=0
-\end{equation}
-
-This then gives the following form for \(\theta\):
-
-\begin{equation}
-\theta^i=-\frac{\vv{r}^{T,i}\textbf{K}\vv{z}^{i-1}}{\vv{z}^{T,i-1}\textbf{K}\vv{z}^{i-1}}
-\end{equation}
-
-where \(\theta\) is used in the update of \(\vv{z}\) as:
-
-\begin{equation}
-\vv{z}^i=\vv{r}^i+\theta^i\vv{z}^{i-1}
-\end{equation}
-
-By solving for \(\lambda^i\) in Eq. \eqref{eq:PCGUpdate} and substituting this into the potential function that minimizes the potential energy of the FE solution, the following optimal form for \(\lambda^i\) is found:
-
-\begin{equation}
-\lambda^i=\frac{\vv{z}^{T,i}\vv{r}^i}{\vv{z}^{T,i}\textbf{K}\vv{z}^i}
-\end{equation}
-
-The point at which the iterations are stopped is based on the energy norm discussed in the previous section. The error tolerance for the PCG method is set to 0.000001, and so the iterations are halted once:
-
-\begin{equation}
-\label{eq:PCGError}
-\left(\vv{a}^{T,i+1}-\vv{a}^{T,i}\right)\textbf{K}\left(\vv{a}^{i+1}-\vv{a}^i\right)<0.000001
-\end{equation}
-
-The PCG method has convergence behavior dictated by:
-
-\begin{equation}
-\label{eq:PCGConvergence}
-\|\vv{a}-\vv{a}^{i}\|_K\leq\left(\frac{\sqrt{C(\textbf{K})}-1}{\sqrt{C(\textbf{K})}+1}\right)^i\|\vv{a}-\vv{a}^1\|_K
-\end{equation}
-
-In other words, the convergence speed is governed by the condition number. The identity matrix has the lowest possible condition number of 1, but real physical problems tend to have much larger condition numbers. The higher the condition number, then the slower the rate of convergence. Preconditioning can be used to transform the linear system \(\textbf{K}\vv{a}=\vv{R}\) to a different domain in which the condition number is higher. The preconditioning matrix \textbf{T} is used to introduce this change of variables:
-
-\begin{equation}
-\label{eq:Transformation}
-\textbf{K}\vv{a}=\vv{R}\quad\rightarrow\hat{\textbf{K}}\hat{\vv{a}}=\hat{\vv{R}}
-\end{equation}
-
-where
-
-\begin{equation}
-\label{eq:TransformationSpecs}
-\begin{aligned}
-\hat{\vv{a}}=\textbf{T}^{-1}\vv{a}\\
-\hat{\textbf{K}}=\textbf{T}^{T}\textbf{K}\textbf{T}\\
-\hat{\vv{R}}=\textbf{T}^T\vv{R}\\
-\end{aligned}
-\end{equation}
-
-Then, it is the condition number of \(\hat{\textbf{K}}\) that controls the convergence. The best possible preconditioner is to set \(\textbf{T}=\textbf{L}^{-T}\), where \(\textbf{L}\textbf{L}^T=\textbf{K}\) and \textbf{L} is a lower-triangular matrix. With this preconditioner, Eq. \eqref{eq:Transformation} becomes:
-
-\begin{equation}
-\label{eq:Transformation2}
-\underbrace{\textbf{L}^{-1}\textbf{L}}_\text{\textbf{I}}\underbrace{\textbf{L}^T\textbf{L}^{-T}}_\text{\textbf{I}}\hat{\vv{a}}=\hat{\vv{R}}
-\end{equation}
-
-which then gives \(\textbf{I}\hat{\vv{a}}=\hat{\vv{R}}\), which is an incredibly easy system to solve numerically, since then \(\hat{\vv{a}}=\hat{\vv{R}}\). However, the cost to form \(\textbf{L}\) is of order \(N^3\), and hence defeats the purpose of using the PCG method, since standard Gaussian elimination also scales as approximately \(N^3\). Hence, a simpler preconditioner is selected here. For this assignment, a diagonal preconditioner is used:
-
-\begin{equation}
-T_{ij}=\frac{1}{\sqrt{K_{ij}}}\delta_{ij}
-\end{equation}
-
-where \(\delta_{ij}\) is the Kronecker delta. With this preconditioner, the transformations described in Eq. \eqref{eq:TransformationSpecs} are made. Then, the PCG method described earlier is performed on this preconditioned system. Once reaching an acceptable error tolerance, the result is transformed back to the actual problem domain to give the final result.
-
-It should be noted that this assignment was completed in two different ways. The first of these ways takes advantage of the sparse matrix system in Matlab to perform the PCG solve. The function to perform the PCG solve using this method is shown in \texttt{PCG.m}. On the other hand, because the problem prompted us to perform the multiplication element-by-element, that is also performed as an alternative to the sparse PCG solve. This is about two times slower than simply using the sparse system in Matlab, likely due to code inefficiencies. This element-by-element method is shown in \texttt{PCG\_element\_by\_element.m}.
+while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}. 
 
 \section{Solution Results and Discussion}
-
-Fig. \ref{fig:NodalValues} shows the nodal values (the solution) for \(N=\) 100, 1000, and 10000. Because it is very difficult to see any differences between the nodal values for these choices of elements, Fig. \ref{fig:NodalValues2} shows the difference between the analytical solution and the solutions for \(N=\) 100, 1000, and 10000 elements. As can be seen, with more elements, the solution is much closer to the true solution. This is to be expected because the greater the number of elements, the greater the number of degrees of freedom that can be used to capture the behavior of the true solution. 
 
 \begin{comment}
 \begin{figure}[H]
