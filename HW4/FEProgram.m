@@ -1,7 +1,7 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-N_plot_flag = 1;                    % 1 - plot the solutions for various N
+N_plot_flag = 0;                    % 1 - plot the solutions for various N
 
 L = 1.0;                            % problem domain
 shape_order = 2;                    % number of nodes per element
@@ -15,7 +15,7 @@ refine_tol = 0.05;                  % refinement tolerance
 energy_norm = tolerance + 1;        % arbitrary initialization value
 fontsize = 16;                      % fontsize for plots
 num_refinements = 0;                % number of refinements to prevent loop
-max_refinements = 10;                % maximum number of refinements
+max_refinements = 8;                % maximum number of refinements
 
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(shape_order);
@@ -172,24 +172,24 @@ for num_elem = N_elem
             
             sprintf('Difference between sum and exact = %.6f', sum(eN_per_elem) - energy_norm_top^2)
             
-            
             % plot A_I as a function of the element number
-            A_I = sqrt((1 ./ elem_length) .* eN_per_elem ./ ((1 / L) .* energy_norm_bottom .^ 2));
-            plot(1:1:length(eN_per_elem), A_I, '*')
+            A_I = sqrt((1 ./ elem_length) .* eN_per_elem ./ ((1 ./ L) .* energy_norm_bottom .^ 2));
+            A_I_alt = sqrt(eN_per_elem ./ (energy_norm_bottom .^ 2));
+            %plot(1:1:length(eN_per_elem), A_I, '*')
             %plot(1:1:length(eN_per_elem), eN_per_elem, '*')
-            %hold on
+            coords = coordinates(:,1);
+            plot(coords(2:1:end), A_I_alt, '*-', physical_domain, solution_analytical, 'k')
+            hold on
             %xlabel('Element Number' , 'FontSize', fontsize)
             %ylabel(sprintf('A_I for %i Elements', num_elem), 'FontSize', fontsize)
             %saveas(gcf, 'A_I_NoRefinement', 'jpeg')
 
-            
-            eN_per_elem(end) = 0.01;
             % determine which elements need to be refined
             clearvars refine
             j = 1;
             for i = 1:length(A_I)
                 % convergence criteria
-                criteria = eN_per_elem(i);
+                criteria = A_I(i);
                 if (criteria < refine_tol)
                     % no refinement
                 else
