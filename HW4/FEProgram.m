@@ -41,23 +41,24 @@ for num_elem = N_elem
     
     %coordinates(:,1) = [0, linspace(0.5, L, num_elem)];
     
-    % create a new physical domain
-    j = 1;
-    for elem = 1:num_elem
-        discretization = linspace(coordinates(LM(elem, 1)), coordinates(LM(elem, num_nodes_per_element)), length(parent_domain));
-        if elem == 1
-            physical_domain(j:length(parent_domain)) = discretization;
-            j = j + length(parent_domain);
-        else
-            physical_domain(j:(j + length(parent_domain) - 2)) = discretization(2:end);
-            j = j + length(parent_domain) - 1;
-        end
-
-    end
     
     
     % --- ADAPTIVE MESH REFINEMENT --- %
-    %while ((finished_refining ~= 1) && (num_refinements < max_refinements))
+    while ((finished_refining ~= 1) && (num_refinements <= max_refinements))
+        
+            % create a new physical domain
+            j = 1;
+            for elem = 1:num_elem
+                discretization = linspace(coordinates(LM(elem, 1)), coordinates(LM(elem, num_nodes_per_element)), length(parent_domain));
+                if elem == 1
+                    physical_domain(j:length(parent_domain)) = discretization;
+                    j = j + length(parent_domain);
+                else
+                    physical_domain(j:(j + length(parent_domain) - 2)) = discretization(2:end);
+                    j = j + length(parent_domain) - 1;
+                end
+
+            end
     
             % --- ANALYTICAL SOLUTION --- %
             solution_analytical = cos(10 .* pi .* physical_domain .^ 5);
@@ -193,13 +194,11 @@ for num_elem = N_elem
             
             % plot A_I as a function of the element number
             A_I = sqrt((1 ./ elem_length) .* eN_per_elem ./ ((1 ./ L) .* energy_norm_bottom .^ 2));
-            %plot(1:1:length(eN_per_elem), A_I, '*')
-            %plot(1:1:length(eN_per_elem), eN_per_elem, '*')
             coords = coordinates(:,1);
             plot(coords(2:1:end), A_I, '*-', physical_domain, solution_analytical, 'k')
-            %hold on
-            %xlabel('Element Number' , 'FontSize', fontsize)
-            %ylabel(sprintf('A_I for %i Elements', num_elem), 'FontSize', fontsize)
+            hold on
+            xlabel('Element Number' , 'FontSize', fontsize)
+            ylabel(sprintf('A_I for %i Elements', num_elem), 'FontSize', fontsize)
             %saveas(gcf, 'A_I_NoRefinement', 'jpeg')
 
             % determine which elements need to be refined
@@ -220,49 +219,46 @@ for num_elem = N_elem
             else 
                 num_refinements = num_refinements + 1;
             
-            % update coordinates vector (only works for linear elements)
-            num_elem_new = num_elem + length(refine);
-            num_nodes_new = (shape_order - 1) * num_elem_new + 1;
-            coordinates_new = zeros(num_nodes_new, 3);
-%             
-%             j = 1;
-%             k = 1;
-%             l = 1;
-%             for i = 1:num_elem
-%                 if ((j <= length(refine)) && (refine(j) == i)) % refine this element
-%                     increment = 0.5 * (coordinates(k+1,1) - coordinates(k,1));
-%                     coordinates_new(l,1) = coordinates(k,1);
-%                     coordinates_new(l+1,1) = coordinates(k,1) + increment;
-%                     coordinates_new(l+2,1) = coordinates(k+1,1);
-%                     k = k + 1;
-%                     l = l + 2;
-%                     j = j + 1;
-%                 else
-%                     coordinates_new(l,1) = coordinates(k,1);
-%                     coordinates_new(l+1,1) = coordinates(k+1,1);
-%                     l = l + 1;
-%                     k = k + 1;
-%                 end
-%             end
-%             
-%             coordinates = coordinates_new;
-%             num_elem = num_elem_new;
-%             num_nodes = num_nodes_new;
-%             
-%             % update LM
-%             % Which nodes correspond to which elements depends on the shape function
-%             % used. Each row in the LM corresponds to one element.
-%             num_nodes_per_element = shape_order;
-% 
-%             LM = zeros(num_elem, num_nodes_per_element); 
-% 
-%             for i = 1:num_elem
-%                 for j = 1:num_nodes_per_element
-%                     LM(i,j) = num_nodes_per_element * (i - 1) + j - (i - 1);
-%                 end
-%             end
-%                 end
-%         end
+                % update coordinates vector (only works for linear elements)
+                num_elem_new = num_elem + length(refine);
+                num_nodes_new = (shape_order - 1) * num_elem_new + 1;
+                coordinates_new = zeros(num_nodes_new, 3);
+
+                j = 1;
+                k = 1;
+                l = 1;
+                for i = 1:num_elem
+                    if ((j <= length(refine)) && (refine(j) == i)) % refine this element
+                        increment = 0.5 * (coordinates(k+1,1) - coordinates(k,1));
+                        coordinates_new(l,1) = coordinates(k,1);
+                        coordinates_new(l+1,1) = coordinates(k,1) + increment;
+                        coordinates_new(l+2,1) = coordinates(k+1,1);
+                        k = k + 1;
+                        l = l + 2;
+                        j = j + 1;
+                    else
+                        coordinates_new(l,1) = coordinates(k,1);
+                        coordinates_new(l+1,1) = coordinates(k+1,1);
+                        l = l + 1;
+                        k = k + 1;
+                    end
+                end
+
+                coordinates = coordinates_new;
+                num_elem = num_elem_new;
+                num_nodes = num_nodes_new;
+
+                % update LM
+                num_nodes_per_element = shape_order;
+
+                LM = zeros(num_elem, num_nodes_per_element); 
+
+                for i = 1:num_elem
+                    for j = 1:num_nodes_per_element
+                        LM(i,j) = num_nodes_per_element * (i - 1) + j - (i - 1);
+                    end
+                end
+        end
     end
 end
 
