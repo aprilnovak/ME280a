@@ -15,7 +15,7 @@ refine_tol = 0.05;                  % refinement tolerance
 energy_norm = tolerance + 1;        % arbitrary initialization value
 fontsize = 16;                      % fontsize for plots
 num_refinements = 0;                % number of refinements to prevent loop
-max_refinements = 1;                % maximum number of refinements + 1
+max_refinements = 10;                % maximum number of refinements + 1
 
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(shape_order);
@@ -206,9 +206,7 @@ for num_elem = N_elem
             j = 1;
             for i = 1:length(A_I)
                 if (A_I(i) < refine_tol)
-                    % no refinement
                 else
-                    % refinement
                     refine(j) = i;
                     j = j + 1;
                 end
@@ -216,6 +214,7 @@ for num_elem = N_elem
                    
             if (j == 1)
                 finished_refining = 1;
+                disp('Finished refining!')
             else 
                 num_refinements = num_refinements + 1;
             
