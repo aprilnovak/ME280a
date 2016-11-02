@@ -105,6 +105,72 @@ This section details the problem statement and mathematical method used for solv
 
 \subsection{Theoretical Problem Statement}
 
+The theory of elasticity is based on the continuum approximation, which assumes that the length scale on which solid particles exchange momentum is much smaller than the length scale characterizing the problem. An Eulerian perspective is adopted in the derivation of the governing equations, since control-volume-based approaches are much more amenable to solution than Lagrangian approaches. The deformation gradient tensor \(\bar{\bar{F}}\) is used to map between two different coordinate systems. One of these coordinates frames is defined by the coordinates \(x_i\) (the present coordinates), and the other by \(X_i\) (the reference coordinates):
+
+\begin{equation}
+F_{ij}\equiv\frac{\partial x_i}{\partial X_i}
+\end{equation}
+
+The Jacobian \(\mathscr{J}\) is defined as the determinant of the deformation gradient tensor, and is required to transform integrals over the physical domain to the master element for application of quadrature rules:
+
+\begin{equation}
+\mathscr{J}\equiv \det{\bar{\bar{F}}}
+\end{equation}
+
+To have a physically meaningful transformation between two coordinate frames, the Jacobian must be positive. A balance of linear momentum in an arbitrary continuum is:
+
+\begin{equation}
+\label{eq:Cauchy}
+\frac{d}{dt}\int_{\Omega}\rho\dot{u}dV=\int_{\partial\Omega}\vv{t}dS+\int_{\Omega}\rho\vv{b}dV
+\end{equation}
+
+where \(\Omega\) is the domain of the continuum (a volume), \(rho\) is the density, \(u\) is the displacement vector (written without a vector overbar to simplify the notation), \(\partial\Omega\) represents the boundary of the volume domain (a surface \(S\)), \(\vv{t}\) represents the traction (loading on a surface), and \(\vv{b}\) represents a body force such as gravity. Eq. \eqref{eq:Cauchy} is no more than the Cauchy balance of linear momentum. By the Cauchy theorem, where surface forces are balanced on a tetrahedron, the traction is equivalent to:
+
+\begin{equation}
+\label{eq:Traction}
+\vv{t}\equiv\bar{\bar{\sigma}}^T\cdot\hat{n}
+\end{equation}
+
+where \(\hat{n}\) is a unit normal and \(\bar{\bar{\sigma}}\) is the stress tensor, with components \(\sigma_{ji}\), where \(j\) refers to the face on which the stress acts, and \(i\) the direction in which the stress points. The transpose appears in the above equation because, in fluids scenarios, the stress is usually defined in the opposite manner such that the first index refers to the direction in which the stress points, and the second index the face on which the stress acts.
+
+The stress tensor is symmetric in virtually all fluids applications, and in applications for which there are no ``micro-stresses'' in the body. In other words, from a balance of angular momentum, and by inserting the Cauchy balance of momentum in Eq. \eqref{eq:Cauchy}, the stress tensor is symmetric. Because the Cauchy balance of momentum was used, it was inherently assumed that the only moments on the body were due to the forces on the body, and hence this conclusion is consistent with that in the text.
+
+Inserting Eq. \eqref{eq:Traction} into Eq. \eqref{eq:Cauchy}:
+
+\begin{equation}
+\label{eq:Cauchy2}
+\frac{d}{dt}\int_{\Omega}\rho\dot{u}dV=\int_{\partial\Omega}\bar{\bar{\sigma}}^T\cdot\hat{n}dS+\int_{\Omega}\rho\vv{b}dV
+\end{equation}
+
+If mass is conserved in this continuum (it is assumed so), then the material derivative on the LHS of the above equation can be moved inside the integration to act only on \(\cdot{\vv{u}}\). This can conceptually be understood if the integral is divided into a finite sum over material elements. In a material element, mass is assumed conserved such that the time rate of change of \(\rho dV\) is zero, which is why the time derivative acts only on \(\cdot{\vv{u}}\) (This also assumes that the coordinate system is not moving in time).
+
+\begin{equation}
+\label{eq:Cauchy3}
+\int_{\Omega}\rho\ddot{u}dV=\int_{\partial\Omega}\bar{\bar{\sigma}}^T\cdot\hat{n}dS+\int_{\Omega}\rho\vv{b}dV
+\end{equation}
+
+Applying Gauss's divergence theorem, which implicitly assumes that \(\bar{\bar{\sigma}}\) is sufficiently smooth, and dropping the transpose on the stress tensor with the assumption that it is symmetric:
+
+\begin{equation}
+\label{eq:Cauchy4}
+\int_{\Omega}\rho\ddot{u}dV=\int_{\Omega}\nabla\cdot\bar{\bar{\sigma}}dV+\int_{\Omega}\rho\vv{b}dV
+\end{equation}
+
+Then, by rearranging:
+
+\begin{equation}
+\label{eq:Cauchy5}
+\int_{\Omega}\left(\rho\ddot{u}-\nabla\cdot\bar{\bar{\sigma}}-\rho\vv{b}\right)dV=0
+\end{equation}
+
+Because the selection of the control volume was arbitrary, the integrand must equal zero:
+
+\begin{equation}
+\label{eq:Cauchy6}
+\rho\ddot{u}=\nabla\cdot\bar{\bar{\sigma}}+\rho\vv{b}
+\end{equation}
+
+Eq. \eqref{eq:Cauchy6} represents a balance of linear momentum, and is very general. It applies equally to fluids and solids, until a constitutive relationship is introduced for \(\bar{\bar{\sigma}}\).
 
 
 \subsection{Finite Element Implementation}
