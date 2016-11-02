@@ -89,350 +89,30 @@
 \setcounter{tocdepth}{4}
 \begin{document}
 
-\title{ME 280a: HW 4}
+\title{ME 280a: HW 5}
 \author{April Novak}
 
 \maketitle
 
 \section{Introduction and Objectives}
 
-The purpose of this study is to solve a simple finite element (FE) problem and perform Adaptive Mesh Refinement (AMR) in order to refine the mesh in locations where the solution is highly-varying. AMR is an important technique for reducing the necessary run-time of a simulation, and is especially important for large simulations where every method possible to reduce the computational cost is needed.
+The purpose of this study is to describe in great detail the process to solve a 3-D elastics problem, and also to generate a 3-D mesh with the appropriate connectivity matrix to be used for placing the local matrices and vectors into the global matrices and vectors.
 
 \section{Procedure}
 \label{sec:Procedure}
 
 This section details the problem statement and mathematical method used for solving the problem.
 
-\subsection{Problem Statement}
+\subsection{Theoretical Problem Statement}
 
-This section describes the mathematical process used to solve the following problem:
 
-\begin{equation}
-\label{eq:Problem}
-\begin{aligned}
-\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)=f(x)\\
-\end{aligned}
-\end{equation}
-
-where \(E\) is the modulus of elasticity, \(u\) is the solution, \(x\) is the spatial variable, and \(f(x)\) is a forcing function whose form is to be determined in order to obtain the solution \(u(x)=\cos{(10\pi x^5)}\). In order to determine the form of \(f(x)\), substitute the manufactured solution into Eq. \eqref{eq:Problem} to give:
-
-\begin{equation}
-\label{eq:Problem2}
-\cancel{\frac{dE(x)}{dx}\frac{du}{dx}}+E(x)\frac{d^2u}{dx^2}=f(x)\quad\rightarrow\quad E\frac{d^2}{dx^2}\left(\cos{(10\pi x^5)}\right)=f(x)
-\end{equation}
-
-where the fact that \(E(x)\) is constant has been implemented. This gives the following form for \(f(x)\):
-
-\begin{equation}
-\label{eq:Problem3}
-f(x)=-E\left(200\pi x^3\sin{(10\pi x^5)}+2500\pi^2x^8\cos{(10\pi x^5)} \right)
-\end{equation}
-
-The boundary conditions for this problem are Dirichlet at both endpoints such that the assumed solution is satisfied. At \(x=0\), \(u(0)=\cos{(0)}=1\). At \(x=L\), \(u(L)=\cos{(10\pi L^5)}\). 
-
-\begin{equation}
-\begin{aligned}
-u(0)=1\\
-u(L)=\cos{(10\pi L^5)}\\
-\end{aligned}
-\end{equation}
-
-This problem will be solved using the FE method, and AMR will be performed in order to most effectively solve the problem.
 
 \subsection{Finite Element Implementation}
-
-The Galerkin FEM achieves the best approximation property by approximating the true solution \(u(x)\) as \(u^N(x)\), where both \(u^N(x)\) and the test function \(\psi\) are expanded in the same set of \(N\) basis functions \(\phi\):
-
-\begin{equation}
-\label{eq:approx}
-\begin{aligned}
-u\approx u^N=\sum_{j=1}^{N}a_j\phi_j\\
-\psi=\sum_{i=1}^{N}b_i\phi_i\\
-\end{aligned}
-\end{equation}
-
-Galerkin's method is stated as:
-
-\begin{equation}
-r^N\cdot u^N=0
-\end{equation}
-
-where \(r^N\) is the residual. Hence, to formulate the weak form to Eq. \eqref{eq:Problem}, multiply Eq. \eqref{eq:Problem} through by \(\psi\) and integrate over all space, \(d\Omega\).
-
-\begin{equation}
-\int_{\Omega}^{}\frac{d}{dx}\left(E(x)\frac{du}{dx}\right)\psi d\Omega-\int_{\Omega}^{}f(x)\psi d\Omega=0
-\end{equation}
-
-Applying integration by parts to the first term:
-
-\begin{equation}
--\int_{\Omega}^{}E(x)\frac{du}{dx}\frac{d\psi}{dx}d\Omega+\int_{\partial\Omega}^{}E(x)\frac{du}{dx}\psi d(\partial\Omega)-\int_{\Omega}^{}f(x)\psi d\Omega=0
-\end{equation}
-
-where \(\partial\Omega\) refers to one dimension lower than \(\Omega\), which for this case refers to evaluation at the endpoints of the domain. Hence, for this particular 1-D problem, the above reduces to:
-
-\begin{equation}
-\begin{aligned}
--\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx+ E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}-\int_{0}^{L}f(x)\psi dx=0\\
-\int_{0}^{L}E(x)\frac{du}{dx}\frac{d\psi}{dx}dx=-\int_{0}^{L}f(x)\psi dx+E(x)\frac{du}{dx}\psi\biggr\vert_{0}^{L}\\
-\end{aligned}
-\end{equation}
-
-Inserting the approximation described in Eq. \eqref{eq:approx}:
-
-\begin{equation}
-\begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\left(\sum_{i=1}^{N}b_i\phi_i\right)}{dx}dx=-\int_{0}^{L}f(x)\sum_{i=1}^{N}b_i\phi_idx+E(x)\frac{du}{dx}\sum_{i=1}^{N}b_i\phi_i\biggr\vert_{0}^{L}\\
-\end{aligned}
-\end{equation}
-
-Recognizing that \(b_i\) appears in each term, the sum of the remaining terms must also equal zero (i.e. basically cancel \(b_i\) from each term).
-
-\begin{equation}
-\begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(\sum_{j=1}^{N}a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}f(x)\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
-\end{aligned}
-\end{equation}
-
-This equation can be satisfied for each choice of \(j\), and hence can be reduced to:
-
-\begin{equation}
-\begin{aligned}
-\int_{0}^{L}E(x)\frac{d\left(a_j\phi_j\right)}{dx}\frac{d\phi_i}{dx}dx=-\int_{0}^{L}f(x)\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
-\end{aligned}
-\end{equation}
-
-This produces a system of matrix equations of the form:
-
-\begin{equation}
-\label{eq:MatrixEqn}
-\textbf{K}\vv{a}=\vv{F}
-\end{equation}
-
-where:
-
-\begin{equation}
-\begin{aligned}
-\label{eq:SystemEquations}
-K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\\
-a_j=a_j\\
-F_i=-\int_{0}^{L}f(x)\phi_idx+E(x)\frac{du}{dx}\phi_i\biggr\vert_{0}^{L}\\
-\end{aligned}
-\end{equation}
-
-where the second term in \(F_i\) is only applied at nodes that have Neumann boundary conditions (since \(\psi\) satisfies the homogeneous form of the essential boundary conditions). The above equation governs the entire domain. \(\textbf{K}\) is an \(n \times n\) matrix, where \(n\) is the number of global nodes. The solution is contained within \(\vv{a}\). This matrix system is solved in this assignment by simple Gaussian elimination, such that \(\vv{a}=\textbf{K}^{-1}\vv{F}\).
-
-Quadrature is used to perform the numerical integration because it is much faster, and more general, than symbolic integration of the terms appearing in Eq. \eqref{eq:SystemEquations}. In order for these equations to be useful with Gaussian quadrature, they must be transformed to the master element which exists over \(-1\leq\xi\leq1\):
-
-\begin{equation}
-\label{eq:GoverningEqnsIsoparametric}
-\begin{aligned}
-K_{ij}=\int_{0}^{L}E(x)\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{dx}\frac{d\phi_j}{dx}dx\left(\frac{dx}{d\xi}\frac{dx}{d\xi}\frac{d\xi}{dx}\right)\rightarrow\int_{-1}^{1}E(x(\xi))\frac{d\phi_i}{d\xi}\frac{d\phi_j}{d\xi}dx\left(\frac{d\xi}{dx}\right)\\
-a_j=a_j\\
-F_i=-\int_{0}^{L}f(x)\phi_idx\rightarrow-\int_{-1}^{1}f(x(\xi))\phi_i\frac{dx}{d\xi}d\xi\\
-\end{aligned}
-\end{equation} 
-
-where the second term in \(F_i\) has been dropped because there are no Neumann boundary conditions in this assignment. For linear elements, the shape functions have the following form and derivative over the master element:
-
-\begin{equation}
-\begin{aligned}
-\phi_1(\xi)=\frac{1-\xi}{2},\quad\frac{d\phi_1(\xi)}{d\xi}=-1/2\\
-\phi_2(\xi)=\frac{1+\xi}{2}, \quad\frac{d\phi_2(\xi)}{d\xi}=+1/2\\
-\end{aligned}
-\end{equation}
-
-The transformation from the physical domain (\(x\)) to the parent domain (\(\xi\)) is done with an isoparametric mapping:
-
-\begin{equation}
-\label{eq:Mapping}
-x(\xi)=\sum_{i=1}^{N} X_i\phi_i(\xi)
-\end{equation}
-
-where \(X_i\) are the coordinates in each element. This mapping is performed for each element individually. The Jacobian \(dx/d\xi\) is obtain from Eq. \eqref{eq:Mapping} by differentiation:
-
-\begin{equation}
-\frac{dx(\xi)}{d\xi}=\sum_{i=1}^{N} X_i\frac{d\phi_i(\xi)}{d\xi}
-\end{equation}
-
-With all these transformations from the physical domain to the isoparametric domain, Gaussian quadrature can be used. A 5-point quadrature rule is used. For the five-point quadrature rule, the weights \(w\) and sampling points \(x\) are:
-
-\begin{equation}
-\begin{aligned}
-w=\left\lbrack\frac{322-13\sqrt{70}}{900}, \frac{322+13\sqrt{70}}{900}, \frac{128}{225}, \frac{322+13\sqrt{70}}{900}, \frac{322-13\sqrt{70}}{900}\right\rbrack\\
-x=\left\lbrack-\frac{1}{3}\sqrt{5+2\sqrt{10/7}}, -\frac{1}{3}\sqrt{5-2\sqrt{10/7}}, 0, \frac{1}{3}\sqrt{5-2\sqrt{10/7}}, \frac{1}{3}\sqrt{5+2\sqrt{10/7}}\right\rbrack\\
-\end{aligned}
-\end{equation} 
-
-Transformation to the isoparametric domain therefore easily allows construction of the local stiffness matrix and local force matrix. The actual numerical algorithm computes the elemental \(k(i,j)\) and \(b(i)\) by looping over \(i, j\), and the quadrature points. Because each calculation is computed over a single element, a connectivity matrix is used to populate the global stiffness matrix and the global forcing vector with the elemental matrices and vectors. After the global matrix and vector are formed, the global matrix has a banded-diagonal structure. 
-
-In order to apply the boundary conditions within the numerical context of the finite element method, the matrix equation in Eq. \eqref{eq:MatrixEqn} must be rewritten to reflect that some of the nodal values are actually already specified through the Dirichlet boundary conditions. 
-
-\begin{equation}
-\label{eq:condensation}
-\begin{bmatrix}
-	K_{kk} & K_{ku}\\
-	K_{uk} & K_{uu}\\
-\end{bmatrix}
-\begin{bmatrix}
-	x_k\\
-	x_u\\
-\end{bmatrix}
-=
-\begin{bmatrix}
-	F_k\\
-	F_u\\
-\end{bmatrix}
-\end{equation}
-
-where \(k\) indicates a known quantity (specified through a boundary condition) and \(u\) indicates an unknown quantity.   Explicitly expanding this equation gives:
-
-\begin{equation}
-\begin{aligned}
-K_{kk}x_k+K_{ku}x_u=F_k\\
-K_{uk}x_k+K_{uu}x_u=F_u\\
-\end{aligned}
-\end{equation}
-
-Solving this matrix system is sometimes referred to as ``static condensation,'' since the original matrix system in Eq. \eqref{eq:MatrixEqn} must be separated into its components. The nodes at which Dirichlet conditions are specified are ``known,'' while all other nodes, including Neumann condition nodes, are ``unknown,'' since it is the value of \(u\) that we are looking to find at each node. The second of these equations is the one that is solved in this assignment, since there are no natural boundary conditions.
-
-Once the solution is obtained, the solution is transformed back to the physical domain (from the isoparametric domain) by solving a linear matrix system to determine the coefficients on the basis functions over each element (in the physical domain). For example, for a quadratic shape function, over one element with coordinates \(x_1, x_2,\) and \(x_3\), with solution values \(a_1, a_2,\) and \(a_3\), the following linear system solves for the coordinates on the shape function in the physical domain, in that element:
-
-\begin{equation}
-\label{eq:LinearSolve}
-\begin{bmatrix}
-1 & x_1 & x_1^2\\
-1 & x_2 & x_2^2\\
-1 & x_3 & x_3^2\\
-\end{bmatrix}
-\begin{bmatrix} A\\ B\\ C
-\end{bmatrix}
-=
-\begin{bmatrix} a_1 \\ a_2 \\ a_3
-\end{bmatrix}
-\end{equation}
-
-Each element is looped over to obtain the coefficients on the shape functions in the physical domain. This then transforms the solution back to the physical domain, and completes the FE solution.
-
-\subsection{Error Estimates and Convergence Criteria}
-
-The accuracy of the FE solution is estimated using the energy norm \(e^N\), defined as:
-
-\begin{equation}
-\label{eq:EnergyNorm}
-e^N=\frac{\|u-u^N\|}{\|u\|}
-\end{equation}
-
-where:
-
-\begin{equation}
-\|u\|=\sqrt{\int_{\Omega}^{}\frac{du}{dx}E\frac{du}{dx}}
-\end{equation}
-
-\begin{equation}
-\|u-u^N\|=\sqrt{\int_{\Omega}^{}\frac{d(u-u^N)}{dx}E\frac{d(u-u^N)}{dx}}=\sqrt{\int_{\Omega}^{}\left(\frac{du}{dx}-\frac{du^N}{dx}\right)E\left(\frac{du}{dx}-\frac{du^N}{dx}\right)}
-\end{equation}
-
-The derivatives of the FE solution are determined according to:
-
-\begin{equation}
-\frac{du^N}{dx}=\frac{d}{dx}\sum_{j=1}^{N}a_j\phi_j(x)=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{dx}=\sum_{j=1}^{N}a_j\frac{d\phi_j(x)}{d\xi}\frac{d\xi}{dx}
-\end{equation}
-
-while the derivative of the analytical solution is obtained from Eq. \eqref{eq:Problem2}. The purpose of this assignment is to perform mesh refinement for elements that have high error relative to the manufactured solution \(u(x)=\cos{(10\pi x^5)}\). In this assignment, an error estimate is determined for each element. This error estimate, \(A_i\) is defined for each element \(i\) as:
-
-\begin{equation}
-\label{eq:A_i}
-A_i^2=\frac{\frac{1}{h_i}\|u-u^N\|_{E(\Omega_i)}^2}{\frac{1}{L}\|u\|_{E(\Omega)}^2}
-\end{equation}
-
-If \(A_i>0.05\), then that element is subdivided into two, and the solution repeated until all elements have satisfactory \(A_i\). Once reaching this point, the mesh is considered sufficiently fine that the error is acceptable. It should be noted that while the energy norm converges as a first order method (proportional to \(h\)) for linear elements, because it is squared in the equation above, \(A_i^2\) converges as first-order as well.
-
-\section{Solution Results and Discussion}
-
-Fig. \ref{fig:Analytical} shows the FE and analytical solutions for various numbers of elements. To reach a tolerance of 0.05 in Eq. \eqref{eq:EnergyNorm} (\(e^N\leq 0.05\)), 100 elements are needed.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{Nplot.jpg} % versioned
-  \caption{FE and analytical solutions for various numbers of elements.}
-  \label{fig:Analytical}
-\end{figure}
-
-Fig. \ref{fig:A_I} shows \(A_i\) as calculated from Eq. \eqref{eq:A_i} for a mesh beginning with 20 elements. As can be seen, due to the oscillatory nature of the function towards the right end of the domain, \(A_i\) increases since the FE solution does not have a sufficient number of degrees of freedom to accurately capture the behavior of the solution. As the mesh is refined, it is expected that the mesh become increasingly fine when moving in the positive-\(x\) direction. With 20 elements, only the first 12 elements have \(A_i<0.05\), and hence the remaining 9 elements will be repeatedly refined until reaching an acceptable error.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{A_I_NoRefinement.jpg} % versioned
-  \caption{\(A_i\) for each element as calculated by Eq. \eqref{eq:A_i}.}
-  \label{fig:A_I}
-\end{figure}
-
-With the AMR scheme discussed in the previous section, a total of 405 elements are needed to achieve \(A_i\leq 0.05\) for each element \(i\). 
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{FinalSolution.jpg} % versioned
-  \caption{FE and analytic solutions for 405 elements, the minimum numbers of elements (with the particular refinement scheme discussed) such that each element satisfies \(A_i\leq 0.05\).}
-  \label{fig:FinalSolution}
-\end{figure}
-
-Because the difference between the FE and analytic solutions are relatively difficult to perceive from the above figure, Fig. \ref{fig:FinalSolutionDiff} shows the difference between the analytic and FE solutions. It is interesting to see that the greatest difference is observed in the earlier elements that likely had \(A_i\) only slightly lower than the tolerance in order to not be refined later.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{FinalSolutionDiff.jpg} % versioned
-  \caption{Analytic - FE solution for 405 elements.}
-  \label{fig:FinalSolutionDiff}
-\end{figure}
-
-Table \ref{table:orders} shows the final number of elements in each of the original element subdivisions. As expected, due to the sharp gradients that occur with increasing \(x\), significantly more elements are needed towards the end of the domain to achieve the same \(A_i\) tolerance for each element. This table shows the great benefit of AMR - if the entire domain were refined ``blindly'' without recognizing that some regions of the domain don't need to be meshed, then each original element might have been meshed with 160 elements each, which would result in a total of 3200 elements assuming that a single element were responsible for ``holding back'' the remaining elements from achieving the desired error tolerance. Compared with the 405 elements actually needed, this represents about an order of magnitude savings in computational cost, and is hence why AMR is very important for obtaining the desired error levels.
-
-\begin{table}[H]
-\caption{Final numbers of elements required for the original element domains.}
-\centering
-\begin{tabular}{c c}
-\hline\hline
-Initial Element Domain & Final Number of Elements\\ [0.5ex]
-\hline
-\(0.00\leq x< 0.05\) & 1\\
-\(0.05\leq x< 0.10\) & 1\\
-\(0.10\leq x< 0.15\) & 1\\
-\(0.15\leq x< 0.20\) & 1\\
-\(0.20\leq x< 0.25\) & 1\\
-\(0.25\leq x< 0.30\) & 1\\
-\(0.30\leq x< 0.35\) & 1\\
-\(0.35\leq x< 0.40\) & 1\\
-\(0.40\leq x< 0.45\) & 1\\
-\(0.45\leq x< 0.50\) & 1\\
-\(0.50\leq x< 0.55\) & 1\\
-\(0.55\leq x< 0.60\) & 1\\
-\(0.60\leq x< 0.65\) & 6\\
-\(0.65\leq x< 0.70\) & 5\\
-\(0.70\leq x< 0.75\) & 15\\
-\(0.75\leq x< 0.80\) & 22\\
-\(0.80\leq x< 0.85\) & 39\\
-\(0.85\leq x< 0.90\) & 53\\
-\(0.90\leq x< 0.95\) & 93\\
-\(0.95\leq x< 1.00\) & 160\\
-\hline
-\end{tabular}
-\label{table:orders}
-\end{table}
-
-Finally, Fig. \ref{fig:AivsElem} shows \(A_i\) for each element plotted as a function of the coordinate at the right endpoint of each element. As can be seen, \(A_i<0.05\) as required by the convergence criteria, and due to the highly-varying nature of the solution towards the right endpoint of the domain, \(A_i\) are closer the reaching the tolerance in that region than earlier in the domain where the true solution is slowly-varying. 
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{Nodes_vs_Ai.jpg} % versioned
-  \caption{\(A_i\) plotted for each element as a function of the coordinate of the right endpoint of the element.}
-  \label{fig:AivsElem}
-\end{figure}
 
 \section{Appendix}
 
 This section contains the complete code used in this assignment. 
-
+\begin{comment}
 \subsection{\texttt{FEProgram.m}}
 This is the main code used for the problem solving.
 \lstinputlisting[language=Matlab]{FEProgram.m}
@@ -464,5 +144,5 @@ This function selects the quadrature rule.
 \subsection{\texttt{shapefunctions.m}}
 This function contains the library of shape functions.
 \lstinputlisting[language=Matlab]{shapefunctions.m}
-
+\end{comment}
 \end{document}
