@@ -32,16 +32,11 @@ for num_elem = N_elem
  %while energy_norm > tolerance
 %     num_elem = num_elem + 1;
     
-    % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
     physical_domain = zeros(1, num_elem * length(parent_domain) - (num_elem - 1));
    
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
-    
-    %coordinates(:,1) = [0, linspace(0.5, L, num_elem)];
-    
-    
     
     % --- ADAPTIVE MESH REFINEMENT --- %
     while ((finished_refining ~= 1) && (num_refinements <= max_refinements))
@@ -130,10 +125,7 @@ for num_elem = N_elem
 
             % assemble the solution in the physical domain
             [solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_element, shape_order, coordinates, physical_domain);
-            
-            % check the derivatives
-            %plot(physical_domain, solution_derivative_FE, 'r*', physical_domain, solution_analytical_derivative, 'k')
-            
+
             % compute the energy norm
             energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative));
             energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E .* (solution_derivative_FE - solution_analytical_derivative)));
@@ -177,16 +169,13 @@ for num_elem = N_elem
             end
             
             % compute the energy norm over each element
-            eN_per_elem = zeros(1, length(num_elem)); % works only for linear elements
+            eN_per_elem = zeros(1, length(num_elem));
             elem_length = zeros(1, length(num_elem));
             for i = 1:num_elem
                 elem_length(i) = coordinates(i+1, 1) - coordinates(i,1);
                 spatial_domain = physical_domain(bounds(i):bounds(i+1));
-                sprintf('Start: %.6f, End: %.6f', spatial_domain(1), spatial_domain(end));
-                
                 dFE = solution_derivative_FE(bounds(i):bounds(i+1));
                 dAN = solution_analytical_derivative(bounds(i):bounds(i+1));
-                
                 eN_per_elem(i) = trapz(spatial_domain, (dFE - dAN) .* E .* (dFE - dAN));
             end
             
@@ -195,10 +184,10 @@ for num_elem = N_elem
             % plot A_I as a function of the element number
             A_I = sqrt((1 ./ elem_length) .* eN_per_elem ./ ((1 ./ L) .* energy_norm_bottom .^ 2));
             coords = coordinates(:,1);
-            plot(coords(2:1:end), A_I, '*-', physical_domain, solution_analytical, 'k')
-            hold on
-            xlabel('Element Number' , 'FontSize', fontsize)
-            ylabel(sprintf('A_I for %i Elements', num_elem), 'FontSize', fontsize)
+            %plot(coords(2:1:end), A_I, '*-', physical_domain, solution_analytical, 'k')
+            %hold on
+            %xlabel('Element Number' , 'FontSize', fontsize)
+            %ylabel(sprintf('A_I for %i Elements', num_elem), 'FontSize', fontsize)
             %saveas(gcf, 'A_I_NoRefinement', 'jpeg')
 
             % determine which elements need to be refined
@@ -214,7 +203,20 @@ for num_elem = N_elem
                    
             if (j == 1)
                 finished_refining = 1;
-                disp('Finished refining!')
+                sprintf('Finished refining, with %i total elements', num_elem)
+                plot(physical_domain, solution_FE, physical_domain, solution_analytical)
+                xlabel('Problem Domain', 'FontSize', fontsize)
+                ylabel('Solution', 'FontSize', fontsize)
+                legend('FE solution', 'Analytic solution')
+                saveas(gcf, 'FinalSolution', 'jpeg')
+                close all
+                
+                plot(physical_domain, solution_analytical - solution_FE)
+                xlabel('Problem Domain', 'FontSize', fontsize)
+                ylabel('Analytic - FE Solution', 'FontSize', fontsize)
+                saveas(gcf, 'FinalSolutionDiff', 'jpeg')
+                close all
+                
             else 
                 num_refinements = num_refinements + 1;
             

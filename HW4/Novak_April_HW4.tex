@@ -368,6 +368,25 @@ Fig. \ref{fig:A_I} shows \(A_i\) as calculated from Eq. \eqref{eq:A_i} for a mes
   \label{fig:A_I}
 \end{figure}
 
+With the AMR scheme discussed in the previous section, a total of 405 elements are needed to achieve \(A_i\leq 0.05\) for each element \(i\). 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{FinalSolution.jpg} % versioned
+  \caption{FE and analytic solutions for 405 elements, the minimum numbers of elements (with the particular refinement scheme discussed) such that each element satisfies \(A_i\leq 0.05\).}
+  \label{fig:FinalSolution}
+\end{figure}
+
+Because the difference between the FE and analytic solutions are relatively difficult to perceive from the above figure, Fig. \ref{fig:FinalSolutionDiff} shows the difference between the analytic and FE solutions. It is interesting to see that the greatest difference is observed in the earlier elements that likely had \(A_i\) only slightly lower than the tolerance in order to not be refined later.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{FinalSolutionDiff.jpg} % versioned
+  \caption{Analytic - FE solution for 405 elements.}
+  \label{fig:FinalSolutionDiff}
+\end{figure}
+
+
 
 \section{Appendix}
 \begin{comment}
