@@ -386,6 +386,40 @@ Because the difference between the FE and analytic solutions are relatively diff
   \label{fig:FinalSolutionDiff}
 \end{figure}
 
+Table \ref{table:orders} shows the final number of elements in each of the original element subdivisions. As expected, due to the sharp gradients that occur with increasing \(x\), significantly more elements are needed towards the end of the domain to achieve the same \(A_i\) tolerance for each element. This table shows the great benefit of AMR - if the entire domain were refined ``blindly'' without recognizing that some regions of the domain don't need to be meshed, then each original element might have been meshed with 160 elements each, which would result in a total of 3200 elements assuming that a single element were responsible for ``holding back'' the remaining elements from achieving the desired error tolerance. Compared with the 405 elements actually needed, this represents about an order of magnitude savings in computational cost, and is hence why AMR is very important for obtaining the desired error levels.
+
+\begin{table}[H]
+\caption{Final numbers of elements required for the original element domains.}
+\centering
+\begin{tabular}{c c}
+\hline\hline
+Initial Element Domain & Final Number of Elements\\ [0.5ex]
+\hline
+\(0.00\leq x< 0.05\) & 1\\
+\(0.05\leq x< 0.10\) & 1\\
+\(0.10\leq x< 0.15\) & 1\\
+\(0.15\leq x< 0.20\) & 1\\
+\(0.20\leq x< 0.25\) & 1\\
+\(0.25\leq x< 0.30\) & 1\\
+\(0.30\leq x< 0.35\) & 1\\
+\(0.35\leq x< 0.40\) & 1\\
+\(0.40\leq x< 0.45\) & 1\\
+\(0.45\leq x< 0.50\) & 1\\
+\(0.50\leq x< 0.55\) & 1\\
+\(0.55\leq x< 0.60\) & 1\\
+\(0.60\leq x< 0.65\) & 6\\
+\(0.65\leq x< 0.70\) & 5\\
+\(0.70\leq x< 0.75\) & 15\\
+\(0.75\leq x< 0.80\) & 22\\
+\(0.80\leq x< 0.85\) & 39\\
+\(0.85\leq x< 0.90\) & 53\\
+\(0.90\leq x< 0.95\) & 93\\
+\(0.95\leq x< 1.00\) & 160\\
+\hline
+\end{tabular}
+\label{table:orders}
+\end{table}
+
 
 
 \section{Appendix}

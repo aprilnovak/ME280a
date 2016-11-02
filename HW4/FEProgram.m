@@ -15,18 +15,17 @@ refine_tol = 0.05;                  % refinement tolerance
 energy_norm = tolerance + 1;        % arbitrary initialization value
 fontsize = 16;                      % fontsize for plots
 num_refinements = 0;                % number of refinements to prevent loop
-max_refinements = 10;                % maximum number of refinements + 1
+max_refinements = 10;               % maximum number of refinements + 1
+num_elem_initial = 20;              % initial guess for number of elements
 
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(shape_order);
-
-N_elem = [20];
 
 % index for collecting error
 finished_refining = 0;
 e = 1;
 
-for num_elem = N_elem
+for num_elem = num_elem_initial
 % uncomment to find how many elements are required to reach the error
 % tolerance
  %while energy_norm > tolerance
@@ -164,7 +163,7 @@ for num_elem = N_elem
                 h = legend(txt);
                 xlabel('Problem domain', 'FontSize', fontsize)
                 ylabel('Solution', 'FontSize', fontsize)
-                %saveas(gcf, 'Nplot', 'jpeg')
+                saveas(gcf, 'Nplot', 'jpeg')
                 close all
             end
             
@@ -179,16 +178,20 @@ for num_elem = N_elem
                 eN_per_elem(i) = trapz(spatial_domain, (dFE - dAN) .* E .* (dFE - dAN));
             end
             
+            % check that eN_per_elem is computed correctly
             sprintf('Difference between sum and exact = %.6f', sum(eN_per_elem) - energy_norm_top^2)
             
             % plot A_I as a function of the element number
             A_I = sqrt((1 ./ elem_length) .* eN_per_elem ./ ((1 ./ L) .* energy_norm_bottom .^ 2));
             coords = coordinates(:,1);
-            %plot(coords(2:1:end), A_I, '*-', physical_domain, solution_analytical, 'k')
-            %hold on
-            %xlabel('Element Number' , 'FontSize', fontsize)
-            %ylabel(sprintf('A_I for %i Elements', num_elem), 'FontSize', fontsize)
-            %saveas(gcf, 'A_I_NoRefinement', 'jpeg')
+            
+            if num_refinements == 0
+                plot(coords(2:1:end), A_I, '*-', physical_domain, solution_analytical, 'k')
+                xlabel('Element Number' , 'FontSize', fontsize)
+                ylabel(sprintf('A_I for %i Elements', num_elem), 'FontSize', fontsize)
+                saveas(gcf, 'A_I_NoRefinement', 'jpeg')
+                close all
+            end
 
             % determine which elements need to be refined
             clearvars refine
@@ -202,25 +205,43 @@ for num_elem = N_elem
             end
                    
             if (j == 1)
-                finished_refining = 1;
-                sprintf('Finished refining, with %i total elements', num_elem)
-                plot(physical_domain, solution_FE, physical_domain, solution_analytical)
-                xlabel('Problem Domain', 'FontSize', fontsize)
-                ylabel('Solution', 'FontSize', fontsize)
-                legend('FE solution', 'Analytic solution')
-                saveas(gcf, 'FinalSolution', 'jpeg')
-                close all
+                 finished_refining = 1;
+                 sprintf('Finished refining, with %i total elements', num_elem)
+%                 plot(physical_domain, solution_FE, physical_domain, solution_analytical)
+%                 xlabel('Problem Domain', 'FontSize', fontsize)
+%                 ylabel('Solution', 'FontSize', fontsize)
+%                 legend('FE solution', 'Analytic solution')
+%                 saveas(gcf, 'FinalSolution', 'jpeg')
+%                 close all
+%                 
+%                 plot(physical_domain, solution_analytical - solution_FE)
+%                 xlabel('Problem Domain', 'FontSize', fontsize)
+%                 ylabel('Analytic - FE Solution', 'FontSize', fontsize)
+%                 saveas(gcf, 'FinalSolutionDiff', 'jpeg')
+%                 close all
                 
-                plot(physical_domain, solution_analytical - solution_FE)
-                xlabel('Problem Domain', 'FontSize', fontsize)
-                ylabel('Analytic - FE Solution', 'FontSize', fontsize)
-                saveas(gcf, 'FinalSolutionDiff', 'jpeg')
-                close all
+                % determine the number of elements per initial range
+                m = 1;
+                num_elem_per_initial_elem2 = zeros(1, length(num_elem_initial));
+                initial_bounds = linspace(0, L, num_elem_initial + 1);
+                for y = 1:length(coords)
+                    if (abs(coords(y) - initial_bounds(m)) < 1e-10)
+                        num_elem_per_initial_elem2(m) = y;
+                        m = m + 1;
+                    end
+                end
+                
+                num_elem_per_initial_elem = zeros(1, length(num_elem_initial));
+                for y = 1:(length(num_elem_per_initial_elem2) - 1)
+                    num_elem_per_initial_elem(y) = num_elem_per_initial_elem2(y+1) - num_elem_per_initial_elem2(y);
+                end
+                
+                num_elem_per_initial_elem
                 
             else 
                 num_refinements = num_refinements + 1;
             
-                % update coordinates vector (only works for linear elements)
+                % update coordinates vector
                 num_elem_new = num_elem + length(refine);
                 num_nodes_new = (shape_order - 1) * num_elem_new + 1;
                 coordinates_new = zeros(num_nodes_new, 3);
@@ -229,7 +250,7 @@ for num_elem = N_elem
                 k = 1;
                 l = 1;
                 for i = 1:num_elem
-                    if ((j <= length(refine)) && (refine(j) == i)) % refine this element
+                    if ((j <= length(refine)) && (refine(j) == i))
                         increment = 0.5 * (coordinates(k+1,1) - coordinates(k,1));
                         coordinates_new(l,1) = coordinates(k,1);
                         coordinates_new(l+1,1) = coordinates(k,1) + increment;
@@ -248,9 +269,6 @@ for num_elem = N_elem
                 coordinates = coordinates_new;
                 num_elem = num_elem_new;
                 num_nodes = num_nodes_new;
-
-                % update LM
-                num_nodes_per_element = shape_order;
 
                 LM = zeros(num_elem, num_nodes_per_element); 
 
