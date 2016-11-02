@@ -346,7 +346,7 @@ while the derivative of the analytical solution is obtained from Eq. \eqref{eq:P
 A_i^2=\frac{\frac{1}{h_i}\|u-u^N\|_{E(\Omega_i)}^2}{\frac{1}{L}\|u\|_{E(\Omega)}^2}
 \end{equation}
 
-If \(A_i>0.05\), then that element is subdivided into two, and the solution repeated until all elements have satisfactory \(A_i\). Once reaching this point, the mesh is considered sufficiently fine that the error is acceptable.
+If \(A_i>0.05\), then that element is subdivided into two, and the solution repeated until all elements have satisfactory \(A_i\). Once reaching this point, the mesh is considered sufficiently fine that the error is acceptable. It should be noted that while the energy norm converges as a first order method (proportional to \(h\)) for linear elements, because it is squared in the equation above, \(A_i^2\) converges as first-order as well.
 
 \section{Solution Results and Discussion}
 
@@ -420,21 +420,22 @@ Initial Element Domain & Final Number of Elements\\ [0.5ex]
 \label{table:orders}
 \end{table}
 
+Finally, Fig. \ref{fig:AivsElem} shows \(A_i\) for each element plotted as a function of the coordinate at the right endpoint of each element. As can be seen, \(A_i<0.05\) as required by the convergence criteria, and due to the highly-varying nature of the solution towards the right endpoint of the domain, \(A_i\) are closer the reaching the tolerance in that region than earlier in the domain where the true solution is slowly-varying. 
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{Nodes_vs_Ai.jpg} % versioned
+  \caption{\(A_i\) plotted for each element as a function of the coordinate of the right endpoint of the element.}
+  \label{fig:AivsElem}
+\end{figure}
 
 \section{Appendix}
-\begin{comment}
+
+This section contains the complete code used in this assignment. 
+
 \subsection{\texttt{FEProgram.m}}
 This is the main code used for the problem solving.
 \lstinputlisting[language=Matlab]{FEProgram.m}
-
-\subsection{\texttt{AddDirichlet.m}}
-This function adds in dummy Dirichlet node placeholders.
-\lstinputlisting[language=Matlab]{AddDirichlet.m}
-
-\subsection{\texttt{AnalyticalSolution.m}}
-This function computes the analytical solution.
-\lstinputlisting[language=Matlab]{AnalyticalSolution.m}
 
 \subsection{\texttt{BCnodes.m}}
 This function applies boundary conditions.
@@ -444,41 +445,13 @@ This function applies boundary conditions.
 This function separates out the matrix equation as in Eq. \eqref{eq:condensation}.
 \lstinputlisting[language=Matlab]{condensation.m}
 
-\subsection{\texttt{CutoffDirichlet.m}}
-This function removes Dirichlet nodes from a vector.
-\lstinputlisting[language=Matlab]{CutoffDirichlet.m}
-
-\subsection{\texttt{ElementInterpolation.m}}
-This function interpolates the block-structure of \(E\) into an elemental basis (\(E\) as a function of the element number).
-\lstinputlisting[language=Matlab]{ElementInterpolation.m}
-
 \subsection{\texttt{mesh.m}}
 This function performs the meshing.
 \lstinputlisting[language=Matlab]{mesh.m}
 
-\subsection{\texttt{Mult.m}}
-This functions performs multiplication element-by-element of a matrix and a vector.
-\lstinputlisting[language=Matlab]{Mult.m}
-
-\subsection{\texttt{NodalInterpolation.m}}
-This function interpolates a vector defined over the physical domain into one defined over a nodal domain.
-\lstinputlisting[language=Matlab]{NodalInterpolation.m}
-
-\subsection{\texttt{PCG.m}}
-This function performs the Preconditioned Conjugate Gradient solve of the matrix system (not element-by-element).
-\lstinputlisting[language=Matlab]{PCG.m}
-
-\subsection{\texttt{PCG\_element\_by\_element.m}}
-This function performs the Preconditioned Conjugate Gradient solve of the matrix system (element-by-element).
-\lstinputlisting[language=Matlab]{PCG_element_by_element.m}
-
 \subsection{\texttt{permutation.m}}
 This function determines the permutation matrix for use with the connectivity matrix.
 \lstinputlisting[language=Matlab]{permutation.m}
-
-\subsection{\texttt{PhysicalInterpolation.m}}
-This function interpolates a block-structure \(E\) into the physical domain (\(E\) as a function of position).
-\lstinputlisting[language=Matlab]{PhysicalInterpolation.m}
 
 \subsection{\texttt{postprocess.m}}
 This function postprocesses the FE solution and transforms it back to the physical domain using a linear system solve as described in Eq. \eqref{eq:LinearSolve}.
@@ -491,8 +464,5 @@ This function selects the quadrature rule.
 \subsection{\texttt{shapefunctions.m}}
 This function contains the library of shape functions.
 \lstinputlisting[language=Matlab]{shapefunctions.m}
-\end{comment}
-
-
 
 \end{document}

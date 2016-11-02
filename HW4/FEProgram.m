@@ -207,18 +207,25 @@ for num_elem = num_elem_initial
             if (j == 1)
                  finished_refining = 1;
                  sprintf('Finished refining, with %i total elements', num_elem)
-%                 plot(physical_domain, solution_FE, physical_domain, solution_analytical)
-%                 xlabel('Problem Domain', 'FontSize', fontsize)
-%                 ylabel('Solution', 'FontSize', fontsize)
-%                 legend('FE solution', 'Analytic solution')
-%                 saveas(gcf, 'FinalSolution', 'jpeg')
-%                 close all
-%                 
-%                 plot(physical_domain, solution_analytical - solution_FE)
-%                 xlabel('Problem Domain', 'FontSize', fontsize)
-%                 ylabel('Analytic - FE Solution', 'FontSize', fontsize)
-%                 saveas(gcf, 'FinalSolutionDiff', 'jpeg')
-%                 close all
+                plot(physical_domain, solution_FE, physical_domain, solution_analytical)
+                xlabel('Problem Domain', 'FontSize', fontsize)
+                ylabel('Solution', 'FontSize', fontsize)
+                legend('FE solution', 'Analytic solution')
+                saveas(gcf, 'FinalSolution', 'jpeg')
+                close all
+                
+                plot(physical_domain, solution_analytical - solution_FE)
+                xlabel('Problem Domain', 'FontSize', fontsize)
+                ylabel('Analytic - FE Solution', 'FontSize', fontsize)
+                saveas(gcf, 'FinalSolutionDiff', 'jpeg')
+                close all
+                
+                plot(coords(2:end), A_I, '*-')
+                xlabel('Node Position', 'FontSize', fontsize)
+                ylabel('A_i', 'FontSize', fontsize)
+                saveas(gcf, 'Nodes_vs_Ai', 'jpeg')
+                close all
+                
                 
                 % determine the number of elements per initial range
                 m = 1;
