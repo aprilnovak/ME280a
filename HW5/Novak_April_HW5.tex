@@ -108,6 +108,7 @@ This section details the problem statement and mathematical method used for solv
 The theory of elasticity is based on the continuum approximation, which assumes that the length scale on which solid particles exchange momentum is much smaller than the length scale characterizing the problem. An Eulerian perspective is adopted in the derivation of the governing equations, since control-volume-based approaches are much more amenable to solution than Lagrangian approaches. The deformation gradient tensor \(\bar{\bar{F}}\) is used to map between two different coordinate systems. One of these coordinates frames is defined by the coordinates \(x_i\) (the present coordinates), and the other by \(X_i\) (the reference coordinates):
 
 \begin{equation}
+\label{eq:DeformationGradient}
 F_{ij}\equiv\frac{\partial x_i}{\partial X_i}
 \end{equation}
 
@@ -170,10 +171,34 @@ Because the selection of the control volume was arbitrary, the integrand must eq
 \rho\ddot{u}=\nabla\cdot\bar{\bar{\sigma}}+\rho\vv{b}
 \end{equation}
 
-Eq. \eqref{eq:Cauchy6} represents a balance of linear momentum, and is very general. It applies equally to fluids and solids, until a constitutive relationship is introduced for \(\bar{\bar{\sigma}}\).
+Eq. \eqref{eq:Cauchy6} represents a balance of linear momentum, and is very general. It applies equally to fluids and solids, until a constitutive relationship is introduced for \(\bar{\bar{\sigma}}\). The theory of linear elasticity is now introduced in order to provide the constitutive relationship for \(\bar{\bar{\sigma}}\). 
+
+From the definition of the deformation gradient tensor \(\bar{\bar{F}}\) in Eq. \eqref{eq:DeformationGradient}, the Lagrangian strain tensor \(\textbf{E}\) is defined as:
+
+\begin{equation}
+\textbf{E}\equiv\frac{1}{2}\left(\nabla_Xu+(\nabla_Xu)^T+\underbrace{(\nabla_Xu)^T\cdot\nabla_xu}_\text{higher-order term}\right)
+\end{equation}
+
+where \(\nabla_X\) indicates a gradient with respect to the reference coordinate \(X\). With the linear theory of elasticity, deformations are assumed to be small such that the higher order term above can be neglected. The infinitesimal strain \(\textbf{e}\) is defined as:
+
+\begin{equation}
+\textbf{e}\equiv\frac{1}{2}\left(\nabla u+(\nabla u)^T\right)
+\end{equation}
+
+and for small deformations, \(\textbf{E}\approx\textbf{e}\). The argument of the gradient has been dropped for simplicity.
 
 
 \subsection{Finite Element Implementation}
+
+\subsection{Mesh Generator}
+
+This section discusses the mesh generator used to mesh the tubular ``S'' structure given in the assignment. The meshing begins in each \(\theta\)-chunk. For the circular cross-section structure, the \(x\) and \(y\) coordinates are related to each other by:
+
+\begin{equation}
+x^2+y^2=r
+\end{equation}
+
+where \(r\) is the inner radius of the tubular structure. Each piece in the circumferential direction is defined according to \(\theta\), where \(0\leq\theta\leq2\pi\) defines the ``slice'' parallel to \(\vv{e}_r\). 
 
 \section{Appendix}
 
