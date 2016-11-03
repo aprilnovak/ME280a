@@ -1,20 +1,20 @@
 % Mesh generator, ME 280a HW 5
 
 Nt = 2;         % number of layers
-No = 8;         % number of elements in the theta direction
+No = 12;         % number of elements in the theta direction
 
 if mod(No, 2) ~= 0
     disp('No must be even!')
 end
 
-Nc = 8;         % number of elements in circumferential direction
+Nc = 8;                     % number of elements in circum. direction
 num_nodes_per_elem = 4;     % linear elements
 
 R = 1;          % radius of each arch
 r = 0.2;        % radius of inner hole
 t = 0.1;        % thickness of the tube wall
 
-layer_thickness = t / (Nt);           % thickness of each ring
+layer_thickness = t / (Nt);         % thickness of each ring
 angle = (2*pi) / Nc;                % angle in horizontal plane
 
 
@@ -34,46 +34,11 @@ z = 0;
 
 Theta = 0;
 
-% mesh in the theta direction
-for l = 1:2
 
-    % for each plane
-    theta = 0;
-    dt = 0;          
-
-    % meshes in a plane perpendicular to tube axis
-    for j = 1:(Nt + 1) % create all layers of rings
-
-        for i = 1:Nc % create a single ring
-
-            % x-coordinate
-            coordinates(k, 1) = x + (r + dt) * cos(theta);
-
-            % y-coordinate
-            coordinates(k, 2) = y + (r + dt) * sin(theta);
-
-            % z-coordinate
-            coordinates(k,3) = z;
-
-            k = k + 1;
-
-            theta = theta + angle;
-        end
-
-        dt = dt + layer_thickness; % reset radius
-        theta = 0; % reset angle
-    end
-
-    Theta = Theta + Angle;
-    
-    x = x + (R + t + r) * (1 - cos(Theta));
-    y = y;
-    z = z + (R + t + r) * sin(Theta);
-end
 
 % find the x-coordinates of the No + 1 slices
 x_centers = zeros(1, No + 1);
-x_centers(1) = 0;
+x_centers(1) = x;
 
 theta_inc = pi / (No / 2);
 theta = theta_inc;
@@ -91,6 +56,69 @@ for l = 2:((No/2) + 1)
     x_centers(j) = second_part_start + x_centers(l);
     j = j + 1;
 end
+
+
+
+% create a vector of the y-coordinates
+z_centers = zeros(1, No + 1);
+z_centers(1) = z;
+theta = theta_inc;
+
+% in the first half of the tube
+for i = 2:((No/2) + 1)
+    z_centers(i) = (R + t + r) * sin(theta);
+    theta = theta + theta_inc;
+end
+
+% in the second half of the tube
+j = i + 1;
+for l = 2:((No/2) + 1)
+    z_centers(j) = - z_centers(l);
+    j = j + 1;
+end
+
+
+
+
+% mesh in the theta direction
+for l = 1:2
+
+    % for each plane
+    theta = 0;
+    dt = 0;          
+
+    % meshes in a plane perpendicular to tube axis
+    for j = 1:(Nt + 1) % create all layers of rings
+
+        for i = 1:Nc % create a single ring
+
+            % x-coordinate
+            coordinates(k, 1) = x_centers(l) + (r + dt) * cos(theta);
+
+            % y-coordinate
+            coordinates(k, 2) = y + (r + dt) * sin(theta);
+
+            % z-coordinate
+            coordinates(k,3) = z_centers(l);
+
+            k = k + 1;
+
+            theta = theta + angle;
+        end
+
+        dt = dt + layer_thickness; % reset radius
+        theta = 0; % reset angle
+    end
+
+    Theta = Theta + Angle;
+    
+    x = x + (R + t + r) * (1 - cos(Theta));
+    y = y;
+    z = z + (R + t + r) * sin(Theta);
+end
+
+
+
 
 
 X = coordinates(:,1);
