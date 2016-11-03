@@ -1,7 +1,12 @@
 % Mesh generator, ME 280a HW 5
 
 Nt = 2;         % number of layers
-No = 1;         % number of elements in the theta direction
+No = 8;         % number of elements in the theta direction
+
+if mod(No, 2) ~= 0
+    disp('No must be even!')
+end
+
 Nc = 8;         % number of elements in circumferential direction
 num_nodes_per_elem = 4;     % linear elements
 
@@ -20,36 +25,76 @@ angle = (2*pi) / Nc;                % angle in horizontal plane
 
 % each row represents one coordinate of a global node
 coordinates = zeros(Nt * Nc, 3);
-
-
-theta = 0;
-dt = 0;          
+Angle = pi / (No / 2);
 
 k = 1; % index for coordinate row
-for j = 1:(Nt + 1) % create all layers of rings
-    
-    for i = 1:Nc % create a single ring
+x = 0;
+y = 0;
+z = 0;
 
-        % x-coordinate
-        coordinates(k, 1) = (r + dt) * cos(theta);
+Theta = 0;
 
-        % y-coordinate
-        coordinates(k, 2) = (r + dt) * sin(theta);
+% mesh in the theta direction
+for l = 1:2
 
-        % z-coordinate
-        coordinates(k,3) = 0;
-        
-        k = k + 1;
+    % for each plane
+    theta = 0;
+    dt = 0;          
 
-        theta = theta + angle;
+    % meshes in a plane perpendicular to tube axis
+    for j = 1:(Nt + 1) % create all layers of rings
+
+        for i = 1:Nc % create a single ring
+
+            % x-coordinate
+            coordinates(k, 1) = x + (r + dt) * cos(theta);
+
+            % y-coordinate
+            coordinates(k, 2) = y + (r + dt) * sin(theta);
+
+            % z-coordinate
+            coordinates(k,3) = z;
+
+            k = k + 1;
+
+            theta = theta + angle;
+        end
+
+        dt = dt + layer_thickness; % reset radius
+        theta = 0; % reset angle
     end
+
+    Theta = Theta + Angle;
     
-    dt = dt + layer_thickness; % reset radius
-    theta = 0; % reset angle
+    x = x + (R + t + r) * (1 - cos(Theta));
+    y = y;
+    z = z + (R + t + r) * sin(Theta);
 end
 
-x = coordinates(:,1);
-y = coordinates(:,2);
-z = coordinates(:,3);
+% find the x-coordinates of the No + 1 slices
+x_centers = zeros(1, No + 1);
+x_centers(1) = 0;
 
-scatter3(x,y,z)
+theta_inc = pi / (No / 2);
+theta = theta_inc;
+
+% in the first half of the tube
+for i = 2:((No/2) + 1)
+    x_centers(i) = x_centers(1) + (R + t + r) * (1 - cos(theta));
+    theta = theta + theta_inc;
+end
+
+% in the second half of the tube
+j = i + 1;
+second_part_start = x_centers(i);
+for l = 2:((No/2) + 1)
+    x_centers(j) = second_part_start + x_centers(l);
+    j = j + 1;
+end
+
+
+X = coordinates(:,1);
+Y = coordinates(:,2);
+Z = coordinates(:,3);
+
+scatter3(X,Y,Z)
