@@ -185,7 +185,81 @@ where \(\nabla_X\) indicates a gradient with respect to the reference coordinate
 \textbf{e}\equiv\frac{1}{2}\left(\nabla u+(\nabla u)^T\right)
 \end{equation}
 
-and for small deformations, \(\textbf{E}\approx\textbf{e}\). The argument of the gradient has been dropped for simplicity.
+and for small deformations, \(\textbf{E}\approx\textbf{e}\). (I couldn't figure out how to get the ``epsilon'' variable to work out, so epsilon is replaced by \(e\) in this document). The argument of the gradient has been dropped for simplicity. A similar derivation of a conservation of energy equation gives:
+
+\begin{equation}
+\rho\dot{w}=\bar{\bar{\sigma}}:\nabla\dot{u}-\nabla\cdot\vv{q}+\rho z
+\end{equation}
+
+where \(w\) is the internal energy per unit mass, \(q\) the heat flux vector, and \(z\) the volumetric heating source. If thermal effects are neglected, then the above equation simplifies to:
+
+\begin{equation}
+\rho\dot{w}=\bar{\bar{\sigma}}:\nabla\dot{u}
+\end{equation}
+
+Applying the chain rule to the LHS above:
+
+\begin{equation}
+\rho\frac{\partial w}{\partial \textbf{e}}:\frac{d\textbf{e}}{dt}=\bar{\bar{\sigma}}:\nabla\dot{u}
+\end{equation}
+
+from which it is clear that:
+
+\begin{equation}
+\label{eq:StressDef}
+\bar{\bar{\sigma}}=\rho\frac{\partial w}{\partial\textbf{e}}
+\end{equation}
+
+In order to develop a constitutive relationship for the theory of linear elasticity, it is assumed that a stored elastic energy function exists that depends only on the deformation. For small strains beginning from an undeformed state, energy is stored in the material. The stored elastic energy function \(W\) is by definition:
+
+\begin{equation}
+W\equiv \rho w
+\end{equation}
+
+The simplest function that satisfies Eq. \eqref{eq:StressDef} is:
+
+\begin{equation}
+W=\frac{1}{2}\textbf{e}:\textbf{IE}:\textbf{e}
+\end{equation}
+
+where \(\textbf{IE}\) is the fourth rank elasticity tensor. With these assumptions, the constitutive relationship for the stress tensor becomes:
+
+\begin{equation}
+\label{eq:1}
+\bar{\bar{\sigma}}=\textbf{IE}:\mathscr{e}
+\end{equation}
+
+Due to the linear relationship between stress and strain, this constitutive relationship is referred to as the ``theory of linear elasticity.'' Because \(\textbf{IE}\) is a fourth-order tensor, it has 81 unique entries (\(3^4=81\)). However, because the stress tensor is symmetric, there are actually only 36 unique entries. Because \(W\) is a scalar, \(\textbf{IE}\) must be symmetric, which implies that \(\textbf{IE}^T=\textbf{IE}\). Hence, the 36 unique constants reduce to 21. With all 36 constants, the relationship in Eq. \eqref{eq:1} is:
+
+\begin{equation}
+\begin{bmatrix}\sigma_{11} \\ \sigma_{22} \\ \sigma_{33} \\ \sigma_{12} \\ \sigma_{23} \\ \sigma_{31}\end{bmatrix}=
+\begin{bmatrix}E_{1111} & E_{1122} & E_{1133} & E_{1112} & E_{1123} & E_{1113} \\
+E_{2211} & E_{2222} & E_{2233} & E_{2212} & E_{2223} & E_{2213} \\
+E_{3311} & E_{3322} & E_{3333} & E_{3312} & E_{3323} & E_{3313}\\
+E_{1211} & E_{1222} & E_{1233} & E_{1212} & E_{1223} & E_{1213}\\
+E_{2311} & E_{2322} & E_{2333} & E_{2312} & E_{2323} & E_{2313}\\
+E_{1311} & E_{1322} & E_{1333} & E_{1312} & E_{1323} & E_{1313}\\
+\end{bmatrix}
+\begin{bmatrix}e_{11} \\ e_{22} \\ e_{33} \\ 2e_{12} \\ 2e_{23} \\ 2e_{31}\\
+\end{bmatrix}
+\end{equation}
+
+where the strain vector shows that \(e_{12}=e_{21}\). For isotropic materials, \(\textbf{IE}\) simplifies by defining two parameters, \(\kappa\) and \(\mu\):
+
+\begin{equation}
+\textbf{IE}=\begin{bmatrix}\kappa+\frac{4}{3}\mu & \kappa-\frac{2}{3}\mu & \kappa-\frac{2}{3}\mu & 0 & 0 & 0\\
+\kappa-\frac{2}{3}\mu & \kappa+\frac{4}{3}\mu & \kappa-\frac{2}{3}\mu & 0 & 0 & 0\\
+\kappa-\frac{2}{3}\mu & \kappa-\frac{2}{3}\mu & \kappa+\frac{4}{3}\mu & 0 & 0 & 0\\
+0 & 0 & 0 & \mu & 0 & 0\\
+0 & 0 & 0 & 0 & \mu & 0\\
+0 & 0 & 0 & 0 & 0 & \mu\\
+\end{bmatrix}
+\end{equation}
+
+The eigenvalues of \(\textbf{IE}\) are directly proportional to \(\mu\) and \(\kappa\), and hence both \(\mu\) and \(\kappa\) must be positive in order to retain the positive definiteness of \(\textbf{IE}\).
+
+
+
 
 
 \subsection{Finite Element Implementation}
