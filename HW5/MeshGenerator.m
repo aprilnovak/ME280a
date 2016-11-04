@@ -124,7 +124,11 @@ for l = 1:(No + 1)
             end
             
             % tilt the x-coordinate
-            %coordinates(k,1) = coordinates(k,1) + p;
+            if find([1, 2, 8], i)
+                coordinates(k,1) = coordinates(k,1) + p;
+            else
+                coordinates(k,1) = coordinates(k,1) - p;
+            end
             
             k = k + 1;
             theta = theta + angle;
@@ -148,7 +152,7 @@ Y = coordinates(:,2);
 Z = coordinates(:,3);
 
 scatter3(X,Y,Z)
-xlim([-r - t, max(X)])
+xlim([min(X), max(X)])
 zlim([-max(Z), max(Z)])
 xlabel('x')
 ylabel('y')
