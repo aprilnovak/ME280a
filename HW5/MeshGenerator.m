@@ -1,14 +1,14 @@
 % Mesh generator, ME 280a HW 5
 clear all
 
-Nt = 2;                             % number of layers
+Nt = 3;                             % number of layers
 No = 8;                             % number of elements in theta
+Nc = 8;                             % number of elements in circum
 
 if mod(No, 2) ~= 0
     disp('No must be even!')
 end
 
-Nc = 8;                             % number of elements in circum
 num_nodes_per_elem = 4;             % linear elements
 
 R = 1;                              % radius of each arch
@@ -95,7 +95,7 @@ for l = 1:(No + 1)
             % compute tilting parameters
             w = sin(pi/2 - Theta) * ((r + dt) * cos(theta)) / sin(pi/2);
             h = w * sin(Theta);
-           
+            p = w * cos(Theta);
 
             % y-coordinate
             coordinates(k, 2) = y + (r + dt) * sin(theta);
@@ -110,12 +110,22 @@ for l = 1:(No + 1)
                 sn = 1;
             end
             
-            % tilt the z-coordinate
+            % tilt the z-coordinate for off-symmetric planes
             if find([1, 2, 8], i)
                 coordinates(k,3) = coordinates(k,3) - sn*h;
             else
                 coordinates(k,3) = coordinates(k,3) + sn*h;
             end
+            
+            % tilt the symmtric planes (the peaks)
+            if (l == 3) || (l == 7)
+                coordinates(k,3) = coordinates(k,3) - ((r + dt) * cos(theta));
+                coordinates(k,1) = x_centers(l);
+            end
+            
+            % tilt the x-coordinate
+            %coordinates(k,1) = coordinates(k,1) + p;
+            
             k = k + 1;
             theta = theta + angle;
         end
