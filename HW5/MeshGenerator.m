@@ -1,24 +1,24 @@
 % Mesh generator, ME 280a HW 5
+clear all
 
-Nt = 2;         % number of layers
-No = 12;         % number of elements in the theta direction
+Nt = 2;                             % number of layers
+No = 8;                             % number of elements in theta
 
 if mod(No, 2) ~= 0
     disp('No must be even!')
 end
 
-Nc = 8;                     % number of elements in circum. direction
-num_nodes_per_elem = 4;     % linear elements
+Nc = 8;                             % number of elements in circum
+num_nodes_per_elem = 4;             % linear elements
 
-R = 1;          % radius of each arch
-r = 0.2;        % radius of inner hole
-t = 0.1;        % thickness of the tube wall
+R = 1;                              % radius of each arch
+r = 0.2;                            % radius of inner hole
+t = 0.1;                            % thickness of the tube wall
 
 layer_thickness = t / (Nt);         % thickness of each ring
 angle = (2*pi) / Nc;                % angle in horizontal plane
 
 
-% in a particular horizontal (relative to tube axis) plane:
 
 % global node numbering begins on the inner surface, and moves clockwise
 % until reaching the outer surface
@@ -32,9 +32,7 @@ x = 0;
 y = 0;
 z = 0;
 
-Theta = 0;
-
-
+Theta = 0;  % angle in each plane
 
 % find the x-coordinates of the No + 1 slices
 x_centers = zeros(1, No + 1);
@@ -81,42 +79,56 @@ end
 
 
 % mesh in the theta direction
-for l = 1:2
+for l = 1:(No + 1)
 
     % for each plane
     theta = 0;
-    dt = 0;          
+    dt = 0;
 
     % meshes in a plane perpendicular to tube axis
     for j = 1:(Nt + 1) % create all layers of rings
-
         for i = 1:Nc % create a single ring
-
+            
             % x-coordinate
             coordinates(k, 1) = x_centers(l) + (r + dt) * cos(theta);
+            
+            % compute tilting parameters
+            w = sin(pi/2 - Theta) * ((r + dt) * cos(theta)) / sin(pi/2);
+            h = w * sin(Theta);
+           
 
             % y-coordinate
             coordinates(k, 2) = y + (r + dt) * sin(theta);
 
             % z-coordinate
             coordinates(k,3) = z_centers(l);
-
+            
+            % tilt for each half of the tube
+            if l > No/2
+                sn = -1;
+            else
+                sn = 1;
+            end
+            
+            % tilt the z-coordinate
+            if find([1, 2, 8], i)
+                coordinates(k,3) = coordinates(k,3) - sn*h;
+            else
+                coordinates(k,3) = coordinates(k,3) + sn*h;
+            end
             k = k + 1;
-
             theta = theta + angle;
         end
-
         dt = dt + layer_thickness; % reset radius
         theta = 0; % reset angle
     end
-
-    Theta = Theta + Angle;
     
+    % move the angle (along length) and centers for the next plane
+    Theta = Theta + Angle;
     x = x + (R + t + r) * (1 - cos(Theta));
     y = y;
     z = z + (R + t + r) * sin(Theta);
 end
-
 
 
 
@@ -126,3 +138,8 @@ Y = coordinates(:,2);
 Z = coordinates(:,3);
 
 scatter3(X,Y,Z)
+xlim([-r - t, max(X)])
+zlim([-max(Z), max(Z)])
+xlabel('x')
+ylabel('y')
+zlabel('z')
