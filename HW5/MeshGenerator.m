@@ -3,7 +3,7 @@ clear all
 
 Nt = 3;                             % number of layers
 No = 8;                             % number of elements in theta
-Nc = 8;                             % number of elements in circum
+Nc = 4;                             % number of elements in circum
 
 if mod(No, 2) ~= 0
     disp('No must be even!')
@@ -12,8 +12,8 @@ end
 num_nodes_per_elem = 4;             % linear elements
 
 R = 1;                              % radius of each arch
-r = 0.2;                            % radius of inner hole
-t = 0.1;                            % thickness of the tube wall
+r = 0.3;                            % radius of inner hole
+t = 0.2;                            % thickness of the tube wall
 
 layer_thickness = t / (Nt);         % thickness of each ring
 angle = (2*pi) / Nc;                % angle in horizontal plane
@@ -117,9 +117,13 @@ for l = 1:(No + 1)
                 coordinates(k,3) = coordinates(k,3) + sn*h;
             end
             
-            % tilt the symmtric planes (the peaks)
+            % tilt the symmetric planes (the peaks)
             if (l == 3) || (l == 7)
-                coordinates(k,3) = coordinates(k,3) - ((r + dt) * cos(theta));
+                if find([1, 2, 8], i)
+                    coordinates(k,3) = coordinates(k,3) - ((r + dt) * cos(theta));
+                else
+                    coordinates(k,3) = coordinates(k,3) + ((r + dt) * cos(theta));
+                end
                 coordinates(k,1) = x_centers(l);
             end
             
@@ -151,9 +155,19 @@ X = coordinates(:,1);
 Y = coordinates(:,2);
 Z = coordinates(:,3);
 
-scatter3(X,Y,Z)
+scatter3(X, Y, Z)
+span = (max(X)-min(X))/2;
 xlim([min(X), max(X)])
-zlim([-max(Z), max(Z)])
+zlim([-span, span])
 xlabel('x')
 ylabel('y')
 zlabel('z')
+
+% hold on
+% plot3(X, Y, Z, 'k-')
+% span = (max(X)-min(X))/2;
+% xlim([min(X), max(X)])
+% zlim([-span, span])
+% xlabel('x')
+% ylabel('y')
+% zlabel('z')
