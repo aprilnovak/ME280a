@@ -122,10 +122,10 @@ To have a physically meaningful transformation between two coordinate frames, th
 
 \begin{equation}
 \label{eq:Cauchy}
-\frac{d}{dt}\int_{\Omega}\rho\dot{u}dV=\int_{\partial\Omega}\vv{t}dS+\int_{\Omega}\rho\vv{b}dV
+\frac{d}{dt}\int_{\Omega}\rho\dot{\textbf{u}}dV=\int_{\partial\Omega}\vv{t}dS+\int_{\Omega}\rho\textbf{b}dV
 \end{equation}
 
-where \(\Omega\) is the domain of the continuum (a volume), \(rho\) is the density, \(u\) is the displacement vector (written without a vector overbar to simplify the notation), \(\partial\Omega\) represents the boundary of the volume domain (a surface \(S\)), \(\vv{t}\) represents the traction (loading on a surface), and \(\vv{b}\) represents a body force such as gravity. Eq. \eqref{eq:Cauchy} is no more than the Cauchy balance of linear momentum. By the Cauchy theorem, where surface forces are balanced on a tetrahedron, the traction is equivalent to:
+where \(\Omega\) is the domain of the continuum (a volume), \(rho\) is the density, \(\textbf{u}\) is the displacement vector, \(\partial\Omega\) represents the boundary of the volume domain (a surface \(S\)), \(\vv{t}\) represents the traction (loading on a surface), and \(\vv{b}\) represents a body force such as gravity. Eq. \eqref{eq:Cauchy} is no more than the Cauchy balance of linear momentum. By the Cauchy theorem, where surface forces are balanced on a tetrahedron, the traction is equivalent to:
 
 \begin{equation}
 \label{eq:Traction}
@@ -140,35 +140,35 @@ Inserting Eq. \eqref{eq:Traction} into Eq. \eqref{eq:Cauchy}:
 
 \begin{equation}
 \label{eq:Cauchy2}
-\frac{d}{dt}\int_{\Omega}\rho\dot{u}dV=\int_{\partial\Omega}\bar{\bar{\sigma}}^T\cdot\hat{n}dS+\int_{\Omega}\rho\vv{b}dV
+\frac{d}{dt}\int_{\Omega}\rho\dot{\textbf{u}}dV=\int_{\partial\Omega}\bar{\bar{\sigma}}^T\cdot\hat{n}dS+\int_{\Omega}\rho\textbf{b}dV
 \end{equation}
 
-If mass is conserved in this continuum (it is assumed so), then the material derivative on the LHS of the above equation can be moved inside the integration to act only on \(\cdot{\vv{u}}\). This can conceptually be understood if the integral is divided into a finite sum over material elements. In a material element, mass is assumed conserved such that the time rate of change of \(\rho dV\) is zero, which is why the time derivative acts only on \(\cdot{\vv{u}}\) (This also assumes that the coordinate system is not moving in time).
+If mass is conserved in this continuum (it is assumed so), then the material derivative on the LHS of the above equation can be moved inside the integration to act only on \(\cdot{\textbf{u}}\). This can conceptually be understood if the integral is divided into a finite sum over material elements. In a material element, mass is assumed conserved such that the time rate of change of \(\rho dV\) is zero, which is why the time derivative acts only on \(\cdot{\textbf{u}}\) (This also assumes that the coordinate system is not moving in time).
 
 \begin{equation}
 \label{eq:Cauchy3}
-\int_{\Omega}\rho\ddot{u}dV=\int_{\partial\Omega}\bar{\bar{\sigma}}^T\cdot\hat{n}dS+\int_{\Omega}\rho\vv{b}dV
+\int_{\Omega}\rho\ddot{\textbf{u}}dV=\int_{\partial\Omega}\bar{\bar{\sigma}}^T\cdot\hat{n}dS+\int_{\Omega}\rho\textbf{b}dV
 \end{equation}
 
 Applying Gauss's divergence theorem, which implicitly assumes that \(\bar{\bar{\sigma}}\) is sufficiently smooth, and dropping the transpose on the stress tensor with the assumption that it is symmetric:
 
 \begin{equation}
 \label{eq:Cauchy4}
-\int_{\Omega}\rho\ddot{u}dV=\int_{\Omega}\nabla\cdot\bar{\bar{\sigma}}dV+\int_{\Omega}\rho\vv{b}dV
+\int_{\Omega}\rho\ddot{\textbf{u}}dV=\int_{\Omega}\nabla\cdot\bar{\bar{\sigma}}dV+\int_{\Omega}\rho\textbf{b}dV
 \end{equation}
 
 Then, by rearranging:
 
 \begin{equation}
 \label{eq:Cauchy5}
-\int_{\Omega}\left(\rho\ddot{u}-\nabla\cdot\bar{\bar{\sigma}}-\rho\vv{b}\right)dV=0
+\int_{\Omega}\left(\rho\ddot{\textbf{u}}-\nabla\cdot\bar{\bar{\sigma}}-\rho\textbf{b}\right)dV=0
 \end{equation}
 
 Because the selection of the control volume was arbitrary, the integrand must equal zero:
 
 \begin{equation}
 \label{eq:Cauchy6}
-\rho\ddot{u}=\nabla\cdot\bar{\bar{\sigma}}+\rho\vv{b}
+\rho\ddot{\textbf{u}}=\nabla\cdot\bar{\bar{\sigma}}+\rho\textbf{b}
 \end{equation}
 
 Eq. \eqref{eq:Cauchy6} represents a balance of linear momentum, and is very general. It applies equally to fluids and solids, until a constitutive relationship is introduced for \(\bar{\bar{\sigma}}\). The theory of linear elasticity is now introduced in order to provide the constitutive relationship for \(\bar{\bar{\sigma}}\). 
@@ -176,31 +176,31 @@ Eq. \eqref{eq:Cauchy6} represents a balance of linear momentum, and is very gene
 From the definition of the deformation gradient tensor \(\bar{\bar{F}}\) in Eq. \eqref{eq:DeformationGradient}, the Lagrangian strain tensor \(\textbf{E}\) is defined as:
 
 \begin{equation}
-\textbf{E}\equiv\frac{1}{2}\left(\nabla_Xu+(\nabla_Xu)^T+\underbrace{(\nabla_Xu)^T\cdot\nabla_xu}_\text{higher-order term}\right)
+\textbf{E}\equiv\frac{1}{2}\left(\nabla_X\textbf{u}+(\nabla_X\textbf{u})^T+\underbrace{(\nabla_X\textbf{u})^T\cdot\nabla_x\textbf{u}}_\text{higher-order term}\right)
 \end{equation}
 
 where \(\nabla_X\) indicates a gradient with respect to the reference coordinate \(X\). With the linear theory of elasticity, deformations are assumed to be small such that the higher order term above can be neglected. The infinitesimal strain \(\textbf{e}\) is defined as:
 
 \begin{equation}
-\textbf{e}\equiv\frac{1}{2}\left(\nabla u+(\nabla u)^T\right)
+\textbf{e}\equiv\frac{1}{2}\left(\nabla\textbf{u}+(\nabla \textbf{u})^T\right)
 \end{equation}
 
 and for small deformations, \(\textbf{E}\approx\textbf{e}\). (I couldn't figure out how to get the ``epsilon'' variable to work out, so epsilon is replaced by \(e\) in this document). The argument of the gradient has been dropped for simplicity. A similar derivation of a conservation of energy equation gives:
 
 \begin{equation}
-\rho\dot{w}=\bar{\bar{\sigma}}:\nabla\dot{u}-\nabla\cdot\vv{q}+\rho z
+\rho\dot{w}=\bar{\bar{\sigma}}:\nabla\dot{\textbf{u}}-\nabla\cdot\textbf{q}+\rho z
 \end{equation}
 
-where \(w\) is the internal energy per unit mass, \(q\) the heat flux vector, and \(z\) the volumetric heating source. If thermal effects are neglected, then the above equation simplifies to:
+where \(w\) is the internal energy per unit mass, \(\textbf{q}\) the heat flux vector, and \(z\) the volumetric heating source. If thermal effects are neglected, then the above equation simplifies to:
 
 \begin{equation}
-\rho\dot{w}=\bar{\bar{\sigma}}:\nabla\dot{u}
+\rho\dot{w}=\bar{\bar{\sigma}}:\nabla\dot{\textbf{u}}
 \end{equation}
 
 Applying the chain rule to the LHS above:
 
 \begin{equation}
-\rho\frac{\partial w}{\partial \textbf{e}}:\frac{d\textbf{e}}{dt}=\bar{\bar{\sigma}}:\nabla\dot{u}
+\rho\frac{\partial w}{\partial \textbf{e}}:\frac{d\textbf{e}}{dt}=\bar{\bar{\sigma}}:\nabla\dot{\textbf{u}}
 \end{equation}
 
 from which it is clear that:
@@ -226,7 +226,7 @@ where \(\textbf{IE}\) is the fourth rank elasticity tensor. With these assumptio
 
 \begin{equation}
 \label{eq:1}
-\bar{\bar{\sigma}}=\textbf{IE}:\mathscr{e}
+\bar{\bar{\sigma}}=\textbf{IE}:\textbf{e}
 \end{equation}
 
 Due to the linear relationship between stress and strain, this constitutive relationship is referred to as the ``theory of linear elasticity.'' Because \(\textbf{IE}\) is a fourth-order tensor, it has 81 unique entries (\(3^4=81\)). However, because the stress tensor is symmetric, there are actually only 36 unique entries. Because \(W\) is a scalar, \(\textbf{IE}\) must be symmetric, which implies that \(\textbf{IE}^T=\textbf{IE}\). Hence, the 36 unique constants reduce to 21. With all 36 constants, the relationship in Eq. \eqref{eq:1} is:
@@ -256,13 +256,25 @@ where the strain vector shows that \(e_{12}=e_{21}\). For isotropic materials, \
 \end{bmatrix}
 \end{equation}
 
-The eigenvalues of \(\textbf{IE}\) are directly proportional to \(\mu\) and \(\kappa\), and hence both \(\mu\) and \(\kappa\) must be positive in order to retain the positive definiteness of \(\textbf{IE}\).
+The eigenvalues of \(\textbf{IE}\) are directly proportional to \(\mu\) and \(\kappa\), and hence both \(\mu\) and \(\kappa\) must be positive in order to retain the positive definiteness of \(\textbf{IE}\). Combining the above results with the conservation of momentum statement in Eq. \eqref{eq:Cauchy6}, the balance of momentum for a linear elastic system is:
 
+\begin{equation}
+\label{eq:Cauchy7}
+\rho\ddot{\textbf{u}}=\nabla\cdot(\textbf{IE}:\nabla \textbf{u})+\rho\textbf{b}
+\end{equation}
 
-
-
+where recall that \(\textbf{u}\) is the vector-valued displacement. The finite element implementation, beginning with the weak form, is discussed next.
 
 \subsection{Finite Element Implementation}
+
+\subsubsection{The Weak Form}
+
+The weak form of Eq. \eqref{eq:Cauchy7} is obtained by multiplying through by a test function \(\textbf{v}\), where, like \(\textbf{u}\), \(\textbf{v}\) is a vector-valued function. Then, integrating over the body:
+
+\begin{equation}
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\Omega}\nabla\cdot(\textbf{IE}:\nabla \textbf{u})\cdot\textbf{v}d\Omega+\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega
+\end{equation}
+
 
 \subsection{Mesh Generator}
 
@@ -367,6 +379,8 @@ The mesh in Fig. \ref{fig:CoarseMesh} is shown below without the lines connectin
 Note that this assignment did not provide the dimensions of the tube, so I assumed that the inner radius of each arch was 1, the radius of the inner hole of the tube 0.3, and the thickness of the tube 0.2.
 
 In order for this mesh to be useful for finite element implementation, a connectivity function must be defined to relate the local node numbering to the global node numbering. The mesh generated numbers the global nodes according to the order in which they were generated. For instance, the first 8 nodes are in the inner layer of the first slice, the next 8 are in the second layer of the first slice, and so on for the first slice. Then, moving to the next \(\Theta\) slice, the node numbering again begins on the inside of the tube and moves counterclockwise in layers until reaching the outside of the tube. This is shown schematically in the figures above by the black lines connecting the coordinates \textit{in the order in which the coordinates are generated}.
+
+The connectivity matrix is an \(N\times4\) matrix, where \(N\) is the total number of elements and 4 is the number of local nodes per element (linear elements are assumed). 
 
 \section{Appendix}
 
