@@ -181,7 +181,7 @@ LM = zeros(num_elem, num_nodes_per_elem);
 j = 1;
 k = 1;
 e = 1;
-for l = 1:2 % for each slice, assign the front node values
+for l = 1:(No + 1) % for each slice, assign the front node values
    for elem = e:(e + num_elem / No - 1) % for each element in the slice
        LM(elem, 1) = j;
        LM(elem, 3) = j + Nc;
@@ -196,7 +196,24 @@ for l = 1:2 % for each slice, assign the front node values
        end
        j = j + 1;
    end
+   
+   % update for next slice frontal values
    k = k + Nc;
    j = j + Nc;
    e = e + Nc * Nt;
 end
+
+% assign the back face values - front values for second slice are
+% back values for first slice, etc.
+i = 1;
+for j = 1:No
+    for elem = i:(i + Nc*Nt - 1)
+        LM(elem, (Nc + 1):end) = LM(elem + Nc * Nt, 1:Nc);
+    end
+    i = i + Nc*Nt;
+end
+
+% delete the unecessary last "chunk" in the LM, since the last slice
+% has the back values determined as if they were the frontal values of
+% another slice
+LM = LM(1:num_elem, :);
