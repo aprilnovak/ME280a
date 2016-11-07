@@ -180,8 +180,9 @@ LM = zeros(num_elem, num_nodes_per_elem);
 % apply in a single slice
 j = 1;
 k = 1;
-for l = 1 % for each slice
-   for elem = 1:(num_elem / No) % for each element in the slice
+e = 1;
+for l = 1:2 % for each slice, assign the front node values
+   for elem = e:(e + num_elem / No - 1) % for each element in the slice
        LM(elem, 1) = j;
        LM(elem, 3) = j + Nc;
        
@@ -195,4 +196,7 @@ for l = 1 % for each slice
        end
        j = j + 1;
    end
+   k = k + Nc;
+   j = j + Nc;
+   e = e + Nc * Nt;
 end
