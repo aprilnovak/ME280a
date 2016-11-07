@@ -2,14 +2,14 @@
 clear all
 
 Nt = 3;                             % number of layers
-No = 8;                             % number of elements in theta
+No = 2;                             % number of elements in theta
 Nc = 4;                             % number of elements in circum
 
 if mod(No, 2) ~= 0
     disp('No must be even!')
 end
 
-num_nodes_per_elem = 4;             % linear elements
+num_nodes_per_elem = 8;             % linear elements
 
 R = 1;                              % radius of each arch
 r = 0.3;                            % radius of inner hole
@@ -155,13 +155,13 @@ X = coordinates(:,1);
 Y = coordinates(:,2);
 Z = coordinates(:,3);
 
-scatter3(X, Y, Z)
-span = (max(X)-min(X))/2;
-xlim([min(X), max(X)])
-zlim([-span, span])
-xlabel('x')
-ylabel('y')
-zlabel('z')
+% scatter3(X, Y, Z)
+% span = (max(X)-min(X))/2;
+% xlim([min(X), max(X)])
+% zlim([-span, span])
+% xlabel('x')
+% ylabel('y')
+% zlabel('z')
 
 % hold on
 % plot3(X, Y, Z, 'k-')
@@ -171,3 +171,28 @@ zlabel('z')
 % xlabel('x')
 % ylabel('y')
 % zlabel('z')
+
+
+% generate the connectivity matrix
+num_elem = No * Nc * Nt;
+LM = zeros(num_elem, num_nodes_per_elem);
+
+% apply in a single slice
+j = 1;
+k = 1;
+for l = 1 % for each slice
+   for elem = 1:(num_elem / No) % for each element in the slice
+       LM(elem, 1) = j;
+       LM(elem, 3) = j + Nc;
+       
+       if (mod(elem, Nc) == 0)
+           LM(elem, 2) = k;
+           LM(elem, 4) = k + Nc;
+           k = k + Nc;
+       else
+           LM(elem, 2) = j + 1;
+           LM(elem, 4) = j + Nc + 1;
+       end
+       j = j + 1;
+   end
+end

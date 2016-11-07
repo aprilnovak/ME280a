@@ -354,7 +354,8 @@ Hence, the penalty method with this interpretation is a quadratic addition to th
 \subsubsection{Specifics on Finite Element Implementation}
 
 
-\subsection{Mesh Generator}
+
+\section{Mesh Generator}
 
 This section discusses the mesh generator used to mesh the tubular ``S'' structure given in the assignment. The meshing begins in each \(\theta\)-chunk. For the circular cross-section structure, the \(x\) and \(y\) coordinates are related to each other by:
 
@@ -456,9 +457,22 @@ The mesh in Fig. \ref{fig:CoarseMesh} is shown below without the lines connectin
 
 Note that this assignment did not provide the dimensions of the tube, so I assumed that the inner radius of each arch was 1, the radius of the inner hole of the tube 0.3, and the thickness of the tube 0.2.
 
+\subsection{The Connectivity Matrix}
+
 In order for this mesh to be useful for finite element implementation, a connectivity function must be defined to relate the local node numbering to the global node numbering. The mesh generated numbers the global nodes according to the order in which they were generated. For instance, the first 8 nodes are in the inner layer of the first slice, the next 8 are in the second layer of the first slice, and so on for the first slice. Then, moving to the next \(\Theta\) slice, the node numbering again begins on the inside of the tube and moves counterclockwise in layers until reaching the outside of the tube. This is shown schematically in the figures above by the black lines connecting the coordinates \textit{in the order in which the coordinates are generated}.
 
-The connectivity matrix is an \(N\times4\) matrix, where \(N\) is the total number of elements and 4 is the number of local nodes per element (linear elements are assumed). 
+The connectivity matrix is an \(N\times8\) matrix, where \(N\) is the total number of elements and 8 is the number of local nodes per element (linear elements are assumed). The local node numbering is performed according to a clockwise fashion. The following schematic shows the node numbering, where the left portion shows the front face, and the right portion shows the back face, all while looking at the front face (i.e. the back face is not written with the perspective of looking at the outward-facing portion of the back face).
+
+\begin{equation}
+\begin{aligned}
+4 -- 3 & \quad\quad & 8 -- 7\\
+2 -- 1 & \quad\quad & 6 -- 5\\
+\end{aligned}
+\end{equation}
+
+So, for each slice, the nodes on the face of each element can be determined using a numbering scheme that follows the order in which the nodes were defined. Beginning with \(\theta=0\), and moving counterclockwise, the local nodes are numbered, moving progressively outwards in the layers until reaching the last node for a particular slice. 
+
+There are \(N_t\cdot N_c\cdot N_\theta\) total elements.
 
 \section{Appendix}
 
