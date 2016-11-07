@@ -288,8 +288,81 @@ where \(r\) is the inner radius of the tubular structure. Each piece in the circ
   \caption{Mesh for \(N_c=8, N_\theta=8, N_t=3\) with no tilt to the slices. Lines connect each coordinate for better visuality.}
 \end{figure}
 
-The next step is to rotate the slices appropriately through the angle \(\Theta\) for each slice so that a tubular structure is formed.
+The next step is to rotate the slices appropriately through the angle \(\Theta\) for each slice so that a tubular structure is formed. Only the \(x\) and \(z\) coordinates must be modified. To perform the tilt, the following quantities are computed using trigonometry:
+
+\begin{equation}
+\begin{aligned}
+w=\sin{(\pi/2-\Theta)}(r+dt)\cos{(\theta)}/\sin{(pi/2)}\\
+h = w\sin{(\Theta)}\\
+p = w\cos{(\Theta)}\\
+\end{aligned}
+\end{equation}
+
+To tilt the z-coordinate, for points in the first and fourth quadrant of each slice:
+
+\begin{equation}
+z_{new} = z - (-1)^{tube}h
+\end{equation}
+
+And for points in the second and third quadrant of each slice:
+
+\begin{equation}
+z_{new} = z + (-1)^{tube}h
+\end{equation}
+
+where \(tube\) is a variable indicating whether or not the slice is in the left or right half of the tube. For the left half of the tube, \(tube=1\), and in the right half, \(tube=2\).
+
+\item Then, tilt the x-coordinates. For points in the first and fourth quadrants of each slice:
+
+\begin{equation}
+x_{new} = x + p
+\end{equation}
+
+And for points in the second and third quadrants of each slice:
+
+\begin{equation}
+x_{new} = x - p
+\end{equation}
+
+\item Finally, tilt the slices that exactly align with the peak and valley of the tube (for odd numbers of \(N_\theta\), this would not be performed). For the slices that align with the peaks and for nodes in the first and fourth quadrants, adjust the \(z\) coordinates according to:
+
+\begin{equation}
+z_{new} = z - (r+dt)\cos{(\theta)}
+\end{equation}
+
+And for points in the second and third quadrants:
+
+\begin{equation}
+z_{new} = z + (r+dt)\cos{(\theta)}
+\end{equation}
+
+The \(x\)-coordinates are adjusted by simply setting all of them to the centroid coordinate for that slice. 
 \end{enumerate}
+
+This process is fairly complicated, and reveals why meshing software is so valuable. The process here is left fairly general that it can apply for any values of \(N_\theta, N_c, N_t\), but any slight change in the geometry completely invalidates the program. The final mesh for \(N_c=8, N_\theta=8, N_t=3\) is shown below. This mesh is shown because the requested mesh with only \(N_c=4\) is relatively difficult to perceive in a 3-D plot in Matlab, so the following plot better reveals the mesh. Lines are drawn between each coordinate.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{RefinedMesh.jpg}
+  \caption{Mesh for \(N_c=8, N_\theta=8, N_t=3\). Lines connect each coordinate for better visuality.}
+\end{figure}
+
+The coarser mesh, for \(N_c=4, N_\theta=8, N_t=3\) is shown below, again with lines connecting each coordinate for better visibility.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{CoarseMesh.jpg}
+  \caption{Mesh for \(N_c=4, N_\theta=8, N_t=3\). Lines connect each coordinate for better visuality.}
+\label{fig:CoarseMesh}
+\end{figure}
+
+The mesh in Fig. \ref{fig:CoarseMesh} is shown below without the lines connecting each coordinate.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{CoarseMeshNoLines.jpg}
+  \caption{Mesh for \(N_c=4, N_\theta=8, N_t=3\).}
+\end{figure}
 
 \section{Appendix}
 
