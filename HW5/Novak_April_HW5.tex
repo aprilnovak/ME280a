@@ -269,10 +269,27 @@ The eigenvalues of \(\textbf{IE}\) are directly proportional to \(\mu\) and \(\k
 This section discusses the mesh generator used to mesh the tubular ``S'' structure given in the assignment. The meshing begins in each \(\theta\)-chunk. For the circular cross-section structure, the \(x\) and \(y\) coordinates are related to each other by:
 
 \begin{equation}
+\label{eq:xy}
 x^2+y^2=r
 \end{equation}
 
-where \(r\) is the inner radius of the tubular structure. Each piece in the circumferential direction is defined according to \(\theta\), where \(0\leq\theta\leq2\pi\) defines the ``slice'' parallel to \(\vv{e}_r\). 
+where \(r\) is the inner radius of the tubular structure. Each piece in the circumferential direction is defined according to \(\theta\), where \(0\leq\theta\leq2\pi\) defines the ``slice'' parallel to \(\vv{e}_r\). The generation of the mesh is based on determining the coordinates of each node. The first node is assigned to the first ``slice'' for \(\theta=0\). In the discussion of the mesh generator, ``slice'' refers to each plane for which there exists a hollowed annulus (that is meshed according to the number of layers and circumferential points). \(\Theta\) is the angle referring to the circumferential angle, while \(\theta\) refers to the angle in each slice. The overall algorithm for generating the coordinates for the mesh is as follows:
+
+\begin{enumerate}
+\item Begin with slice for \(\Theta=0\). Beginning then for \(\theta=0\), move counterclockwise around the first layer (inner surface of the tube). Increment \(\theta\) in units of \(2\pi/N_c\), and for each \(\theta\), assign the \(x\) and \(y\) coordinates according to Eq. \eqref{eq:xy}. 
+\item After finishing the inner layer, increase \(r\) by \(dt\), where \(dt\) is the thickness of each layer, to move to the next layer, then repeat step 1. 
+\item Repeat steps 1 and 2 until all layers in each slice have been meshed, where for each layer, \(dt\) is added. 
+\item Now that a slice has been meshed, repeat for all slices. This requires determining the \(x,y,z\) centers for each new slice. This is performed by sweeping through \(\Theta\). The \(y\) coordinate is \(y=0\) for all points, while the \(x\) coordinate continually increases moving from slice to slice, and the \(z\) coordinate is positive for the left half of the tube, and negative for the right half of the tube. 
+\item Now that all slices have been meshed, the mesh looks like as follows for \(N_c=8, N_\theta=8, N_t=3\). 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{NoTilt.jpg}
+  \caption{Mesh for \(N_c=8, N_\theta=8, N_t=3\) with no tilt to the slices. Lines connect each coordinate for better visuality.}
+\end{figure}
+
+The next step is to rotate the slices appropriately through the angle \(\Theta\) for each slice so that a tubular structure is formed.
+\end{enumerate}
 
 \section{Appendix}
 
