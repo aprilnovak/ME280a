@@ -122,14 +122,14 @@ To have a physically meaningful transformation between two coordinate frames, th
 
 \begin{equation}
 \label{eq:Cauchy}
-\frac{d}{dt}\int_{\Omega}\rho\dot{\textbf{u}}dV=\int_{\partial\Omega}\vv{t}dS+\int_{\Omega}\rho\textbf{b}dV
+\frac{d}{dt}\int_{\Omega}\rho\dot{\textbf{u}}dV=\int_{\partial\Omega}\textbf{t}dS+\int_{\Omega}\rho\textbf{b}dV
 \end{equation}
 
-where \(\Omega\) is the domain of the continuum (a volume), \(rho\) is the density, \(\textbf{u}\) is the displacement vector, \(\partial\Omega\) represents the boundary of the volume domain (a surface \(S\)), \(\vv{t}\) represents the traction (loading on a surface), and \(\vv{b}\) represents a body force such as gravity. Eq. \eqref{eq:Cauchy} is no more than the Cauchy balance of linear momentum. By the Cauchy theorem, where surface forces are balanced on a tetrahedron, the traction is equivalent to:
+where \(\Omega\) is the domain of the continuum (a volume), \(rho\) is the density, \(\textbf{u}\) is the displacement vector, \(\partial\Omega\) represents the boundary of the volume domain (a surface \(S\)), \(\textbf{t}\) represents the traction (loading on a surface), and \(\vv{b}\) represents a body force such as gravity. Eq. \eqref{eq:Cauchy} is no more than the Cauchy balance of linear momentum. By the Cauchy theorem, where surface forces are balanced on a tetrahedron, the traction is equivalent to:
 
 \begin{equation}
 \label{eq:Traction}
-\vv{t}\equiv\bar{\bar{\sigma}}^T\cdot\hat{n}
+\textbf{t}\equiv\bar{\bar{\sigma}}^T\cdot\hat{n}
 \end{equation}
 
 where \(\hat{n}\) is a unit normal and \(\bar{\bar{\sigma}}\) is the stress tensor, with components \(\sigma_{ji}\), where \(j\) refers to the face on which the stress acts, and \(i\) the direction in which the stress points. The transpose appears in the above equation because, in fluids scenarios, the stress is usually defined in the opposite manner such that the first index refers to the direction in which the stress points, and the second index the face on which the stress acts.
@@ -272,8 +272,86 @@ where recall that \(\textbf{u}\) is the vector-valued displacement. The finite e
 The weak form of Eq. \eqref{eq:Cauchy7} is obtained by multiplying through by a test function \(\textbf{v}\), where, like \(\textbf{u}\), \(\textbf{v}\) is a vector-valued function. Then, integrating over the body:
 
 \begin{equation}
-\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\Omega}\nabla\cdot(\textbf{IE}:\nabla \textbf{u})\cdot\textbf{v}d\Omega+\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega
+\label{eq:StrongForm2}
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\Omega}(\nabla\cdot\bar{\bar{\sigma}})\cdot\textbf{v}d\Omega+\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega
 \end{equation}
+
+To apply the product rule, use the following identity:
+
+\begin{equation}
+\nabla\cdot(\bar{\bar{\sigma}}\cdot\textbf{v})=(\nabla\cdot\bar{\bar{\sigma}})\cdot\textbf{v}+\nabla\textbf{v}:\bar{\bar{\sigma}}
+\end{equation}
+
+Using this identity in Eq. \eqref{eq:StrongForm2}:
+
+\begin{equation}
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\Omega}\left(\nabla\cdot(\bar{\bar{\sigma}}\cdot\textbf{v})-\nabla\textbf{v}:\bar{\bar{\sigma}}\right)d\Omega+\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega
+\end{equation}
+
+The divergence theorem can be applied to the first term on the RHS to give:
+
+\begin{equation}
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\bar{\bar{\sigma}}\cdot\textbf{v}\cdot\hat{n}dA-\int_{\Omega}\nabla\textbf{v}:\bar{\bar{\sigma}}d\Omega+\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega
+\end{equation}
+
+where \(A\) is the boundary area of the volume \(\Omega\) with unit normal vector \(\hat{n}\). The traction is defined from Eq. \eqref{eq:Traction}, and hence the above simplifies to:
+
+\begin{equation}
+\begin{aligned}
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\textbf{t}\cdot\textbf{v}dA-& \int_{\Omega}\nabla\textbf{v}:\bar{\bar{\sigma}}d\Omega& +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega\\
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\textbf{t}\cdot\textbf{v}dA-& \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega& +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega\\
+\end{aligned}
+\end{equation}
+
+For convenience, it is assumed that the weight function \(\textbf{v}\) goes to zero on the displacement boundaries such that the area integral that appears in the weak form above applies strictly to boundaries on which the traction is specified. Hence, the weak form can be stated as:
+
+\begin{equation}
+\label{eq:WeakFormQ1}
+\begin{aligned}
+\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ such that } \textbf{u}_{\Gamma_u}=\textbf{d} \text{ and such that }\forall\textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega), \textbf{v}_{\Gamma_u}=\textbf{0},\\
+\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\textbf{t}\cdot\textbf{v}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega\\
+\end{aligned}
+\end{equation}
+
+where \(\textbf{d}\) is the vector of known displacements on the displacement boundary, \(\textbf{t}^{*}\) is a vector of known tractions on the traction boundary, and \(\Gamma_u\)  and \(\Gamma_t\) indicate the portions of the boundary for which there are known displacements and tractions, respectively. This weak form is more general than the strong form because it does not assume differentiability of the stress. The particular weighted residual method to be applied is the Bubnov-Galerkin method, where both the solution and the weight function are expanded in the same basis functions. Hence, both the displacement and the weight function are in \(\textbf{H}^1(\Omega)\), the space necessary to ensure finite integrals in the weak form above. 
+
+The space \(\textbf{H}^1(\Omega)\) is a Hilbert-space norm, where the 1 superscript indicates that it contains all functions whose first derivatives are finite. This is the space from which the shape and weight functions most come because at most a first derivative is required in the weak form. For other applications, where for example, the highest derivative present in the weak form is a second derivative, then the weight and shape functions would need to be in \(\textbf{H}^2(\Omega)\) in order for all integrals to remain finite. In other words, \(\textbf{u}\) is in \(\textbf{H}^1(\Omega)\) if the following statement is true:
+
+\begin{equation}
+\|\textbf{u}\|^2_{\textbf{H}^1(\Omega)}=\int_{\Omega}\left(\frac{\partial u_i}{\partial x_j}\right)^2d\Omega+\int_{\Omega}u_iu_id\Omega<\infty
+\end{equation}
+
+where suffix notation is implied. Because \(\textbf{u}\) is vector-valued, the space of approximation functions must also be vector-valued. This simple extension then requires that each component of \(\textbf{u}\) be in \(H^1(\Omega)\). This is indicated by boldface in Eq. \eqref{eq:WeakFormQ1}. Because the traction and body load also appear in the integrals in Eq. \eqref{eq:WeakFormQ1}, there is a requirement on the space of functions from which they can inhabit. From the weak form, no differentiation of these functions is required, so they must be within \(\textbf{H}^0(\Omega)\), sometimes referred to as in \(\textbf{L}^2(\Omega)\). 
+
+The weak form in Eq. \eqref{eq:WeakFormQ1} is equivalent to the strong form in Eq. \eqref{eq:Cauchy7} provided that the solution is sufficiently differentiable that the higher derivatives required in the strong form are defined.
+
+\subsubsection{The Finite Element Weak Form}
+
+\subsubsection{The Finite Element Weak Form - Penalty Method}
+
+The penalty method is a means by which to apply Dirichlet boundary conditions without the tedious need to separate rows and columns from the stiffness and loading vectors. From Eq. \eqref{eq:WeakFormQ1}, the weak form for a finite element implementation requires that the weight functions are zero on essential boundaries. The penalty method relaxes this requirement, and adds a term to the weak form to account for violation of a Dirichlet boundary condition on a Dirichlet boundary. This method is widely-used, but is not strictly required to apply Dirichlet boundary conditions - the alternative of separating rows and columns containing known quantities, and subtracting from the load vector, can always be performed. The penalty method adds a term to Eq. \eqref{eq:WeakFormQ1}:
+
+\begin{equation}
+\label{eq:WeakFormPenalty}
+\begin{aligned}
+\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ such that } \textbf{u}_{\Gamma_u}=\textbf{d} \text{ and such that }\forall\textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega)\\
+\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\textbf{t}\cdot\textbf{v}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega+\underbrace{P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})\cdot\textbf{v}dA}_\text{penalty term}\\
+\end{aligned}
+\end{equation}
+
+where \(P^{*}\) represents something like a spring constant, and is a large, positive number. A high value of this artificial spring constant will apply a traction to ``force'' the displacement boundary to be satisfied on \(\Gamma_u\), the displacement boundary. In other words, \(P^{*}(\textbf{d}-\textbf{u})\approx\textbf{t}_{penalty}\), so the penalty term represents a traction that enforces the Dirichlet boundary condition. This term, however, would never be applied if we still required \(\textbf{v}_{\Gamma_u}=\textbf{0}\), and so the kinematic restrictions on the weight functions are dropped, and they do not need to be zero on the Dirichlet boundaries.
+
+The penalty method is motivated by the fact that, for symmetric systems for which a potential can be defined, an augmented potential can be defined, whose variation is the weak from in Eq. \eqref{eq:WeakFormPenalty}:
+
+\begin{equation}
+\mathscr{T}(u)=\mathscr{T}(u)+P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})(\textbf{d}-\textbf{u})dA
+\end{equation}
+
+Hence, the penalty method with this interpretation is a quadratic addition to the potential energy. 
+
+\subsubsection{Specifics on Finite Element Implementation}
 
 
 \subsection{Mesh Generator}
