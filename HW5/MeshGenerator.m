@@ -2,7 +2,7 @@
 clear all
 
 Nt = 3;                             % number of layers
-No = 2;                             % number of elements in theta
+No = 8;                             % number of elements in theta
 Nc = 4;                             % number of elements in circum
 
 if mod(No, 2) ~= 0
@@ -203,6 +203,11 @@ for l = 1:(No + 1) % for each slice, assign the front node values
    e = e + Nc * Nt;
 end
 
+% print the LM for the case before relating front to back nodes
+%for e = 1:length(LM)
+%    fprintf('%i & %i & %i & %i & %i & %i & %i & %i\\\\\n', LM(e, 1), LM(e,2), LM(e,3), LM(e,4), LM(e,5), LM(e,6), LM(e,7), LM(e,8))
+%end
+
 % assign the back face values - front values for second slice are
 % back values for first slice, etc.
 i = 1;
@@ -217,3 +222,8 @@ end
 % has the back values determined as if they were the frontal values of
 % another slice
 LM = LM(1:num_elem, :);
+
+% print the final LM
+% for e = 1:length(LM)
+%    fprintf('%i & %i & %i & %i & %i & %i & %i & %i\\\\\n', LM(e, 1), LM(e,2), LM(e,3), LM(e,4), LM(e,5), LM(e,6), LM(e,7), LM(e,8))
+% end
