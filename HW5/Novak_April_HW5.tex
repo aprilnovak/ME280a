@@ -353,6 +353,95 @@ Hence, the penalty method with this interpretation is a quadratic addition to th
 
 \subsubsection{Specifics on Finite Element Implementation}
 
+This section covers the details regarding finite element implementation of Eq. \eqref{eq:WeakFormQ1}. To implement this weak form, first the displacement, body force, traction, and weight function must be defined:
+
+\begin{equation}
+\textbf{u}=\begin{bmatrix}u_1\\u_2\\u_3\end{bmatrix},\quad\textbf{f}=\begin{bmatrix}\rho b_1\\\rho b_2\\\rho b_3\end{bmatrix},\quad\textbf{t}=\begin{bmatrix}t_1\\t_2\\t_3\end{bmatrix},\quad\textbf{v}=\begin{bmatrix}v_1\\v_2\\v_3\end{bmatrix}
+\end{equation}
+
+The governing conservation of momentum equation is a vector-valued equation, so each component of \(\textbf{u}\), and the weight function \(\textbf{v}\), are expanded in a series of shape functions:
+
+\begin{equation}
+\label{eq:UExpansion}
+\textbf{u}^h=\begin{bmatrix}\sum_{i=1}^{n_{en}}a_i\phi_i\\\sum_{i=1}^{n_{en}}a_{i+n_{en}}\phi_i\\\sum_{i=1}^{n_{en}}a_{i+2n_{en}}\phi_i\end{bmatrix}
+\end{equation}
+
+where the above expansion applies over a single element with \(n_{en}\) nodes per element. A similar expansion is performed for the weight function:
+
+\begin{equation}
+\textbf{v}^h=\begin{bmatrix}\sum_{i=1}^{n_{en}}b_i\phi_i\\\sum_{i=1}^{n_{en}}b_{i+n_{en}}\phi_i\\\sum_{i=1}^{n_{en}}b_{i+2n_{en}}\phi_i\end{bmatrix}
+\end{equation}
+
+The number and order of these shape functions determines the order of the finite element approximation. 
+
+The weak form in Eq. \eqref{eq:WeakFormQ1} can be written in matrix form as follows, noting that the dot product of two vectors can be written in matrix form as \(\textbf{a}\cdot\textbf{b}=\textbf{b}^T\textbf{a}\):
+
+\begin{equation}
+\label{eq:FEStep1}
+\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\partial\Omega}\textbf{v}^T\textbf{t}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
+\end{equation}
+
+where the penalty term has been included for completeness (though it could be neglected if static condensation were to be performed on the matrix system prior to solving). To transform the second term on the RHS, use the identity of the second order inner product:
+
+\begin{equation}
+A:B=A_{ij}B_{ij}=\text{Tr}(A^TB)
+\end{equation}
+
+Then, the transpose of a product is:
+
+\begin{equation}
+(AB)^T=A^TB^T
+\end{equation}
+
+% get to deformation tensor!
+
+Then, Eq. \eqref{eq:FEStep1} becomes:
+
+\begin{equation}
+\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\partial\Omega}\textbf{v}^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\textbf{v})^T\textbf{IE}(\textbf{D}\textbf{u})d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
+\end{equation}
+
+where \(\textbf{D}\) is the deformation tensor:
+
+\begin{equation}
+\textbf{D}=\begin{bmatrix}\frac{\partial}{\partial x_1} & 0 & 0\\
+0 & \frac{\partial}{\partial x_2} & 0\\
+0 & 0 & \frac{\partial}{\partial x_3}\\
+\frac{\partial}{\partial x_2} & \frac{\partial}{\partial x_1} & 0\\
+0 & \frac{\partial}{\partial x_3} & \frac{\partial}{\partial x_2}\\
+\frac{\partial}{\partial x_3} & 0 & \frac{\partial}{\partial x_1}\end{bmatrix}
+\end{equation}
+
+The goal is to solve for the expansion coefficients on \(\textbf{u}\). This requires decomposing the expansion in Eq. \eqref{eq:UExpansion} into a matrix containing just the shape functions and a vector containing the unknowns. This can be done in two different ways - the first way is to organize all the expansion coefficients pertaining to \(u_1\) in a vector \(\textbf{a}\), following by all the coefficients for \(u_2\), and followed by all the coefficients for \(u_3\). This is the approach used in this class. An alternative method is to organize the vector of unknowns, \(\textbf{a}\) such that all unknowns for a node appear together, i.e. the first three entries would be the coefficients pertaining to \(u_1\), then \(u_2\), then \(u_3\), for the first node. This second approach is used in ME 180, but is not used here.
+
+So, the displacement is organized as:
+
+\begin{equation}
+\textbf{u}^h=\bar{\bar{\phi}}\textbf{a}
+\end{equation}
+
+where \(\textbf{a}\) is a vector of unknowns containing all the unknowns pertaining to the \(x\)-displacement first, following by all the unknowns pertaining to the \(y\)-displacement second, and for the \(z\)-displacement third. The matrix \(\bar{\bar{\phi}}\) is defined in a different manner depending on the particular value of the node number:
+
+\begin{equation}
+\bar{\bar{\phi}}=
+\begin{cases}(\phi_i, 0, 0)^T & i < N\\(0, \phi_i, 0)^T & N+1\leq i\leq 2N \\ (0, 0, \phi_i)^T & 2N+1\leq i\leq 3N
+\end{cases}
+\end{equation}
+
+The Bubnov-Galerkin method is used so that the approximation for \(\textbf{v}\) is performed in the same manner as for \(\textbf{u}\), so that:
+
+\begin{equation}
+\textbf{v}^h=\bar{\bar{\phi}}\textbf{b}
+\end{equation}
+
+Inserting these matrix forms into the weak form gives:
+
+\begin{equation}
+\int_{\Omega}\rho(\bar{\bar{\phi}}\textbf{b})^T\bar{\bar{\phi}}\ddot{\textbf{a}}d\Omega=\int_{\partial\Omega}(\bar{\bar{\phi}}\textbf{b})^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\bar{\bar{\phi}}\textbf{b})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +\int_{\Omega}(\bar{\bar{\phi}}\textbf{b})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}}\textbf{b})^T(\textbf{d}-\bar{\bar{\phi}}\textbf{a})dA\\
+\end{equation}
+
+where the fact that the shape functions are not functions of time has been included in the first term and the body force \(\rho\textbf{b}\) has been replaced by \(\textbf{f}\) to avoid confusion with the expansion coefficients of the weight function.
+
 
 
 \section{Mesh Generator}
@@ -548,7 +637,7 @@ This is not the final form for the connectivity matrix (a.k.a. location matrix).
 \end{bmatrix}
 \end{equation}
 
-Each row in the location matrix corresponds to an elements, and each column to a local node number, so that \(LM(1,4)\) indicates the global node number of local node number 4 in element 1. This method is extended to the case for \(N_\theta=8, N_c=4, N_t=3\). So, for this particular example, 
+Each row in the location matrix corresponds to an elements, and each column to a local node number, so that \(LM(1,4)\) indicates the global node number of local node number 4 in element 1. This method is extended to the case for \(N_\theta=8, N_c=4, N_t=3\), where the purpose of the previous discussion for a fewer number of circumferential elements was simply to illustrate the process by which the location matrix is generated. So, for the problem statement in this homework assignment (\(N_\theta=8, N_c=4, N_t=3\)):
 
 \begin{equation}
 \label{eq:LMFinalForm}
@@ -669,37 +758,9 @@ LM_2=
 \section{Appendix}
 
 This section contains the complete code used in this assignment. 
-\begin{comment}
-\subsection{\texttt{FEProgram.m}}
-This is the main code used for the problem solving.
-\lstinputlisting[language=Matlab]{FEProgram.m}
 
-\subsection{\texttt{BCnodes.m}}
-This function applies boundary conditions.
-\lstinputlisting[language=Matlab]{BCnodes.m}
+\subsection{\texttt{MeshGenerator.m}}
+This program generates the mesh and connectivity matrix.
+\lstinputlisting[language=Matlab]{MeshGenerator.m}
 
-\subsection{\texttt{condensation.m}}
-This function separates out the matrix equation as in Eq. \eqref{eq:condensation}.
-\lstinputlisting[language=Matlab]{condensation.m}
-
-\subsection{\texttt{mesh.m}}
-This function performs the meshing.
-\lstinputlisting[language=Matlab]{mesh.m}
-
-\subsection{\texttt{permutation.m}}
-This function determines the permutation matrix for use with the connectivity matrix.
-\lstinputlisting[language=Matlab]{permutation.m}
-
-\subsection{\texttt{postprocess.m}}
-This function postprocesses the FE solution and transforms it back to the physical domain using a linear system solve as described in Eq. \eqref{eq:LinearSolve}.
-\lstinputlisting[language=Matlab]{postprocess.m}
-
-\subsection{\texttt{quadrature.m}}
-This function selects the quadrature rule.
-\lstinputlisting[language=Matlab]{quadrature.m}
-
-\subsection{\texttt{shapefunctions.m}}
-This function contains the library of shape functions.
-\lstinputlisting[language=Matlab]{shapefunctions.m}
-\end{comment}
 \end{document}
