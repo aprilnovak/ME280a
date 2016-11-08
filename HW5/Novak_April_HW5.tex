@@ -404,6 +404,7 @@ Then, Eq. \eqref{eq:FEStep1} becomes:
 where \(\textbf{D}\) is the deformation tensor:
 
 \begin{equation}
+\label{eq:D}
 \textbf{D}=\begin{bmatrix}\frac{\partial}{\partial x_1} & 0 & 0\\
 0 & \frac{\partial}{\partial x_2} & 0\\
 0 & 0 & \frac{\partial}{\partial x_3}\\
@@ -481,18 +482,105 @@ While the above equation holds over the entire domain, the strength of the finit
 where \(\Gamma_{u,e}\) is the intersection of the boundary of element \(e\) with the displacement boundary and \(\Gamma-{t,e}\) is the intersection of the boundary of element \(e\) with the traction boundary. All of these integrals are performed in the master domain using quadrature rules. This master domain is a cube defined over \(-1\leq\xi_1\leq1, -1\leq\xi_2\leq1, -1\leq\xi_3\leq1\). In order to transform between the physical and master domain, a transformation rule is needed to map between \(x,y,z\) and \(\xi_1,\xi_2,\xi_3\). This transformation rule can take many forms, but a convenient one is to simply use the shape function expansion:
 
 \begin{equation}
-x_i=\sum_{j=1}^{n_en}X_j\phi_j(\xi_1,\xi_2,\xi_3)
+x_i=\sum_{j=1}^{n_{en}}X_j\phi_j(\xi_1,\xi_2,\xi_3)
 \end{equation}
 
-where the shape functions are defined over the master element, \(X_j\) are the coordinates, and \(i\) refers to the fact that the above expansion is assumed to apply equally for \(x_1\), \(x_2\) and \(x_3\).
+where the shape functions are defined over the master element, \(X_j\) are the coordinates, and \(i\) refers to the fact that the above expansion is assumed to apply equally for \(x_1\), \(x_2\) and \(x_3\). This mapping, which uses the shape functions as the basis for the mapping, is usually called a parametric map. 
+
+So, all the integrals in \(\textbf{K}^e\) and \(\textbf{R}^e\) are performed over a single element by transforming the integrals to the master domain. The integrals in the physical domain are with respect to \(d\bar{x}\), and to transform them to the master domain, the deformation gradient tensor \(\textbf{F}\) by:
+
+\begin{equation}
+d\bar{x}=\textbf{F}d\bar{\xi}
+\end{equation}
+
+Using the chain rule reveals the form of \(\textbf{F}\):
+
+\begin{equation}
+\begin{bmatrix}x_1\\x_2\\x_3\end{bmatrix}=
+\begin{bmatrix}\frac{\partial x_1}{\partial \xi_1}&\frac{\partial x_1}{\partial \xi_2}&\frac{\partial x_1}{\partial \xi_3}\\
+\frac{\partial x_2}{\partial \xi_1}&\frac{\partial x_2}{\partial \xi_2}&\frac{\partial x_2}{\partial \xi_3}\\
+\frac{\partial x_3}{\partial \xi_1}&\frac{\partial x_3}{\partial \xi_2}&\frac{\partial x_3}{\partial \xi_3}\end{bmatrix}
+\begin{bmatrix}\xi_1\\\xi_2\\\xi_3\end{bmatrix}
+\end{equation}
+
+Or, in shorthand notation:
+
+\begin{equation}
+dx_i=F_{ij}\xi_j
+\end{equation}
+
+where suffix notation is implied. The inverse relationship is:
+
+\begin{equation}
+d\xi_j=F_{ji}dx_i=F_{ij}^{-1}dx_i
+\end{equation}
+
+So, in order to perform computations over each element, Eq. \eqref{eq:FEWeakForm_element} becomes:
+
+\begin{equation}
+\label{eq:FEWeakForm_element}
+\begin{aligned}
+\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}})|\textbf{F}|d\xi_1d\xi_2d\xi_3 +P^{*}\int_{\Gamma_{u,e}}\bar{\bar{\phi}}^T\bar{\bar{\phi}}dA_e\\
+\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\bar{\bar{\phi}})^T\textbf{t}dA_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\bar{\bar{\phi}})^T\textbf{f}\ |\textbf{F}|d\xi_1d\xi_2d\xi_3+P^{*}\int_{\Gamma_{u,e}}(\bar{\bar{\phi}})^T\textbf{d}dA_e\\
+\end{aligned}
+\end{equation}
+
+% transform the area integrals to the master element
+
+
+However, to accurately perform the integration in the master element, everything within the integrand must also be converted to the master coordinate frame. Hence, the deformation gradient defined in Eq. \eqref{eq:D} becomes:
+
+\begin{equation}
+\label{eq:D}
+\textbf{D}=\begin{bmatrix}\frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1} & 0 & 0\\
+0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2} & 0\\
+0 & 0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3}\\
+\frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2} & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1} & 0\\
+0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3} & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2}\\
+\frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3} & 0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1}\end{bmatrix}
+\end{equation}
 
 
 
 
 
 
+After this is complete, all the local stiffness matrices and load vectors must be organized into the global stiffness matrix and load vector. The placement of local matrices into the global matrix is performed using a connectivity matrix that relates the local node numbers to the global node numbers. A connectivity matrix is usually organized so that either each row corresponds to a single element. Then, each column in that row refers to each local node to that element, and the information held in the connectivity matrix are the global node numbers relating to the local node numbers. For example, for a 2-D domain with six elements, and global node numbering beginning in the bottom left corner and moving up to the top right corner, the connectivity matrix (also called the location matrix in this document) has the following form:
+
+\begin{equation}
+\textbf{LM}=\begin{bmatrix}
+1 & 2 & 6 & 5\\
+2 & 3 & 7 & 6\\
+3 & 4 & 8 & 7\\
+5 & 6 & 10 & 9\\
+6 & 7 & 11 & 10\\
+7 & 8 & 12 & 11\\\end{bmatrix}
+\end{equation}
+
+where the local nodes are numbered in a counterclockwise manner beginning from the bottom left node. Then, for example, the (2,2) entry in the global matrix is given by \(k(2,2)^{e=1}+k(1,1)^{e=2}\) because both elements 1 and 2 contain global node 2.
 
 
+
+
+
+\subsection{Shape Functions}
+
+The shape functions for 3-D finite elements are a natural extension of the shape functions used in lower dimensions. Trilinear elements, or 3-D linear elements, are used for the remainder of this assignment. This choice of shape functions represents a nodal basis, since the shape functions go to zero at all nodes except for the node for which they are defined. The trilinear shape functions are:
+
+\begin{equation}
+\begin{aligned}
+\phi_1(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1-\xi_1)(1-\xi_2)(1-\xi_3)\\
+\phi_2(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1+\xi_1)(1-\xi_2)(1-\xi_3)\\
+\phi_3(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1+\xi_1)(1+\xi_2)(1-\xi_3)\\
+\phi_4(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1-\xi_1)(1+\xi_2)(1-\xi_3)\\
+\phi_5(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1-\xi_1)(1-\xi_2)(1+\xi_3)\\
+\phi_6(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1+\xi_1)(1-\xi_2)(1+\xi_3)\\
+\phi_7(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1+\xi_1)(1+\xi_2)(1+\xi_3)\\
+\phi_8(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1-\xi_1)(1+\xi_2)(1+\xi_3)\\
+\end{aligned}
+\end{equation}
+
+This gives 24 total unknowns per element (since the unknown is vector-valued with three components). 
 
 
 \section{Mesh Generator}
@@ -805,6 +893,12 @@ LM_2=
 124 & 121 & 128 & 125 & 140 & 137 & 144 & 141\\
 \end{bmatrix}
 \end{equation}
+
+\subsection{Mesh Quality}
+
+In order for the integrals in the weak form to remain finite when transformed to the master element, the Jacobian of the transformation must be positive. For a 3-D implementation, this means that \(\mathscr{J}\equiv\det{(\textbf{F})}>0\). A mesh has poor quality if it has elements with negative or zero Jacobians. This can occur for nonconvex elements, where some region of the master domain is mapped outside of the element when transforming back to the physical domain, or when the node numbering is performed incorrectly within an element such that the element is mapped inside-out. The Jacobian is not necessarily constant over an element, and it is required that the Jacobian be positive everywhere in the element - if the Jacobian were allowed to be negative over some regions of the element, but positive over others, this could cause singularities in the stiffness matrix.
+
+
 
 \section{Appendix}
 
