@@ -115,6 +115,7 @@ F_{ij}\equiv\frac{\partial x_i}{\partial X_i}
 The Jacobian \(\mathscr{J}\) is defined as the determinant of the deformation gradient tensor, and is required to transform integrals over the physical domain to the master element for application of quadrature rules:
 
 \begin{equation}
+\label{eq:Jacobian}
 \mathscr{J}\equiv \det{\bar{\bar{F}}}
 \end{equation}
 
@@ -496,6 +497,7 @@ d\bar{x}=\textbf{F}d\bar{\xi}
 Using the chain rule reveals the form of \(\textbf{F}\):
 
 \begin{equation}
+\label{eq:FForm}
 \begin{bmatrix}x_1\\x_2\\x_3\end{bmatrix}=
 \begin{bmatrix}\frac{\partial x_1}{\partial \xi_1}&\frac{\partial x_1}{\partial \xi_2}&\frac{\partial x_1}{\partial \xi_3}\\
 \frac{\partial x_2}{\partial \xi_1}&\frac{\partial x_2}{\partial \xi_2}&\frac{\partial x_2}{\partial \xi_3}\\
@@ -515,6 +517,24 @@ where suffix notation is implied. The inverse relationship is:
 d\xi_j=F_{ji}dx_i=F_{ij}^{-1}dx_i
 \end{equation}
 
+% transform the area integrals to the master element
+
+The above transformation rule holds for the volume integral Jacobian - Nanson's formula must be used to transform the area integrals appearing in the element stiffness matrix and load vector to area integrals in the master domain. There is no reason that the Jacobian for the volume transformation be the same as that for the surface transformation, which is why more care must be taken here to use the correct transformation. In this case, area integrals are transformed by Nanson's rule:
+
+\begin{equation}
+dA_e=(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e
+\end{equation}
+
+where \(\hat{n}\) is a unit normal to the master element surface (must be determined for each element on the surface), \(\hat{N}\) the normal to the physical element surface (must be determined), \(\mathscr{J}\) is the Jacobian defined in Eq. \eqref{eq:Jacobian}, and \(\textbf{F}\) is the deformation gradient tensor defined in Eq. \eqref{eq:FForm}. Then, all the integrals over areas must set one of \(\xi_i\) to \(\pm1\) to be consistent with the fact that on a surface, one of the master coordinates is held constant.
+
+% verify that I understand Nanson's formula
+
+
+
+
+
+
+
 So, in order to perform computations over each element, Eq. \eqref{eq:FEWeakForm_element} becomes:
 
 \begin{equation}
@@ -525,7 +545,7 @@ So, in order to perform computations over each element, Eq. \eqref{eq:FEWeakForm
 \end{aligned}
 \end{equation}
 
-% transform the area integrals to the master element
+
 
 
 However, to accurately perform the integration in the master element, everything within the integrand must also be converted to the master coordinate frame. Hence, the deformation gradient defined in Eq. \eqref{eq:D} becomes:
@@ -539,6 +559,41 @@ However, to accurately perform the integration in the master element, everything
 0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3} & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2}\\
 \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3} & 0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1}\end{bmatrix}
 \end{equation}
+
+In addition, the matrix \(\bar{\bar{\phi}}\) is defined in terms of the shape functions over the master domain (indicated with hats below):
+
+\begin{equation}
+\bar{\bar{\phi}}=\left\lbrack\begin{array}{*{24}c}
+\hat{\phi_1} & \hat{\phi_2} & \hat{\phi_3} & \hat{\phi_4} & \hat{\phi_5} & \hat{\phi_6} & \hat{\phi_7} & \hat{\phi_8} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \hat{\phi_1} & \hat{\phi_2} & \hat{\phi_3} & \hat{\phi_4} & \hat{\phi_5} & \hat{\phi_6} & \hat{\phi_7} & \hat{\phi_8} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+  0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \hat{\phi_1} & \hat{\phi_2} & \hat{\phi_3} & \hat{\phi_4} & \hat{\phi_5} & \hat{\phi_6} & \hat{\phi_7} & \hat{\phi_8}\\
+\end{array}\right\rbrack
+\end{equation}
+
+So, for trilinear bricks, the element stiffness and load vectors become:
+
+\begin{equation}
+\label{eq:FEWeakForm_element2}
+\begin{aligned}
+\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3 +\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}dA_e\\
+\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}dA_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3+\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}dA_e\\
+\end{aligned}
+\end{equation}
+
+where \(3\) is the number of spatial dimensions (3 for 3-D) and \(24\) is the number of unknowns per element (8 for 3-D). The net result is that \(\textbf{K}^e\) is a \(24\times24\) matrix, and \(\textbf{R}^e\) is a \(24\times1\) column vector. 
+
+All the integrals above are performed using quadrature. To integrate in higher than a single dimension using a Gaussian quadrature rule, simply apply the rule in each direction. So, in 1-D, where a single loop sums over all the quadrature points, three loops are needed to sum over the \(\xi_1,\xi_2,\xi_3\) directions. For instance, the integrals above, in quadrature form, are:
+
+\begin{equation}
+\label{eq:FEWeakForm_element3}
+\begin{aligned}
+\textbf{K}^e=\sum_{q=1}^g\sum_{r=1}^g\sum_{s=1}^gw_qw_gw_s(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar} +\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}dA_e\\
+\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}dA_e+\sum_{q=1}^g\sum_{r=1}^g\sum_{s=1}^gw_qw_gw_s(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}+\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}dA_e\\
+\end{aligned}
+\end{equation}
+
+where \(g\) is the number of quadrature points, where the same quadrature rule has been assumed to be applied in each spatial dimension.
+
 
 
 
@@ -898,7 +953,11 @@ LM_2=
 
 In order for the integrals in the weak form to remain finite when transformed to the master element, the Jacobian of the transformation must be positive. For a 3-D implementation, this means that \(\mathscr{J}\equiv\det{(\textbf{F})}>0\). A mesh has poor quality if it has elements with negative or zero Jacobians. This can occur for nonconvex elements, where some region of the master domain is mapped outside of the element when transforming back to the physical domain, or when the node numbering is performed incorrectly within an element such that the element is mapped inside-out. The Jacobian is not necessarily constant over an element, and it is required that the Jacobian be positive everywhere in the element - if the Jacobian were allowed to be negative over some regions of the element, but positive over others, this could cause singularities in the stiffness matrix.
 
+\section{Computational Cost}
 
+The cost of a 3-D finite element simulation of a vector-valued equation such as the equation of linear elasticity results in element stiffness matrices of size \(24\times24\) when using trilinear shape functions. For a cubical mesh, with \(M\times M\) elements, there are \(3(M+1)^3\) total unknowns in the mesh, so the global stiffness matrix is of size \((3(M+1)^3)\times(3(M+1)^3)\). If the symmetric of the local stiffness matrices is taken into account (they will always be symmetric so long as the Bubnov-Galerkin approach is used), then the required storage per element drops from 576 to 300. 
+
+If the Conjugate Gradient (CG) method is used to solve the matrix system \(\textbf{K}\textbf{a}=\textbf{R}\), then this represents repeated application of a \(24\times24\) matrix and a \(24\times1\) vector, which is an \(\mathscr{O}(N)\) operation. This is performed for each iteration, so the cost for the CG method scales as \(\mathscr{O}(IN)\), where \(I\) is the number of iterations needed to reach a particular tolerance in the solve.
 
 \section{Appendix}
 
