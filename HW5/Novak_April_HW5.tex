@@ -337,7 +337,7 @@ The penalty method is a means by which to apply Dirichlet boundary conditions wi
 \begin{aligned}
 \text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ such that } \textbf{u}_{\Gamma_u}=\textbf{d} \text{ and such that }\forall\textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega)\\
 \text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
-\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\textbf{t}\cdot\textbf{v}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega+\underbrace{P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})\cdot\textbf{v}dA}_\text{penalty term}\\
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\Gamma_t}\textbf{t}\cdot\textbf{v}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega+\underbrace{P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})\cdot\textbf{v}dA}_\text{penalty term}\\
 \end{aligned}
 \end{equation}
 
@@ -378,7 +378,7 @@ The weak form in Eq. \eqref{eq:WeakFormQ1} can be written in matrix form as foll
 
 \begin{equation}
 \label{eq:FEStep1}
-\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\partial\Omega}\textbf{v}^T\textbf{t}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
+\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\Gamma_t}\textbf{v}^T\textbf{t}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
 \end{equation}
 
 where the penalty term has been included for completeness (though it could be neglected if static condensation were to be performed on the matrix system prior to solving). To transform the second term on the RHS, use the identity of the second order inner product:
@@ -398,7 +398,7 @@ Then, the transpose of a product is:
 Then, Eq. \eqref{eq:FEStep1} becomes:
 
 \begin{equation}
-\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\partial\Omega}\textbf{v}^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\textbf{v})^T\textbf{IE}(\textbf{D}\textbf{u})d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
+\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\Gamma_t}\textbf{v}^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\textbf{v})^T\textbf{IE}(\textbf{D}\textbf{u})d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
 \end{equation}
 
 where \(\textbf{D}\) is the deformation tensor:
@@ -437,10 +437,61 @@ The Bubnov-Galerkin method is used so that the approximation for \(\textbf{v}\) 
 Inserting these matrix forms into the weak form gives:
 
 \begin{equation}
-\int_{\Omega}\rho(\bar{\bar{\phi}}\textbf{b})^T\bar{\bar{\phi}}\ddot{\textbf{a}}d\Omega=\int_{\partial\Omega}(\bar{\bar{\phi}}\textbf{b})^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\bar{\bar{\phi}}\textbf{b})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +\int_{\Omega}(\bar{\bar{\phi}}\textbf{b})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}}\textbf{b})^T(\textbf{d}-\bar{\bar{\phi}}\textbf{a})dA\\
+\int_{\Omega}\rho(\bar{\bar{\phi}}\textbf{b})^T\bar{\bar{\phi}}\ddot{\textbf{a}}d\Omega=\int_{\Gamma_t}(\bar{\bar{\phi}}\textbf{b})^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\bar{\bar{\phi}}\textbf{b})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +\int_{\Omega}(\bar{\bar{\phi}}\textbf{b})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}}\textbf{b})^T(\textbf{d}-\bar{\bar{\phi}}\textbf{a})dA\\
 \end{equation}
 
-where the fact that the shape functions are not functions of time has been included in the first term and the body force \(\rho\textbf{b}\) has been replaced by \(\textbf{f}\) to avoid confusion with the expansion coefficients of the weight function.
+where the fact that the shape functions are not functions of time has been included in the first term and the body force \(\rho\textbf{b}\) has been replaced by \(\textbf{f}\) to avoid confusion with the expansion coefficients of the weight function. Because \(\textbf{b}\) is arbitrary, the above can be rearranged such that \(\textbf{b}\) acts on a single term. Then, because that term, multiplied by an arbitrary term, must be zero, it can be concluded that the term equals zero. In other words, \(\textbf{b}\) can be ``canceled'' from each term, though this isn't exactly what is happening.
+
+\begin{equation}
+\int_{\Omega}\rho(\bar{\bar{\phi}})^T\bar{\bar{\phi}}\ddot{\textbf{a}}d\Omega=\int_{\Gamma_t}(\bar{\bar{\phi}})^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T(\textbf{d}-\bar{\bar{\phi}}\textbf{a})dA\\
+\end{equation}
+
+At this point, it is assumed that the system is in steady state. Then, the above reduces to the following, where the penalty term is split up into the portion that is a function of \(\textbf{a}\) and the portion that is not:
+
+\begin{equation}
+\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T(\bar{\bar{\phi}}\textbf{a})dA=\int_{\partial\Omega}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T\textbf{d}dA\\
+\end{equation}
+
+For simplicity, the above terms can be defined as matrices:
+
+\begin{equation}
+\label{eq:FEWeakForm}
+\begin{aligned}
+\textbf{K}\equiv\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}})d\Omega +P^{*}\int_{\Gamma_u}\bar{\bar{\phi}}^T\bar{\bar{\phi}}dA\\
+\textbf{R}\equiv\int_{\Gamma_t}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T\textbf{d}dA\\
+\end{aligned}
+\end{equation}
+
+to give the matrix system:
+
+\begin{equation}
+\textbf{K}\textbf{a}=\textbf{R}
+\end{equation}
+
+While the above equation holds over the entire domain, the strength of the finite element method is that the integrals in Eq. \eqref{eq:FEWeakForm} can be performed over each element, since the shape functions are a nodal basis such that they are only nonzero at a single node. So, for an element \(e\), the element stiffness matrix and load vector are:
+
+\begin{equation}
+\label{eq:FEWeakForm_element}
+\begin{aligned}
+\textbf{K}^e\equiv\int_{\Omega_e}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}})d\Omega_e +P^{*}\int_{\Gamma_{u,e}}\bar{\bar{\phi}}^T\bar{\bar{\phi}}dA_e\\
+\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\bar{\bar{\phi}})^T\textbf{t}dA_e+\int_{\Omega_e}(\bar{\bar{\phi}})^T\textbf{f}d\Omega_e+P^{*}\int_{\Gamma_{u,e}}(\bar{\bar{\phi}})^T\textbf{d}dA_e\\
+\end{aligned}
+\end{equation}
+
+where \(\Gamma_{u,e}\) is the intersection of the boundary of element \(e\) with the displacement boundary and \(\Gamma-{t,e}\) is the intersection of the boundary of element \(e\) with the traction boundary. All of these integrals are performed in the master domain using quadrature rules. This master domain is a cube defined over \(-1\leq\xi_1\leq1, -1\leq\xi_2\leq1, -1\leq\xi_3\leq1\). In order to transform between the physical and master domain, a transformation rule is needed to map between \(x,y,z\) and \(\xi_1,\xi_2,\xi_3\). This transformation rule can take many forms, but a convenient one is to simply use the shape function expansion:
+
+\begin{equation}
+x_i=\sum_{j=1}^{n_en}X_j\phi_j(\xi_1,\xi_2,\xi_3)
+\end{equation}
+
+where the shape functions are defined over the master element, \(X_j\) are the coordinates, and \(i\) refers to the fact that the above expansion is assumed to apply equally for \(x_1\), \(x_2\) and \(x_3\).
+
+
+
+
+
+
+
 
 
 
