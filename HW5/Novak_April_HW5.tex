@@ -959,6 +959,28 @@ The cost of a 3-D finite element simulation of a vector-valued equation such as 
 
 If the Conjugate Gradient (CG) method is used to solve the matrix system \(\textbf{K}\textbf{a}=\textbf{R}\), then this represents repeated application of a \(24\times24\) matrix and a \(24\times1\) vector, which is an \(\mathscr{O}(N)\) operation. This is performed for each iteration, so the cost for the CG method scales as \(\mathscr{O}(IN)\), where \(I\) is the number of iterations needed to reach a particular tolerance in the solve.
 
+The cost of a solve refers to both the storage required and the number of floating point operations required. There are three ways to perform the storage for a mesh consisting of \(M\times M\times M\) linear elements:
+
+\begin{enumerate}
+\item Direct storage - all zeros are stored, and no shortcuts are made by saving element-by-element. This requires \((3(M+1)^3)\times(3(M+1)^3)\approx9M^6\)
+\item Element-by-element storage: no zeros are stored. This requires \(24\times24\times M^3=576M^3\)
+\item Element-by-element storage, taking advantage of the symmetry of the element stiffness matrices. This requires \(300M^3\)
+\end{enumerate} 
+
+So, the storage scales cubically when using element-by-element storage as opposed to direct storage. The number of floating point operations is significantly reduced when using an iterative solver. The total number of unknowns is \(3(M+1)^3\), so the ratio of the direct solver (Gaussian elimination) to the CG method is:
+
+\begin{equation}
+\frac{\mathscr{O}(N^3)}{I\mathscr{O}(N)}=\frac{\left(3(M+1)^3\right)^2}{I}=\frac{9(M+1)^6}{I}
+\end{equation}
+
+where \(N=3(M+1)^3\) is the total number of unknowns. For \(N_t\times N_c\times N_\theta\) elements, there are \((N_t+1)N_c(N_\theta+1)\) total nodes. So, if there are 3 unknowns per node, and if a CG solver takes \(I\mathscr{O}(N)\) operations, then the total number of operations required is:
+
+\begin{equation}
+\text{Operations with CG method}=3I(N_t+1)N_c(N_\theta+1)
+\end{equation}
+ 
+ where \(I\) is the number of iterations.
+
 \section{Appendix}
 
 This section contains the complete code used in this assignment. 
