@@ -260,9 +260,7 @@ The eigenvalues of \(\textbf{IE}\) are directly proportional to \(\mu\) and \(\k
 
 The finite element implementation, beginning with the weak form, is discussed next.
 
-\subsection{Finite Element Implementation}
-
-\subsubsection{The Weak Form}
+\subsection{The Weak Form}
 
 The weak form of Eq. \eqref{eq:Cauchy7} is obtained by multiplying through by a test function \(\textbf{v}\), where, like \(\textbf{u}\), \(\textbf{v}\) is a vector-valued function. Then, integrating over the body:
 
@@ -323,31 +321,6 @@ where suffix notation is implied. Because \(\textbf{u}\) is vector-valued, the s
 
 \subsubsection{The Finite Element Weak Form}
 
-\subsubsection{The Finite Element Weak Form - Penalty Method}
-
-The penalty method is a means by which to apply Dirichlet boundary conditions without the tedious need to separate rows and columns from the stiffness and loading vectors. From Eq. \eqref{eq:WeakFormQ1}, the weak form for a finite element implementation requires that the weight functions are zero on essential boundaries. The penalty method relaxes this requirement, and adds a term to the weak form to account for violation of a Dirichlet boundary condition on a Dirichlet boundary. This method is widely-used, but is not strictly required to apply Dirichlet boundary conditions - the alternative of separating rows and columns containing known quantities, and subtracting from the load vector, can always be performed. The penalty method adds a term to Eq. \eqref{eq:WeakFormQ1}:
-
-\begin{equation}
-\label{eq:WeakFormPenalty}
-\begin{aligned}
-\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ such that } \textbf{u}_{\Gamma_u}=\textbf{d} \text{ and such that }\forall\textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega)\\
-\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
-\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\Gamma_t}\textbf{t}\cdot\textbf{v}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega+\underbrace{P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})\cdot\textbf{v}dA}_\text{penalty term}\\
-\end{aligned}
-\end{equation}
-
-where \(P^{*}\) represents something like a spring constant, and is a large, positive number. A high value of this artificial spring constant will apply a traction to ``force'' the displacement boundary to be satisfied on \(\Gamma_u\), the displacement boundary. In other words, \(P^{*}(\textbf{d}-\textbf{u})\approx\textbf{t}_{penalty}\), so the penalty term represents a traction that enforces the Dirichlet boundary condition. This term, however, would never be applied if we still required \(\textbf{v}_{\Gamma_u}=\textbf{0}\), and so the kinematic restrictions on the weight functions are dropped, and they do not need to be zero on the Dirichlet boundaries.
-
-The penalty method is motivated by the fact that, for symmetric systems for which a potential can be defined, an augmented potential can be defined, whose variation is the weak from in Eq. \eqref{eq:WeakFormPenalty}:
-
-\begin{equation}
-\mathscr{T}(u)=\mathscr{T}(u)+P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})(\textbf{d}-\textbf{u})dA
-\end{equation}
-
-Hence, the penalty method with this interpretation is a quadratic addition to the potential energy. 
-
-\subsubsection{Specifics on Finite Element Implementation}
-
 This section covers the details regarding finite element implementation of Eq. \eqref{eq:WeakFormQ1}. To implement this weak form, first the displacement, body force, traction, and weight function must be defined:
 
 \begin{equation}
@@ -361,15 +334,13 @@ The governing conservation of momentum equation is a vector-valued equation, so 
 \textbf{u}^h=\begin{bmatrix}\sum_{i=1}^{n_{en}}a_i\phi_i\\\sum_{i=1}^{n_{en}}a_{i+n_{en}}\phi_i\\\sum_{i=1}^{n_{en}}a_{i+2n_{en}}\phi_i\end{bmatrix}
 \end{equation}
 
-where the above expansion applies over a single element with \(n_{en}\) nodes per element. A similar expansion is performed for the weight function:
+where the above expansion applies over a single element with \(n_{en}\) nodes per element. \(3n_{en}\) unknowns are solved for in each element for a 3-D problem. A similar expansion is performed for the weight function:
 
 \begin{equation}
 \textbf{v}^h=\begin{bmatrix}\sum_{i=1}^{n_{en}}b_i\phi_i\\\sum_{i=1}^{n_{en}}b_{i+n_{en}}\phi_i\\\sum_{i=1}^{n_{en}}b_{i+2n_{en}}\phi_i\end{bmatrix}
 \end{equation}
 
-The number and order of these shape functions determines the order of the finite element approximation. 
-
-The weak form in Eq. \eqref{eq:WeakFormQ1} can be written in matrix form as follows, noting that the dot product of two vectors can be written in matrix form as \(\textbf{a}\cdot\textbf{b}=\textbf{b}^T\textbf{a}\):
+The number and order of these shape functions determines the order of the finite element approximation. The weak form in Eq. \eqref{eq:WeakFormQ1} can be written in matrix form as follows, noting that the dot product of two vectors can be written as \(\textbf{a}\cdot\textbf{b}=\textbf{b}^T\textbf{a}\):
 
 \begin{equation}
 \label{eq:FEStep1}
@@ -408,9 +379,7 @@ where \(\textbf{D}\) is the deformation tensor:
 \frac{\partial}{\partial x_3} & 0 & \frac{\partial}{\partial x_1}\end{bmatrix}
 \end{equation}
 
-The goal is to solve for the expansion coefficients on \(\textbf{u}\). This requires decomposing the expansion in Eq. \eqref{eq:UExpansion} into a matrix containing just the shape functions and a vector containing the unknowns. This can be done in two different ways - the first way is to organize all the expansion coefficients pertaining to \(u_1\) in a vector \(\textbf{a}\), following by all the coefficients for \(u_2\), and followed by all the coefficients for \(u_3\). This is the approach used in this class. An alternative method is to organize the vector of unknowns, \(\textbf{a}\) such that all unknowns for a node appear together, i.e. the first three entries would be the coefficients pertaining to \(u_1\), then \(u_2\), then \(u_3\), for the first node. This second approach is used in ME 180, but is not used here.
-
-So, the displacement is organized as:
+The goal is to solve for the expansion coefficients on \(\textbf{u}\). This requires decomposing the expansion in Eq. \eqref{eq:UExpansion} into a matrix containing just the shape functions and a vector containing the unknowns. This can be done in two different ways - the first way is to organize all the expansion coefficients pertaining to \(u_1\) in a vector \(\textbf{a}\), following by all the coefficients for \(u_2\), and followed by all the coefficients for \(u_3\). This is the approach used in this class. An alternative method is to organize the vector of unknowns such that all unknowns for a node appear together, i.e. the first three entries would be the coefficients pertaining to \(u_1\), then \(u_2\), then \(u_3\), for the first node. This second approach is used in ME 180, but is not used here. So, the displacement is organized as:
 
 \begin{equation}
 \textbf{u}^h=\bar{\bar{\phi}}\textbf{a}
@@ -463,6 +432,50 @@ to give the matrix system:
 \begin{equation}
 \textbf{K}\textbf{a}=\textbf{R}
 \end{equation}
+
+So, the weak form for the FE method is:
+
+\begin{tcolorbox}
+\begin{equation}
+\begin{aligned}
+\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } \textbf{u}|_{\Gamma_u}=\textbf{d} \text{ and so that }\forall\ \textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega), \textbf{v}|_{\Gamma_u}=\textbf{0},\\
+\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}|_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
+\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega =\int_{\partial\Omega}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega\\
+\end{aligned}
+\end{equation}
+\end{tcolorbox}
+
+where the penalty term has been removed because it is asked for explicitly in the next portion of this assignment. The definitions for all the terms that appear above have been given previously. Section \ref{sec:Penalty} will show the weak form with the penalty method, while Section \ref{sec:FEElement} will show how the above is applied element-by-element.
+
+\subsubsection{The Finite Element Weak Form - Penalty Method}
+\label{sec:Penalty}
+
+The penalty method is a means by which to apply Dirichlet boundary conditions without the tedious need to separate rows and columns from the stiffness and loading vectors. From Eq. \eqref{eq:WeakFormQ1}, the weak form for a finite element implementation requires that the weight functions are zero on essential boundaries. The penalty method relaxes this requirement, and adds a term to the weak form to account for violation of a Dirichlet boundary condition on a Dirichlet boundary. This method is widely-used, but is not strictly required to apply Dirichlet boundary conditions - the alternative of separating rows and columns containing known quantities, and subtracting from the load vector, can always be performed. The penalty method adds a term to Eq. \eqref{eq:WeakFormQ1}:
+
+\begin{equation}
+\label{eq:WeakFormPenalty}
+\begin{aligned}
+\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ such that } \textbf{u}_{\Gamma_u}=\textbf{d} \text{ and such that }\forall\textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega)\\
+\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
+\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\Gamma_t}\textbf{t}\cdot\textbf{v}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega+\underbrace{P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})\cdot\textbf{v}dA}_\text{penalty term}\\
+\end{aligned}
+\end{equation}
+
+where \(P^{*}\) represents something like a spring constant, and is a large, positive number. A high value of this artificial spring constant will apply a traction to ``force'' the displacement boundary to be satisfied on \(\Gamma_u\), the displacement boundary. In other words, \(P^{*}(\textbf{d}-\textbf{u})\approx\textbf{t}_{penalty}\), so the penalty term represents a traction that enforces the Dirichlet boundary condition. This term, however, would never be applied if we still required \(\textbf{v}_{\Gamma_u}=\textbf{0}\), and so the kinematic restrictions on the weight functions are dropped, and they do not need to be zero on the Dirichlet boundaries.
+
+The penalty method is motivated by the fact that, for symmetric systems for which a potential can be defined, an augmented potential can be defined, whose variation is the weak from in Eq. \eqref{eq:WeakFormPenalty}:
+
+\begin{equation}
+\mathscr{T}(u)=\mathscr{T}(u)+P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})(\textbf{d}-\textbf{u})dA
+\end{equation}
+
+Hence, the penalty method with this interpretation is a quadratic addition to the potential energy. 
+
+\subsection{Finite Element Implementation}
+\label{sec:FEElement}
+
+\subsubsection{Element-by-Element Matrices and Vectors}
+\subsubsection{Global-Local Transformation}
 
 While the above equation holds over the entire domain, the strength of the finite element method is that the integrals in Eq. \eqref{eq:FEWeakForm} can be performed over each element, since the shape functions are a nodal basis such that they are only nonzero at a single node. So, for an element \(e\), the element stiffness matrix and load vector are:
 
