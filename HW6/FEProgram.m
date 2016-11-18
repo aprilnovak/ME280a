@@ -11,7 +11,7 @@ right = 'Neumann';              % boundary condition at theta = 0
 right_value = 1.0;              % 
 fontsize = 16;                  % fontsize for plots
 Nr = 1;                         % number of radial layers
-No = 3;                        % number of theta layers
+No = 12;                        % number of theta layers
 N_elem = Nr * No;               % number of elements
 num_nodes = (Nr + 1) * (No + 1);% number of nodes
 num_nodes_per_elem = 4;         % linear elements
@@ -111,14 +111,26 @@ for a_row = 1:num_nodes
 end
 
 % assemble the solution in the physical domain
-[coefficients_mat] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_elem, shape_order, coordinates, physical_domain);
+[mat] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_elem, shape_order, coordinates, physical_domain);
 
 % plot(physical_domain, solution_FE)
 % hold on
+start_theta = pi - pi/No;
+end_theta = pi;
+for i = 1:length(mat(:,1))
+    [r, theta] = meshgrid(ri:0.1:ro, linspace(start_theta, end_theta, length(ri:0.1:ro)));
+    x = r .* cos(theta);
+    y = r .* sin(theta);
 
-
+     z = mat(i,1) + mat(i,2).*x + mat(i,3).*y + mat(i,4).*x.*y;
+     surf(x,y,z)
+     hold on
+     end_theta = start_theta;
+     start_theta = start_theta - pi/No;
+end
 
 end
+
 
 % plot(physical_domain, solution_analytical)
 % h = legend('N = what','analytical', 'Location', 'southeast');
