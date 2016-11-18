@@ -16,7 +16,6 @@ fontsize = 16;                  % fontsize for plots
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(shape_order);
 
-
 Nr = 3;                         % number of radial layers
 No = 12;                        % number of theta layers
 N_elem = Nr * No;               % number of elements
@@ -36,7 +35,7 @@ for num_elem = N_elem
     solution_analytical_derivative = -(1 ./ E) * k_th * k_th * cos(2 * pi * k_th * physical_domain ./ L) * L ./ (2 * pi * k_th) + C_1;
 
     % for a 2-D mesh polar mesh
-    [coordinates_polar] = polar_mesh(No, Nr, dt, num_nodes, ri, ro);
+    [coordinates_polar, LM_polar] = polar_mesh(No, Nr, dt, num_nodes, ri, ro, num_elem);
 
     plot(coordinates_polar(:,1), coordinates_polar(:,2), '*')
     xlim([-ro, ro])
