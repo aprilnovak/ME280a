@@ -175,9 +175,6 @@ C_o=\frac{40}{k}\\
 \end{aligned}
 \end{equation}
 
-
-
-
 \subsection{The Weak Form}
 
 The weak form is obtained by multiplying through by a test function \(\psi\) and integrating over the body:
@@ -415,78 +412,25 @@ This gives 4 total unknowns per element, since temperature is a scalar.
 
 \section{Mesh Generator}
 
-This section discusses the mesh generator used to mesh the tubular ``S'' structure given in the assignment. The meshing begins in each \(\theta\)-chunk. For the circular cross-section structure, the \(x\) and \(y\) coordinates are related to each other by:
-
-\begin{equation}
-\label{eq:xy}
-x^2+y^2=r
-\end{equation}
-
-where \(r\) is the inner radius of the tubular structure. Each piece in the circumferential direction is defined according to \(\theta\), where \(0\leq\theta\leq2\pi\) defines the ``slice'' parallel to \(\vv{e}_r\). The generation of the mesh is based on determining the coordinates of each node. The first node is assigned to the first ``slice'' for \(\theta=0\). In the discussion of the mesh generator, ``slice'' refers to each plane for which there exists a hollowed annulus (that is meshed according to the number of layers and circumferential points). \(\Theta\) is the angle referring to the circumferential angle, while \(\theta\) refers to the angle in each slice. The overall algorithm for generating the coordinates for the mesh is as follows:
-
-\begin{enumerate}
-\item Begin with slice for \(\Theta=0\). Beginning then for \(\theta=0\), move counterclockwise around the first layer (inner surface of the tube). Increment \(\theta\) in units of \(2\pi/N_c\), and for each \(\theta\), assign the \(x\) and \(y\) coordinates according to Eq. \eqref{eq:xy}. 
-\item After finishing the inner layer, increase \(r\) by \(dt\), where \(dt\) is the thickness of each layer, to move to the next layer, then repeat step 1. 
-\item Repeat steps 1 and 2 until all layers in each slice have been meshed, where for each layer, \(dt\) is added. 
-\item Now that a slice has been meshed, repeat for all slices. This requires determining the \(x,y,z\) centers for each new slice. This is performed by sweeping through \(\Theta\). The \(y\) coordinate is \(y=0\) for all points, while the \(x\) coordinate continually increases moving from slice to slice, and the \(z\) coordinate is positive for the left half of the tube, and negative for the right half of the tube. 
-\item Now that all slices have been meshed, the mesh looks like as follows for \(N_c=8, N_\theta=8, N_t=3\). 
-\begin{comment}
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{NoTilt.jpg}
-  \caption{Mesh for \(N_c=8, N_\theta=8, N_t=3\) with no tilt to the slices. Lines connect each coordinate for better visuality.}
-\end{figure}
-\end{comment}
-The next step is to rotate the slices appropriately through the angle \(\Theta\) for each slice so that a tubular structure is formed. Only the \(x\) and \(z\) coordinates must be modified. To perform the tilt, the following quantities are computed using trigonometry:
+This section discusses the mesh generator used to mesh the ``S'' structure given in the assignment. The meshing begins in each \(\theta\)-chunk. For each plane (each plane intersects (0,0) if \(r_i=0\)), the \(x\) and \(y\) coordinates are given by:
 
 \begin{equation}
 \begin{aligned}
-w=\sin{(\pi/2-\Theta)}(r+dt)\cos{(\theta)}/\sin{(pi/2)}\\
-h = w\sin{(\Theta)}\\
-p = w\cos{(\Theta)}\\
+x=R\cos{(\theta)}\\
+y=R\sin{(\theta)}\\
 \end{aligned}
 \end{equation}
 
-To tilt the z-coordinate, for points in the first and fourth quadrant of each slice:
+where \(R\) is the radius of the current node. For instance, \(R=r_i\) for the very first node, and then in each slice is incremented by \((r_o-r_i)/Nr\) until reaching the outside of the structure. Then, for the next slice, \(R\) is reset to \(r_i\). This is repeated, beginning with \(\theta=\pi\), and incrementing \(\theta\) by \(\pi/N_\theta\) until completing the structure. The mesh for \(N_r=3,N_\theta=12\) is shown below. The global node numbering is shown next to each coordinate.
 
-\begin{equation}
-z_{new} = z - (-1)^{tube}h
-\end{equation}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{Mesh.jpg}
+  \caption{Mesh for \(N_r=3, N_\theta=12\), with global node numbers given next to each node.}
+\end{figure}
 
-And for points in the second and third quadrant of each slice:
 
-\begin{equation}
-z_{new} = z + (-1)^{tube}h
-\end{equation}
 
-where \(tube\) is a variable indicating whether or not the slice is in the left or right half of the tube. For the left half of the tube, \(tube=1\), and in the right half, \(tube=2\).
-
-\item Then, tilt the x-coordinates. For points in the first and fourth quadrants of each slice:
-
-\begin{equation}
-x_{new} = x + p
-\end{equation}
-
-And for points in the second and third quadrants of each slice:
-
-\begin{equation}
-x_{new} = x - p
-\end{equation}
-
-\item Finally, tilt the slices that exactly align with the peak and valley of the tube (for odd numbers of \(N_\theta\), this would not be performed). For the slices that align with the peaks and for nodes in the first and fourth quadrants, adjust the \(z\) coordinates according to:
-
-\begin{equation}
-z_{new} = z - (r+dt)\cos{(\theta)}
-\end{equation}
-
-And for points in the second and third quadrants:
-
-\begin{equation}
-z_{new} = z + (r+dt)\cos{(\theta)}
-\end{equation}
-
-The \(x\)-coordinates are adjusted by simply setting all of them to the centroid coordinate for that slice. 
-\end{enumerate}
 
 This process is fairly complicated, and reveals why meshing software is so valuable. The process here is left fairly general that it can apply for any values of \(N_\theta, N_c, N_t\), but any slight change in the geometry completely invalidates the program. The final mesh for \(N_c=8, N_\theta=8, N_t=3\) is shown below. This mesh is shown because the requested mesh with only \(N_c=4\) is relatively difficult to perceive in a 3-D plot in Matlab, so the following plot better reveals the mesh. Lines are drawn between each coordinate.
 

@@ -36,10 +36,18 @@ for num_elem = N_elem
 
     % for a 2-D mesh polar mesh
     [coordinates_polar, LM_polar] = polar_mesh(No, Nr, dt, num_nodes, ri, ro, num_elem);
-
-    plot(coordinates_polar(:,1), coordinates_polar(:,2), '*')
-    xlim([-ro, ro])
-    ylim([-ro/2, ro + ro/2])
+    
+    % mesh of the semi-circle, with node numbering
+%     x = coordinates_polar(:,1);
+%     y = coordinates_polar(:,2);
+%     scatter(x,y)
+%     a = [1:num_nodes]';
+%     b = num2str(a);
+%     c = cellstr(b);
+%     dx = 0.1; dy = 0.1; % displacement so the text does not overlay the data points
+%     text(x+dx, y+dy, c);
+%     xlim([-ro-2*dx, ro+5*dx])
+%     ylim([-ro/2, ro + ro/2])
     %saveas(gcf, 'Mesh', 'jpeg')
     
     % original meshing (Cartesian)
