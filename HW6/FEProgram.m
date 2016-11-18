@@ -56,21 +56,19 @@ for num_elem = N_elem
 
         for ll = 1:length(qp) % eta loop
              for l = 1:length(qp) % xe loop
-                 %for i = 1:num_nodes_per_elem
                      [N, dN_dxe, dN_deta, x_xe_eta, y_xe_eta, dx_dxe, dx_deta, dy_dxe, dy_deta, B] = shapefunctions(qp(l), qp(ll), num_nodes_per_elem, coordinates, LM, elem);
                      F_mat = [dx_dxe, dx_deta; dy_dxe, dy_deta];
                      J = det(F_mat);
+                     r = sqrt(x_xe_eta^2 + y_xe_eta^2);
+                     theta = acos(x_xe_eta / r);
                      
                      % assemble the (elemental) forcing vector
-                     %f(i) = f(i) - wt(ll) * wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe_eta / L) * N(i) * dx_dxe;
-                     f = f - wt(ll) * wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe_eta / L) * N * dx_dxe;
+                     f = f + wt(ll) * wt(l) * (40 * sin(2 * theta) / (r^2)) * transpose(N) * J;
                      
                      for j = 1:num_nodes_per_elem
                          % assemble the (elemental) stiffness matrix
-                         %k(i,j) = k(i,j) + wt(ll) * wt(l) * transpose(inv(F) * B) * k_th * inv(F) * B * J;
                          k = k + wt(ll) * wt(l) * transpose(inv(F_mat) * B) * k_th * inv(F_mat) * B * J;
                      end
-                 %end
              end
         end
         
@@ -121,12 +119,11 @@ for i = 1:length(mat(:,1))
     [r, theta] = meshgrid(ri:0.1:ro, linspace(start_theta, end_theta, length(ri:0.1:ro)));
     x = r .* cos(theta);
     y = r .* sin(theta);
-
-     z = mat(i,1) + mat(i,2).*x + mat(i,3).*y + mat(i,4).*x.*y;
-     surf(x,y,z)
-     hold on
-     end_theta = start_theta;
-     start_theta = start_theta - pi/No;
+    z = mat(i,1) + mat(i,2).*x + mat(i,3).*y + mat(i,4).*x.*y;
+    surf(x,y,z)
+    hold on
+    end_theta = start_theta;
+    start_theta = start_theta - pi/No;
 end
 
 end
