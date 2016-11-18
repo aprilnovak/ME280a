@@ -130,10 +130,10 @@ Applying the product rule in Eq. \eqref{eq:StrongForm2}:
 Because the shape functions are defined to be zero on Dirichlet boundaries, the above area integral can be specified as the boundaries over which there are flux boundary conditions:
 
 \begin{equation}
-\int_{\Omega}k\nabla T\nabla\psi d\Omega=\int_{\Omega}f\psi d\Omega+\int_{\Gamma_q}\textbf{q}^{*}\psi\cdot\hat{n}dA\\
+\int_{\Omega}k\nabla T\nabla\psi d\Omega=\int_{\Omega}f\psi d\Omega+\int_{\Gamma_q}\textbf{q}^{*}\psi dA\\
 \end{equation}
 
-where \(\Gamma_q\) is the boundary over which the heat flux is specified, and \(\textbf{q}^{*}\) is the known heat flux on the boundary. On boundaries for which there are Dirichlet conditions, denoted as \(\Gamma_d\), those nodes are either subject to a penalty term to enforce the boundary, or those nodes are removed from the final matrix system. Both of these methods are investigated in this assignment - the method of removing nodes from the global stiffness matrix and load vector will be referred to as ``static condensation.'' Hence, the weak form can be stated as:
+where \(\Gamma_q\) is the boundary over which the heat flux is specified, and \(\textbf{q}^{*}=k\nabla T\cdot\hat{n}\) is the known heat flux on the boundary. On boundaries for which there are Dirichlet conditions, denoted as \(\Gamma_d\), those nodes are either subject to a penalty term to enforce the boundary, or those nodes are removed from the final matrix system. Both of these methods are investigated in this assignment - the method of removing nodes from the global stiffness matrix and load vector will be referred to as ``static condensation.'' Hence, the weak form can be stated as:
 
 \begin{tcolorbox}
 \begin{equation}
@@ -141,344 +141,175 @@ where \(\Gamma_q\) is the boundary over which the heat flux is specified, and \(
 \begin{aligned}
 \text{Find }T\in \textbf{H}^T(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } T|_{\Gamma_d}=T^{*} \text{ and so that }\forall\ \psi \in \textbf{H}^\psi(\Omega)\subset \textbf{H}^1(\Omega), \psi|_{\Gamma_d}=\textbf{0},\\
 \text{and for }\textbf{q}\in\textbf{L}^2(\Gamma_q), \textbf{q}=\textbf{q}^{*}|_{\Gamma_q}\text{ and }f\in\textbf{L}^2(\Omega)\\
-\int_{\Omega}k\nabla T\nabla\psi d\Omega=\int_{\Omega}f\psi d\Omega+\int_{\Gamma_q}\textbf{q}^{*}\psi\cdot\hat{n}dA\\
+\int_{\Omega}k\nabla T\nabla\psi d\Omega=\int_{\Omega}f\psi d\Omega+\int_{\Gamma_q}\textbf{q}^{*}\psi dA\\
 \end{aligned}
 \end{equation}
 \end{tcolorbox}
 
-where \(\textbf{d}\) is the vector of known displacements on the displacement boundary, \(\textbf{t}^{*}\) is a vector of known tractions on the traction boundary, and \(\Gamma_u\)  and \(\Gamma_t\) indicate the portions of the boundary for which there are known displacements and tractions, respectively. This weak form is more general than the strong form because it does not assume differentiability of the stress. The particular weighted residual method to be applied is the Bubnov-Galerkin method, where both the solution and the weight function are expanded in the same basis functions. Hence, both the displacement and the weight function are in \(\textbf{H}^1(\Omega)\), the space necessary to ensure finite integrals in the weak form above. For other methods such as the Petrov-Galerkin method, where different shape functions are used to expand the solution and weight function, \(\textbf{u}\) and \(\textbf{v}\) do not necessarily need to come from the same space, but they must be in at least \(\textbf{H}^1(\Omega)\).
+where this weak form applies if the method of static condensation is to be used to apply the Dirichlet boundary conditions. If the penalty method is to be used:
 
-The space \(\textbf{H}^1(\Omega)\) is a Hilbert-space norm, where the 1 superscript indicates that it contains all functions whose highest finite derivative is the first derivative. This is the space from which the shape and weight functions most come because at most a first derivative is required in the weak form. For other applications, where for example, the highest derivative present in the weak form is a second derivative, then the weight and shape functions would need to be in \(\textbf{H}^2(\Omega)\) in order for all integrals to remain finite. In other words, \(\textbf{u}\) is in \(\textbf{H}^1(\Omega)\) if the following statement is true:
-
+\begin{tcolorbox}
 \begin{equation}
-\|\textbf{u}\|^2_{\textbf{H}^1(\Omega)}=\int_{\Omega}\left(\frac{\partial u_i}{\partial x_j}\right)^2d\Omega+\int_{\Omega}u_iu_id\Omega<\infty
+\label{eq:WeakFormQ2}
+\begin{aligned}
+\text{Find }T\in \textbf{H}^T(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } T|_{\Gamma_d}=T^{*} \text{ and so that }\forall\ \psi \in \textbf{H}^\psi(\Omega)\subset \textbf{H}^1(\Omega)\\
+\text{and for }\textbf{q}\in\textbf{L}^2(\Gamma_q), \textbf{q}=\textbf{q}^{*}|_{\Gamma_q}\text{ and }f\in\textbf{L}^2(\Omega)\\
+\int_{\Omega}k\nabla T\nabla\psi d\Omega+P^{*}\int_{\Gamma_d}T\psi dA=\int_{\Omega}f\psi d\Omega+\int_{\Gamma_q}\textbf{q}^{*}\psi dA+P^{*}\int_{\Gamma_d}T^{*}\psi dA\\
+\end{aligned}
 \end{equation}
+\end{tcolorbox}
 
-where suffix notation is implied. Because \(\textbf{u}\) is vector-valued, the space of approximation functions must also be vector-valued. This simple extension then requires that each component of \(\textbf{u}\) be in \(H^1(\Omega)\). This is indicated by boldface in Eq. \eqref{eq:WeakFormQ1}. Because the traction and body load also appear in the integrals in Eq. \eqref{eq:WeakFormQ1}, there is a requirement on the space of functions from which they can inhabit. From the weak form, no differentiation of these functions is required, so they must be within \(\textbf{H}^0(\Omega)\), sometimes referred to as \(\textbf{L}^2(\Omega)\). The weak form in Eq. \eqref{eq:WeakFormQ1} is equivalent to the strong form in Eq. \eqref{eq:Cauchy7} provided that the solution is sufficiently differentiable that the higher derivatives required in the strong form are defined. Next, the specifics of the finite element implementation are given in order to specify the above to the finite element method.
+where \(P^{*}\) is the penalty coefficient that is a large, positive number that essentially applies a traction that forces the temperature on the Dirichlet boundaries to equal the specified temperature \(T^{*}\). 
 
 \subsubsection{The Finite Element Weak Form}
 
-This section covers the details regarding finite element implementation of Eq. \eqref{eq:WeakFormQ1}. To implement this weak form, first the displacement, body force, traction, and weight function must be defined:
+This section covers the details regarding finite element implementation of Eq. \eqref{eq:WeakFormQ2} (the non-penalty method simply sets \(P^{*}=0\). To implement this weak form, first the unknown, the temperature, must be expanded in a series of shape functions \(\phi\):
 
 \begin{equation}
-\textbf{u}=\begin{bmatrix}u_1\\u_2\\u_3\end{bmatrix},\quad\textbf{f}=\begin{bmatrix}\rho b_1\\\rho b_2\\\rho b_3\end{bmatrix},\quad\textbf{t}=\begin{bmatrix}t_1\\t_2\\t_3\end{bmatrix},\quad\textbf{v}=\begin{bmatrix}v_1\\v_2\\v_3\end{bmatrix}
+T=\sum_{i=1}^{n_{en}}C_j\phi_j=\textbf{N}\textbf{T}
 \end{equation}
 
-The governing conservation of momentum equation is a vector-valued equation, so each component of \(\textbf{u}\), and the weight function \(\textbf{v}\), are expanded in a series of shape functions:
+where \(n_{en}\) are the number of nodes per element and the following vectors have been defined (for a linear, 2-D element):
 
 \begin{equation}
-\label{eq:UExpansion}
-\textbf{u}^h=\begin{bmatrix}\sum_{i=1}^{n_{en}}a_i\phi_i\\\sum_{i=1}^{n_{en}}a_{i+n_{en}}\phi_i\\\sum_{i=1}^{n_{en}}a_{i+2n_{en}}\phi_i\end{bmatrix}
+\textbf{N}\equiv\begin{bmatrix}\phi_1(x,y) & \phi_2(x,y) & \phi_3(x,y) & \phi_4(x,y)
+\end{bmatrix}
 \end{equation}
-
-where the above expansion applies over a single element with \(n_{en}\) nodes per element. \(3n_{en}\) unknowns are solved for in each element for a 3-D problem. A similar expansion is performed for the weight function:
 
 \begin{equation}
-\textbf{v}^h=\begin{bmatrix}\sum_{i=1}^{n_{en}}b_i\phi_i\\\sum_{i=1}^{n_{en}}b_{i+n_{en}}\phi_i\\\sum_{i=1}^{n_{en}}b_{i+2n_{en}}\phi_i\end{bmatrix}
+\textbf{T}\equiv\begin{bmatrix}C_1 &  C_2 & C_3 & C_4
+\end{bmatrix}^T
 \end{equation}
 
-The number and order of these shape functions determines the order of the finite element approximation. The weak form in Eq. \eqref{eq:WeakFormQ1} can be written in matrix form as follows, noting that the dot product of two vectors can be written as \(\textbf{a}\cdot\textbf{b}=\textbf{b}^T\textbf{a}\):
+Likewise, the weight function is also expanded in a series of these shape functions. The gradient of temperature is required in the weak form:
 
 \begin{equation}
-\label{eq:FEStep1}
-\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\Gamma_t}\textbf{v}^T\textbf{t}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
+\nabla T=\frac{\partial T}{\partial x}\hat{x}+\frac{\partial T}{\partial y}\hat{y}=\textbf{B}\textbf{T}
 \end{equation}
 
-where the penalty term has been included for completeness (though it could be neglected if static condensation were to be performed on the matrix system prior to solving). To transform the second term on the RHS, use the identity of the second order inner product:
+where the following matrix is defined:
 
 \begin{equation}
-A:B=A_{ij}B_{ij}=\text{Tr}(A^TB)
+\textbf{B}\equiv\begin{bmatrix}\frac{\partial \phi_1}{\partial x} & \frac{\partial \phi_2}{\partial x} & \frac{\partial \phi_3}{\partial x} & \frac{\partial \phi_4}{\partial x}\\
+\frac{\partial \phi_1}{\partial y} & \frac{\partial \phi_2}{\partial y} & \frac{\partial \phi_3}{\partial y} & \frac{\partial \phi_4}{\partial y}\\
+\end{bmatrix}
 \end{equation}
 
-Then, the transpose of a product is:
+The weak form can now be written using these definitions:
+
+\begin{equation}
+\label{eq:WeakFormQ3}
+\begin{aligned}
+\int_{\Omega}k\textbf{B}\textbf{T}\cdot(\textbf{B}\Psi) d\Omega+P^{*}\int_{\Gamma_d}\textbf{N}\textbf{T}\cdot(\textbf{N}\Psi)dA=\int_{\Omega}f\textbf{N}\Psi d\Omega+\int_{\Gamma_q}\textbf{q}^{*}(\textbf{N}\Psi) dA+P^{*}\int_{\Gamma_d}T^{*}(\textbf{N}\Psi) dA\\
+\end{aligned}
+\end{equation}
+
+Then, noting that the dot product of two vectors can be written as \(\textbf{a}\cdot\textbf{b}=\textbf{b}^T\textbf{a}\), and noting the equivalence between \(\textbf{N}\Psi\) and \((\textbf{N}\Psi)^T\):
+
+\begin{equation}
+\int_{\Omega}(\textbf{B}\Psi)^Tk\textbf{B}\textbf{T} d\Omega+P^{*}\int_{\Gamma_d}(\textbf{N}\Psi)^T\textbf{N}\textbf{T}dA=\int_{\Omega}f(\textbf{N}\Psi)^T d\Omega+\int_{\Gamma_q}\textbf{q}^{*}(\textbf{N}\Psi)^T dA+P^{*}\int_{\Gamma_d}T^{*}(\textbf{N}\Psi)^T dA\\
+\end{equation}
+
+The transpose of a product is:
 
 \begin{equation}
 (AB)^T=A^TB^T
 \end{equation}
 
-% get to deformation tensor!
-
-Then, Eq. \eqref{eq:FEStep1} becomes:
+Using this identity, \(\Psi^T\) cancels from every term (to be more exact, the above could be rearranged such that \(\Psi\) multiplies every term within an integrand, and that term equals zero, in which case the term multiplied by \(\Psi\) must also be zero). 
 
 \begin{equation}
-\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\Gamma_t}\textbf{v}^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\textbf{v})^T\textbf{IE}(\textbf{D}\textbf{u})d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
+\int_{\Omega}\textbf{B}^Tk\textbf{B}\textbf{T} d\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\textbf{N}\textbf{T}dA=\int_{\Omega}f\textbf{N}^T d\Omega+\int_{\Gamma_q}\textbf{q}^{*}\textbf{N}^T dA+P^{*}\int_{\Gamma_d}T^{*}\textbf{N}^T dA\\
 \end{equation}
 
-where \(\textbf{D}\) is the deformation tensor:
+Introducing the definitions of some convenient matrices and vectors:
 
 \begin{equation}
-\label{eq:D}
-\textbf{D}=\begin{bmatrix}\frac{\partial}{\partial x_1} & 0 & 0\\
-0 & \frac{\partial}{\partial x_2} & 0\\
-0 & 0 & \frac{\partial}{\partial x_3}\\
-\frac{\partial}{\partial x_2} & \frac{\partial}{\partial x_1} & 0\\
-0 & \frac{\partial}{\partial x_3} & \frac{\partial}{\partial x_2}\\
-\frac{\partial}{\partial x_3} & 0 & \frac{\partial}{\partial x_1}\end{bmatrix}
-\end{equation}
-
-The goal is to solve for the expansion coefficients on \(\textbf{u}\). This requires decomposing the expansion in Eq. \eqref{eq:UExpansion} into a matrix containing just the shape functions and a vector containing the unknowns. This can be done in two different ways - the first way is to organize all the expansion coefficients pertaining to \(u_1\) in a vector \(\textbf{a}\), following by all the coefficients for \(u_2\), and followed by all the coefficients for \(u_3\). This is the approach used in this class. An alternative method is to organize the vector of unknowns such that all unknowns for a node appear together, i.e. the first three entries would be the coefficients pertaining to \(u_1\), then \(u_2\), then \(u_3\), for the first node. This second approach is used in ME 180, but is not used here. So, the displacement is organized as:
-
-\begin{equation}
-\textbf{u}^h=\bar{\bar{\phi}}\textbf{a}
-\end{equation}
-
-where \(\textbf{a}\) is a vector of unknowns containing all the unknowns pertaining to the \(x\)-displacement first, following by all the unknowns pertaining to the \(y\)-displacement second, and for the \(z\)-displacement third. The matrix \(\bar{\bar{\phi}}\) is defined in a different manner depending on the particular value of the node number:
-
-\begin{equation}
-\bar{\bar{\phi}}=
-\begin{cases}(\phi_i, 0, 0)^T & i < N\\(0, \phi_i, 0)^T & N+1\leq i\leq 2N \\ (0, 0, \phi_i)^T & 2N+1\leq i\leq 3N
-\end{cases}
-\end{equation}
-
-The Bubnov-Galerkin method is used so that the approximation for \(\textbf{v}\) is performed in the same manner as for \(\textbf{u}\), so that:
-
-\begin{equation}
-\textbf{v}^h=\bar{\bar{\phi}}\textbf{b}
-\end{equation}
-
-Inserting these matrix forms into the weak form gives:
-
-\begin{equation}
-\int_{\Omega}\rho(\bar{\bar{\phi}}\textbf{b})^T\bar{\bar{\phi}}\ddot{\textbf{a}}d\Omega=\int_{\Gamma_t}(\bar{\bar{\phi}}\textbf{b})^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\bar{\bar{\phi}}\textbf{b})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +\int_{\Omega}(\bar{\bar{\phi}}\textbf{b})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}}\textbf{b})^T(\textbf{d}-\bar{\bar{\phi}}\textbf{a})dA\\
-\end{equation}
-
-where the fact that the shape functions are not functions of time has been included in the first term and the body force \(\rho\textbf{b}\) has been replaced by \(\textbf{f}\) to avoid confusion with the expansion coefficients of the weight function. Because \(\textbf{b}\) is arbitrary, the above can be rearranged such that \(\textbf{b}\) acts on a single term. Then, because that term, multiplied by an arbitrary term, must be zero, it can be concluded that the term equals zero. In other words, \(\textbf{b}\) can be ``canceled'' from each term, though this isn't exactly what is happening.
-
-\begin{equation}
-\int_{\Omega}\rho(\bar{\bar{\phi}})^T\bar{\bar{\phi}}\ddot{\textbf{a}}d\Omega=\int_{\Gamma_t}(\bar{\bar{\phi}})^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T(\textbf{d}-\bar{\bar{\phi}}\textbf{a})dA\\
-\end{equation}
-
-At this point, it is assumed that the system is in steady state. Then, the above reduces to the following, where the penalty term is split up into the portion that is a function of \(\textbf{a}\) and the portion that is not:
-
-\begin{equation}
-\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T(\bar{\bar{\phi}}\textbf{a})dA=\int_{\partial\Omega}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T\textbf{d}dA\\
-\end{equation}
-
-For simplicity, the above terms can be defined as matrices:
-
-\begin{equation}
-\label{eq:FEWeakForm}
+\label{eq:TotalDomain}
 \begin{aligned}
-\textbf{K}\equiv\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}})d\Omega +P^{*}\int_{\Gamma_u}\bar{\bar{\phi}}^T\bar{\bar{\phi}}dA\\
-\textbf{R}\equiv\int_{\Gamma_t}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T\textbf{d}dA\\
+\textbf{K}\equiv&\ \int_{\Omega}\textbf{B}^Tk\textbf{B}\textbf{T} d\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\textbf{N}\textbf{T}dA\\
+\textbf{R}\equiv&\ \int_{\Omega}f\textbf{N}^T d\Omega+\int_{\Gamma_q}\textbf{q}^{*}\textbf{N}^T dA+P^{*}\int_{\Gamma_d}T^{*}\textbf{N}^T dA\\
 \end{aligned}
 \end{equation}
 
-to give the matrix system:
+Then, the matrix system to be solved reduces to \(\textbf{K}\textbf{T}=\textbf{R}\). However, the actual system is solved element-by-element to take advantage of Gaussian quadrature that is defined over a master element. Hence, all the integrals above, which are over the physical domain, must be transformed to integrals over the master domain, defined as \(-1\leq\xi_1\leq1\) and \(-1\leq\xi_2\leq1\). The coordinates are mapped according to:
 
 \begin{equation}
-\textbf{K}\textbf{a}=\textbf{R}
-\end{equation}
-
-So, the weak form for the FE method is:
-
-\begin{tcolorbox}
-\begin{equation}
-\label{eq:FEWeakFormFinal}
 \begin{aligned}
-\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } \textbf{u}|_{\Gamma_u}=\textbf{d} \text{ and so that }\forall\ \textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega), \textbf{v}|_{\Gamma_u}=\textbf{0},\\
-\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}|_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
-\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega =\int_{\partial\Omega}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega\\
+x(\xi_1,\xi_2)=\sum_{j=1}^{n_{en}}X_{j}\phi_j(\xi_1,\xi_2)\\
+y(\xi_1,\xi_2)=\sum_{j=1}^{n_{en}}Y_{j}\phi_j(\xi_1,\xi_2)\\
 \end{aligned}
 \end{equation}
-\end{tcolorbox}
 
-where the penalty term has been removed because it is asked for explicitly in the next portion of this assignment. The definitions for all the terms that appear above have been given previously. Section \ref{sec:Penalty} will show the weak form with the penalty method, while Section \ref{sec:FEElement} will show how the above is applied element-by-element.
-
-\subsubsection{The Finite Element Weak Form - Penalty Method}
-\label{sec:Penalty}
-
-The penalty method is a means by which to apply Dirichlet boundary conditions without the tedious need to separate rows and columns from the stiffness and loading vectors. From Eq. \eqref{eq:FEWeakFormFinal}, the weak form for a finite element implementation requires that the weight functions are zero on essential boundaries. The penalty method relaxes this requirement, and adds a term to the weak form to account for violation of a Dirichlet boundary condition on a Dirichlet boundary. This method is widely-used, but is not strictly required to apply Dirichlet boundary conditions - the alternative of separating rows and columns containing known quantities, and subtracting from the load vector, can always be performed. The penalty method adds a term to Eq. \eqref{eq:FEWeakFormFinal}:
-
-\begin{tcolorbox}
-\begin{equation}
-\label{eq:WeakFormPenalty}
-\begin{aligned}
-\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } \textbf{u}|_{\Gamma_u}=\textbf{d} \text{ and so that }\forall\ \textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega),\\
-\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}|_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
-\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T(\bar{\bar{\phi}}\textbf{a})dA=\int_{\partial\Omega}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T\textbf{d}dA\\
-\end{aligned}
-\end{equation}
-\end{tcolorbox}
-
-where \(P^{*}\) represents something like a spring constant, and is a large, positive number. A high value of this artificial spring constant will apply a traction to ``force'' the displacement boundary to be satisfied on \(\Gamma_u\), the displacement boundary. In other words, \(P^{*}(\textbf{d}-\textbf{u})\approx\textbf{t}_{penalty}\), so the penalty term represents a traction that enforces the Dirichlet boundary condition. This term, however, would never be applied if we still required \(\textbf{v}|_{\Gamma_u}=\textbf{0}\), and so the kinematic restrictions on the weight functions are dropped, and they do not need to be zero on the Dirichlet boundaries.
-
-The penalty method is motivated by the fact that, for symmetric systems for which a potential can be defined, an augmented potential can be defined, whose variation is the weak from in Eq. \eqref{eq:WeakFormPenalty}:
+where \(X\) and \(Y\) are the physical coordinates. To transform the integrals, the initial volume integrals over \(d\bar{x}\) are transformed to integrals over \(d\bar{\xi}\) using:
 
 \begin{equation}
-\mathscr{T}(u)=\mathscr{T}(u)+P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})(\textbf{d}-\textbf{u})dA
+d\bar{x}=\textbf{F}d\bar{\xi}
 \end{equation}
 
-Hence, the penalty method with this interpretation is a quadratic addition to the potential energy. 
-
-\subsection{Finite Element Implementation}
-\label{sec:FEElement}
-
-\subsubsection{Element-by-Element Matrices and Vectors}
-
-This section provides in explicit detail the forms of the element stiffness matrices and load vectors using the penalty method (the penalty terms could simply be dropped if needed, and hence the penalty method is discussed here to be as complete as possible). While Eq. \eqref{eq:WeakFormPenalty} holds over the entire domain, the strength of the finite element method is that the integrals in Eq. \eqref{eq:WeakFormPenalty} can be performed over each element, since the shape functions are a nodal basis such that they are only nonzero at a single node. Once assembling into the global stiffness matrix, this gives a sparse system. So, for an element \(e\), the element stiffness matrix and load vector are:
-
-\begin{tcolorbox}
-\begin{equation}
-\label{eq:FEWeakForm_element}
-\begin{aligned}
-\textbf{K}^e\equiv\int_{\Omega_e}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}})d\Omega_e +P^{*}\int_{\Gamma_{u,e}}\bar{\bar{\phi}}^T\bar{\bar{\phi}}dA_e\\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\bar{\bar{\phi}})^T\textbf{t}dA_e+\int_{\Omega_e}(\bar{\bar{\phi}})^T\textbf{f}d\Omega_e+P^{*}\int_{\Gamma_{u,e}}(\bar{\bar{\phi}})^T\textbf{d}dA_e\\
-\end{aligned}
-\end{equation}
-\end{tcolorbox}
-
-where \(\Gamma_{u,e}\) is the intersection of the boundary of element \(e\) with the displacement boundary and \(\Gamma_{t,e}\) is the intersection of the boundary of element \(e\) with the traction boundary. All of these integrals are performed in the master domain using quadrature rules. This master domain is a cube defined over \(-1\leq\xi_1\leq1, -1\leq\xi_2\leq1, -1\leq\xi_3\leq1\). In order to transform between the physical and master domain, a transformation rule is needed to map between \(x,y,z\) and \(\xi_1,\xi_2,\xi_3\). This transformation rule can take many forms, but a convenient one is to simply use the shape function expansion:
+where \(\textbf{F}\) is the deformation gradient of the transformation, defined as:
 
 \begin{equation}
-x_i=\sum_{j=1}^{n_{en}}X_{i,j}\phi_j(\xi_1,\xi_2,\xi_3)
+\textbf{F}\equiv\begin{bmatrix}
+\frac{\partial x}{\partial \xi_1} & \frac{\partial x}{\partial \xi_2} \\
+\frac{\partial y}{\partial \xi_1} & \frac{\partial y}{\partial \xi_2} \\
+\end{bmatrix}
 \end{equation}
 
-where the shape functions are defined over the master element, \(X_{i,j}\) are the physical (real) coordinates, and \(i\) refers to the fact that the above expansion is assumed to apply equally for \(x_1\), \(x_2\) and \(x_3\). This mapping, which uses the shape functions as the basis for the mapping, is called a parametric map. 
-
-So, all the integrals in \(\textbf{K}^e\) and \(\textbf{R}^e\) are performed over a single element by transforming the integrals to the master domain. The integrals in the physical domain are with respect to \(\bar{dx}\), and to transform them to the master domain, the deformation gradient tensor \(\textbf{F}\) defined by Eq. \eqref{eq:DeformationGradient} is used. Using the chain rule reveals the form of \(\textbf{F}\):
+This allows the differentials in the integrals to be transformed, but the matrix \textbf{B}, which contains derivatives with respect to the physical coordinates, must also be transformed to a version applying to the master domain:
 
 \begin{equation}
-\label{eq:FForm}
-\begin{bmatrix}x_1\\x_2\\x_3\end{bmatrix}=
-\begin{bmatrix}\frac{\partial x_1}{\partial \xi_1}&\frac{\partial x_1}{\partial \xi_2}&\frac{\partial x_1}{\partial \xi_3}\\
-\frac{\partial x_2}{\partial \xi_1}&\frac{\partial x_2}{\partial \xi_2}&\frac{\partial x_2}{\partial \xi_3}\\
-\frac{\partial x_3}{\partial \xi_1}&\frac{\partial x_3}{\partial \xi_2}&\frac{\partial x_3}{\partial \xi_3}\end{bmatrix}
-\begin{bmatrix}\xi_1\\\xi_2\\\xi_3\end{bmatrix}
+\begin{bmatrix}\frac{\partial\xi_1}{\partial x} & \frac{\partial\xi_2}{\partial x}\\
+\frac{\partial\xi_1}{\partial y} & \frac{\partial\xi_2}{\partial y}\\
+\end{bmatrix}
+\begin{bmatrix}
+\frac{\partial\phi_1}{\partial \xi_1} & \frac{\partial\phi_2}{\partial \xi_1} & \frac{\partial\phi_3}{\partial \xi_1} & \frac{\partial\phi_4}{\partial \xi_1}\\
+\frac{\partial\phi_1}{\partial \xi_2} & \frac{\partial\phi_2}{\partial \xi_2} & \frac{\partial\phi_3}{\partial \xi_2} & \frac{\partial\phi_4}{\partial \xi_2}\\
+\end{bmatrix}=
+\begin{bmatrix}\frac{\partial \phi_1}{\partial x} & \frac{\partial \phi_2}{\partial x} & \frac{\partial \phi_3}{\partial x} & \frac{\partial \phi_4}{\partial x}\\
+\frac{\partial \phi_1}{\partial y} & \frac{\partial \phi_2}{\partial y} & \frac{\partial \phi_3}{\partial y} & \frac{\partial \phi_4}{\partial y}\\
+\end{bmatrix}
 \end{equation}
 
-Or, in shorthand notation:
+The first term on the LHS is simply the inverse of the deformation gradient \textbf{F}. The LHS will be denoted as \(\textbf{F}^{-1}\mathscr{B}\). The Jacobian is defined as:
 
 \begin{equation}
-dx_i=F_{ij}\xi_j
+\mathscr{J}\equiv\det{\textbf{F}}
 \end{equation}
 
-where suffix notation is implied. The inverse relationship is:
-
-\begin{equation}
-d\xi_j=F_{ji}dx_i=F_{ij}^{-1}dx_i
-\end{equation}
-
-The above transformation rule holds for the volume integral Jacobian - Nanson's formula must be used to transform the area integrals appearing in the element stiffness matrix and load vector to area integrals in the master domain. There is no reason that the Jacobian for the volume transformation be the same as that for the surface transformation, which is why more care must be taken here to use the correct transformation. In this case, area integrals are transformed by Nanson's rule:
+The area integrals must also be transformed using the Jacobian of the area transformation, which does not necessarily equal that of the volume transformation. 
 
 \begin{equation}
 \label{eq:Nanson}
 dA_e=(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e
 \end{equation}
 
-where \(\hat{n}\) is a unit normal to the master element surface (must be determined for each element on the surface), \(\hat{N}\) the normal to the physical element surface (must be determined), \(\mathscr{J}\) is the Jacobian defined in Eq. \eqref{eq:Jacobian}, and \(\textbf{F}\) is the deformation gradient tensor defined in Eq. \eqref{eq:FForm}. Then, all the integrals over areas must set one of \(\xi_i\) to \(\pm1\) to be consistent with the fact that on a surface, one of the master coordinates is held constant. So, in order to perform computations over each element, Eq. \eqref{eq:FEWeakForm_element} becomes:
+where \(\hat{N}\) and \(\hat{n}\) are the unit normals for the surfaces in the master and physical domains. With these definitions, the integrals over the entire domain given in Eq. \eqref{eq:TotalDomain} are transformed to integrals only over each individual element, in the master domain:
 
 \begin{equation}
-\label{eq:FEWeakForm_element}
+\label{eq:MasterDomain}
 \begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}})|\textbf{F}|d\xi_1d\xi_2d\xi_3 +P^{*}\int_{\Gamma_{u,e}}(\bar{\bar{\phi}})^T\bar{\bar{\phi}}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\bar{\bar{\phi}})^T\textbf{t}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\bar{\bar{\phi}})^T\textbf{f}\ |\textbf{F}|d\xi_1d\xi_2d\xi_3+P^{*}\int_{\Gamma_{u,e}}(\bar{\bar{\phi}})^T\textbf{d}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{K}^e\equiv&\ \int_{\Omega_e}(\textbf{F}^{-1}\mathscr{B})^Tk(\textbf{F}^{-1}\mathscr{B})\textbf{T} \mathscr{J}d\xi_1d\xi_2+P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\textbf{N}\textbf{T}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\xi_v\\
+\textbf{R}^e\equiv&\ \int_{\Omega_e}f\textbf{N}^T \mathscr{J}d\xi_1d\xi_2+\int_{\Gamma_{q,e}}\textbf{q}^{*}\textbf{N}^T (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\xi_v+P^{*}\int_{\Gamma_{d,e}}T^{*}\textbf{N}^T (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\xi_v\\
 \end{aligned}
 \end{equation}
 
-where it is implied in the area integrals that one of the spatial coordinates is set to \(\pm 1\) according to the orientation of the surface. To accurately perform the integration in the master element, everything within the integrand must also be converted to the master coordinate frame. Hence, the deformation gradient becomes:
-
-\begin{equation}
-\label{eq:D}
-\textbf{D}=\begin{bmatrix}\frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1} & 0 & 0\\
-0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2} & 0\\
-0 & 0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3}\\
-\frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2} & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1} & 0\\
-0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3} & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2}\\
-\frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3} & 0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1}\end{bmatrix}
-\end{equation}
-
-In addition, the matrix \(\bar{\bar{\phi}}\) is defined in terms of the shape functions over the master domain (indicated with hats below):
-
-\begin{equation}
-\bar{\bar{\phi}}=
-\begin{cases}(\hat{\phi}_i, 0, 0)^T & i < N\\(0, \hat{\phi}_i, 0)^T & N+1\leq i\leq 2N \\ (0, 0, \hat{\phi}_i)^T & 2N+1\leq i\leq 3N
-\end{cases}
-\end{equation}
-
-So, for trilinear bricks, the element stiffness and load vectors become:
-
-\begin{tcolorbox}
-\begin{equation}
-\label{eq:FEWeakForm_element2}
-\begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3 +\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\ \\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3+\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\end{aligned}
-\end{equation}
-\end{tcolorbox}
-
-where \(3\) is the number of spatial dimensions (3 for 3-D) and \(24\) is the number of unknowns per element (8 for 3-D). The net result is that \(\textbf{K}^e\) is a \(24\times24\) matrix, and \(\textbf{R}^e\) is a \(24\times1\) column vector. The trilinear brick shape functions (in the master domain) are defined in Eq. \eqref{eq:Bricks}. The unit normals are of length 3, and are oriented such that the correct dimensions are obtained in the matrix and load integrals above.
-
-All the integrals above are performed using quadrature. To integrate in higher than a single dimension using a Gaussian quadrature rule, simply apply the rule in each direction. So, in 1-D, where a single loop sums over all the quadrature points, three loops are needed to sum over the \(\xi_1,\xi_2,\xi_3\) directions. For instance, the integrals above, in quadrature form, are:
+where \(d\xi_v\) is one of \(d\xi_1\) or \(d\xi_2\), depending on the orientation of the surface (``\(v\)'' stands for ``variable''). So, all the integrals in \(\textbf{K}^e\) and \(\textbf{R}^e\) are performed over a single element by transforming the integrals to the master domain. All the integrals above are performed using quadrature. To integrate in higher than a single dimension using a Gaussian quadrature rule, simply apply the rule in each direction. So, in 1-D, where a single loop sums over all the quadrature points, three loops are needed to sum over the \(\xi_1,\xi_2,\xi_3\) directions. For instance, the integrals above, in quadrature form, are:
 
 \begin{equation}
 \label{eq:FEWeakForm_element3}
 \begin{aligned}
-\textbf{K}^e=\sum_{q=1}^g\sum_{r=1}^g\sum_{s=1}^gw_qw_gw_s\left\{(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}\right\} +\quad\\
-\sum_{r=1}^g\sum_{s=1}^gw_gw_s\left\{\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\right\}\\
+\textbf{K}^e=\sum_{r=1}^g\sum_{s=1}^gw_gw_s\left\{(\textbf{F}^{-1}\mathscr{B})^Tk(\textbf{F}^{-1}\mathscr{B})\textbf{T} \mathscr{J}\right\} +\underbrace{\sum_{s=1}^gw_s\left\{P^{*}\textbf{N}^T\textbf{N}\textbf{T}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}\right\}}_\text{Dirichlet boundaries only}\\
 \ \\
-\textbf{R}^e\equiv\sum_{q=1}^g\sum_{r=1}^g\sum_{s=1}^gw_qw_gw_s(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}+\quad\\
-\sum_{r=1}^g\sum_{s=1}^gw_gw_s\left\{\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\right\}\\
+\textbf{R}^e\equiv\sum_{r=1}^g\sum_{s=1}^gw_gw_sf\textbf{N}^T \mathscr{J}+\sum_{s=1}^gw_s\left\{\underbrace{\textbf{q}^{*}\textbf{N}^T (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}}_\text{Flux boundaries only}+\underbrace{P^{*}T^{*}\textbf{N}^T (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}}_\text{Dirichlet boundaries only}\right\}\\
 \end{aligned}
 \end{equation}
 
-where \(g\) is the number of quadrature points, where the same quadrature rule has been assumed to be applied in each spatial dimension. It is implied that in the area integrals, \(d\hat{A}_e\) refers to one of \(d\xi_1d\xi_2\), \(d\xi_2d\xi_3, d\xi_3d\xi_1\), depending on the particular surface.
-
-To be as explicit as possible, there are essentially four types of elements. The element stiffness matrix and load vector for each of these possible combinations is shown below for completeness.
-
-\begin{enumerate}
-\item an element on the interior (no displacement or traction boundaries)
-
-\begin{equation}
-\begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3\\
-\textbf{R}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3\\
-\end{aligned}
-\end{equation}
-
-\item an element on the boundary with only displacement boundaries
-
-\begin{equation}
-\begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3 +\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\ \\
-\textbf{R}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3+\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\end{aligned}
-\end{equation}
-
-\item an element on the boundary with only traction boundaries
-
-\begin{equation}
-\begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3\\
-\ \\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3\\
-\end{aligned}
-\end{equation}
-
-\item an element on the boundary with both displacement and traction boundaries
-
-\begin{equation}
-\begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3 +\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\ \\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3+\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\end{aligned}
-\end{equation}
-\end{enumerate}
-
-Care must be taken for determining if an element is on a Dirichlet boundary. If it is, then penalty terms must be added, and if not, the penalty terms are absent. So, whether or not the penalty method is used, there is some amount of bookkeeping required to record which nodes correspond to Dirichlet boundaries.
+where \(g\) is the number of quadrature points, where the same quadrature rule has been assumed to be applied in each spatial dimension. Care must be taken for determining if an element is on a Dirichlet boundary. If it is, then penalty terms must be added, and if not, the penalty terms are absent. So, whether or not the penalty method is used, there is some amount of bookkeeping required to record which nodes correspond to Dirichlet boundaries.
 
 \subsubsection{Global-Local Transformation}
 
-After all computations over the elements are complete, all the local stiffness matrices and load vectors must be organized into the global stiffness matrix and load vector. The placement of local matrices into the global matrix is performed using a connectivity matrix that relates the local node numbers to the global node numbers. A connectivity matrix is usually organized so that each row corresponds to a single element. Then, each column in that row refers to each local node to that element, and the information held in the connectivity matrix are the global node numbers relating to the local node numbers. For example, for a 2-D domain with four elements, and global node numbering beginning in the bottom left corner and moving up to the top right corner, the connectivity matrix (also called the location matrix in this document) has the following form:
+After all computations over the elements are complete, all the local stiffness matrices and load vectors must be organized into the global stiffness matrix and load vector. The placement of local matrices into the global matrix is performed using a connectivity matrix that relates the local node numbers to the global node numbers. A connectivity matrix (referred to in this document as a location matrix \textbf{LM}) is usually organized so that each row corresponds to a single element. Then, each column in that row refers to each local node to that element, and the information held in the connectivity matrix are the global node numbers relating to the local node numbers. For example, for a 2-D domain with four elements, and global node numbering beginning in the bottom left corner and moving up to the top right corner, the location matrix has the following form:
 
 \begin{equation}
 \textbf{LM}=\begin{bmatrix}
@@ -499,24 +330,19 @@ k_{2,1}^{e=1}, & k_{2,2}^{e=1}+k_{1,1}^{e=2}, & k_{1,2}^{e=2}, & k_{2,4}^{e=1}, 
 
 \subsection{Shape Functions}
 
-The shape functions for 3-D finite elements are a natural extension of the shape functions used in lower dimensions. Trilinear elements, or 3-D linear elements, are used for the remainder of this assignment. This choice of shape functions represents a nodal basis, since the shape functions go to zero at all nodes except for the node for which they are defined. The trilinear shape functions are:
+The shape functions for 2-D finite elements are a natural extension of the shape functions used in lower dimensions. This choice of shape functions represents a nodal basis, since the shape functions go to zero at all nodes except for the node for which they are defined. These shape functions are defined beginning with the bottom left node and moving in a counterclockwise manner around the master element domain. The bilinear shape functions are:
 
 \begin{equation}
 \label{eq:Bricks}
 \begin{aligned}
-\phi_1(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1-\xi_1)(1-\xi_2)(1-\xi_3)\\
-\phi_2(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1+\xi_1)(1-\xi_2)(1-\xi_3)\\
-\phi_3(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1+\xi_1)(1+\xi_2)(1-\xi_3)\\
-\phi_4(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1-\xi_1)(1+\xi_2)(1-\xi_3)\\
-\phi_5(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1-\xi_1)(1-\xi_2)(1+\xi_3)\\
-\phi_6(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1+\xi_1)(1-\xi_2)(1+\xi_3)\\
-\phi_7(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1+\xi_1)(1+\xi_2)(1+\xi_3)\\
-\phi_8(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1-\xi_1)(1+\xi_2)(1+\xi_3)\\
+\phi_1(\xi_1,\xi_2)=\frac{1}{4}(1-\xi_1)(1-\xi_2)\\
+\phi_2(\xi_1,\xi_2)=\frac{1}{8}(1+\xi_1)(1-\xi_2)\\
+\phi_3(\xi_1,\xi_2)=\frac{1}{8}(1+\xi_1)(1+\xi_2)\\
+\phi_4(\xi_1,\xi_2)=\frac{1}{8}(1-\xi_1)(1+\xi_2)\\
 \end{aligned}
 \end{equation}
 
-This gives 24 total unknowns per element (since the unknown is vector-valued with three components). 
-
+This gives 4 total unknowns per element, since temperature is a scalar.
 
 \section{Mesh Generator}
 
