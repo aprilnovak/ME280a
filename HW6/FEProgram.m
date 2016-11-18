@@ -1,6 +1,6 @@
 clear all
 
-L = 1.0;                        % problem domain
+L = pi;                         % problem domain (theta)
 k_th = 2;                       % thermal conductivity
 shape_order = 2;                % number of nodes per element
 E = 0.1;                        % elastic modulus
@@ -17,7 +17,11 @@ fontsize = 16;                  % fontsize for plots
 [permutation] = permutation(shape_order);
 
 
-N_elem = [32];
+Nr = 3;                         % number of radial layers
+No = 12;                        % number of theta layers
+N_elem = Nr * No;               % number of elements
+ri = 3;                         % inner radius of arch
+ro = 4;                         % outer radius of arch
 
 for num_elem = N_elem
     
@@ -29,8 +33,43 @@ for num_elem = N_elem
     solution_analytical = 10 .* sin(2 .* physical_domain) ./ k_th + C_o .* physical_domain + C_1;
     solution_analytical_derivative = -(1 ./ E) * k_th * k_th * cos(2 * pi * k_th * physical_domain ./ L) * L ./ (2 * pi * k_th) + C_1;
 
+    
+    
+    
+    
     % perform the meshing
-    [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
+    num_nodes = (shape_order - 1) * num_elem + 1;
+
+% for evenly-spaced nodes, on a 2-D mesh
+coordinates = zeros(num_nodes, 2);
+
+% in 1-D, the first node starts at (0,0), and the rest are evenly-spaced
+for i = 2:num_nodes
+   coordinates(i,:) = [coordinates(i - 1, 1) + L/(num_nodes - 1), 0];
+end
+
+% Which nodes correspond to which elements depends on the shape function
+% used. Each row in the LM corresponds to one element.
+num_nodes_per_element = shape_order;
+
+LM = zeros(num_elem, num_nodes_per_element); 
+
+for i = 1:num_elem
+    for j = 1:num_nodes_per_element
+        LM(i,j) = num_nodes_per_element * (i - 1) + j - (i - 1);
+    end
+end
+
+
+
+
+
+
+
+
+
+
+
 
     % specify the boundary conditions
     [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
