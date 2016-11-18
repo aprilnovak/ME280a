@@ -10,8 +10,8 @@ left_value = To;                %
 right = 'Neumann';              % boundary condition at theta = 0
 right_value = 1.0;              % 
 fontsize = 16;                  % fontsize for plots
-Nr = 3;                         % number of radial layers
-No = 12;                        % number of theta layers
+Nr = 2;                         % number of radial layers
+No = 4;                        % number of theta layers
 N_elem = Nr * No;               % number of elements
 num_nodes = (Nr + 1) * (No + 1);% number of nodes
 num_nodes_per_elem = 4;         % linear elements
@@ -32,28 +32,11 @@ for num_elem = N_elem
     solution_analytical = 10 .* sin(2 .* physical_domain) ./ k_th + C_o .* physical_domain + C_1;
     
     % for a 2-D mesh polar mesh
-    [coordinates_polar, LM_polar] = polar_mesh(No, Nr, dt, num_nodes, ri, ro, num_elem);
-    
-%     % mesh of the semi-circle, with node numbering
-%     x = coordinates_polar(:,1);
-%     y = coordinates_polar(:,2);
-%     scatter(x,y)
-%     a = [1:num_nodes]';
-%     b = num2str(a);
-%     c = cellstr(b);
-%     dx = 0.1; dy = 0.1; % displacement so the text does not overlay the data points
-%     text(x+dx, y+dy, c);
-%     xlim([-ro-2*dx, ro+5*dx])
-%     ylim([-ro/2, ro + ro/2])
-%     %saveas(gcf, 'Mesh', 'jpeg')
-    
-%     % output the LM for report
-%     for e = 1:length(LM_polar)
-%        fprintf('%i & %i & %i & %i \\\\\n', LM_polar(e, 1), LM_polar(e,2), LM_polar(e,3), LM_polar(e,4))
-%     end
+    [coordinates, LM] = polar_mesh(No, Nr, dt, num_nodes, ri, ro, num_elem);
+    %[plot] = mesh_plots(coordinates, num_nodes, ro, LM);
     
     % original meshing (Cartesian)
-    [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
+    %[num_nodes, num_nodes_per_elem, LM, coordinates] = mesh(L, num_elem, shape_order);
     
     % specify the boundary conditions
     [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes, Nr, No);
@@ -66,22 +49,28 @@ for num_elem = N_elem
     F = zeros(num_nodes, 1);
 
     for elem = 1:num_elem
-        k = zeros(num_nodes_per_element);
-        f = zeros(num_nodes_per_element, 1);
+        %k = zeros(num_nodes_per_elem);
+        %f = zeros(num_nodes_per_elem, 1);
+        k = 0;
+        f = 0;
 
         for ll = 1:length(qp) % eta loop
              for l = 1:length(qp) % xe loop
-                 for i = 1:num_nodes_per_element
-                     [N, dN_dxe, dN_deta, x_xe_eta, y_xe_eta, dx_dxe, dx_deta, dy_dxe, dy_deta] = shapefunctions(qp(l), qp(ll), num_nodes_per_elem, coordinates, LM, elem);
+                 %for i = 1:num_nodes_per_elem
+                     [N, dN_dxe, dN_deta, x_xe_eta, y_xe_eta, dx_dxe, dx_deta, dy_dxe, dy_deta, B] = shapefunctions(qp(l), qp(ll), num_nodes_per_elem, coordinates, LM, elem);
+                     F = [dx_dxe, dx_deta; dy_dxe, dy_deta];
+                     J = det(F);
                      
                      % assemble the (elemental) forcing vector
-                     f(i) = f(i) - wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe_eta / L) * N(i) * dx_dxe;
-
-                     for j = 1:num_nodes_per_element
+                     %f(i) = f(i) - wt(ll) * wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe_eta / L) * N(i) * dx_dxe;
+                     f = f - wt(ll) * wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe_eta / L) * N * dx_dxe;
+                     
+                     for j = 1:num_nodes_per_elem
                          % assemble the (elemental) stiffness matrix
-                         k(i,j) = k(i,j) + wt(l) * E * dN_dxe(i) * dN_dxe(j) / dx_dxe;
+                         %k(i,j) = k(i,j) + wt(ll) * wt(l) * transpose(inv(F) * B) * k_th * inv(F) * B * J;
+                         k = k + wt(ll) * wt(l) * transpose(inv(F) * B) * k_th * inv(F) * B * J;
                      end
-                 end
+                 %end
              end
         end
 
@@ -122,7 +111,7 @@ for a_row = 1:num_nodes
 end
 
 % assemble the solution in the physical domain
-[solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_element, shape_order, coordinates, physical_domain);
+[solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_elem, shape_order, coordinates, physical_domain);
 
 % plot(physical_domain, solution_FE)
 % hold on
