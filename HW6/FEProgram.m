@@ -5,17 +5,11 @@ k_th = 2;                       % thermal conductivity
 shape_order = 2;                % number of nodes per element
 E = 0.1;                        % elastic modulus
 To = 110;                       % temperature at theta = pi
-left = 'Dirichlet';             % left boundary condition 
-left_value = 0.0;               % left Dirichlet boundary condition value
-right = 'Dirichlet';            % right boundary condition type
-right_value = 1.0;              % right Dirichlet boundary condition value
-tolerance = 0.05;               % convergence tolerance
-energy_norm = tolerance + 1;    % arbitrary initialization value
+left = 'Dirichlet';             % boundary condition at theta = pi
+left_value = To;                % 
+right = 'Neumann';              % boundary condition at theta = 0
+right_value = 1.0;              % 
 fontsize = 16;                  % fontsize for plots
-
-% form the permutation matrix for assembling the global matrices
-[permutation] = permutation(shape_order);
-
 Nr = 3;                         % number of radial layers
 No = 12;                        % number of theta layers
 N_elem = Nr * No;               % number of elements
@@ -23,6 +17,9 @@ num_nodes = (Nr + 1) * (No + 1);% number of nodes
 ri = 3;                         % inner radius of arch
 ro = 4;                         % outer radius of arch
 dt = (ro - ri)/Nr;              % thickness of each radial layer
+
+% form the permutation matrix for assembling the global matrices
+[permutation] = permutation(shape_order);
 
 for num_elem = N_elem
     
@@ -32,8 +29,7 @@ for num_elem = N_elem
     C_o = 40 / k_th;
     C_1 = To - C_o * pi;
     solution_analytical = 10 .* sin(2 .* physical_domain) ./ k_th + C_o .* physical_domain + C_1;
-    solution_analytical_derivative = -(1 ./ E) * k_th * k_th * cos(2 * pi * k_th * physical_domain ./ L) * L ./ (2 * pi * k_th) + C_1;
-
+    
     % for a 2-D mesh polar mesh
     [coordinates_polar, LM_polar] = polar_mesh(No, Nr, dt, num_nodes, ri, ro, num_elem);
     
@@ -59,7 +55,7 @@ for num_elem = N_elem
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
     
     % specify the boundary conditions
-    [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
+    [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes, Nr, No);
 
     % define the quadrature rule
     [wt, qp] = quadrature(shape_order);
@@ -140,7 +136,3 @@ end
 %saveas(gcf, sprintf('Nplot_for_k_%i', k_th), 'jpeg')
 %close all
 
-
-% uncomment to find out how many elements are needed to reach the error
-% tolerance
-%sprintf('For k = %i, number elements: %i', k_th, num_elem)
