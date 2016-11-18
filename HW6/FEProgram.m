@@ -68,19 +68,21 @@ for num_elem = N_elem
         k = zeros(num_nodes_per_element);
         f = zeros(num_nodes_per_element, 1);
 
-         for l = 1:length(qp)
-             for i = 1:num_nodes_per_element
-                 [N, dN, x_xe, dx_dxe] = shapefunctions(qp(l), shape_order, coordinates, LM, elem);
+        for ll = 1:length(qp) % eta loop
+             for l = 1:length(qp) % xe loop
+                 for i = 1:num_nodes_per_element
+                     [N, dN_dxe, dN_deta, x_xe, dx_dxe] = shapefunctions(qp(l), qp(ll), shape_order, coordinates, LM, elem);
 
-                 % assemble the (elemental) forcing vector
-                 f(i) = f(i) - wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe / L) * N(i) * dx_dxe;
+                     % assemble the (elemental) forcing vector
+                     f(i) = f(i) - wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe / L) * N(i) * dx_dxe;
 
-                 for j = 1:num_nodes_per_element
-                     % assemble the (elemental) stiffness matrix
-                     k(i,j) = k(i,j) + wt(l) * E * dN(i) * dN(j) / dx_dxe;
+                     for j = 1:num_nodes_per_element
+                         % assemble the (elemental) stiffness matrix
+                         k(i,j) = k(i,j) + wt(l) * E * dN_dxe(i) * dN_dxe(j) / dx_dxe;
+                     end
                  end
              end
-         end
+        end
 
          % place the elemental k matrix into the global K matrix
          for m = 1:length(permutation(:,1))
