@@ -14,6 +14,7 @@ Nr = 3;                         % number of radial layers
 No = 12;                        % number of theta layers
 N_elem = Nr * No;               % number of elements
 num_nodes = (Nr + 1) * (No + 1);% number of nodes
+num_nodes_per_elem = 4;         % linear elements
 ri = 3;                         % inner radius of arch
 ro = 4;                         % outer radius of arch
 dt = (ro - ri)/Nr;              % thickness of each radial layer
@@ -71,10 +72,10 @@ for num_elem = N_elem
         for ll = 1:length(qp) % eta loop
              for l = 1:length(qp) % xe loop
                  for i = 1:num_nodes_per_element
-                     [N, dN_dxe, dN_deta, x_xe, dx_dxe] = shapefunctions(qp(l), qp(ll), shape_order, coordinates, LM, elem);
-
+                     [N, dN_dxe, dN_deta, x_xe_eta, y_xe_eta, dx_dxe, dx_deta, dy_dxe, dy_deta] = shapefunctions(qp(l), qp(ll), num_nodes_per_elem, coordinates, LM, elem);
+                     
                      % assemble the (elemental) forcing vector
-                     f(i) = f(i) - wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe / L) * N(i) * dx_dxe;
+                     f(i) = f(i) - wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe_eta / L) * N(i) * dx_dxe;
 
                      for j = 1:num_nodes_per_element
                          % assemble the (elemental) stiffness matrix

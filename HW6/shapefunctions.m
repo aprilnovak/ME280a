@@ -2,14 +2,14 @@
 % dN        : derivative of the shape functions with respect to xe
 % x_xe      : x as a function of xe
 % dx_dxe    : derivative of x with respect to xe
-function [N, dN_dxe, dN_deta, x_xe, dx_dxe] = shapefunctions(xe, eta, shape_order, coordinates, LM, elem)
+function [N, dN_dxe, dN_deta, x_xe_eta, y_xe_eta, dx_dxe, dx_deta, dy_dxe, dy_deta] = shapefunctions(xe, eta, num_nodes_per_elem, coordinates, LM, elem)
 
 % shape functions and their derivatives (for linear elements)
-N = zeros(shape_order * 2, 1);
-dN = zeros(shape_order * 2, 1);
+N = zeros(num_nodes_per_elem, 1);
+dN = zeros(num_nodes_per_elem, 1);
 
-switch shape_order
-    case 2
+switch num_nodes_per_elem
+    case 4
         N(1) = 0.25 * (1 - xe) * (1 - eta);
         N(2) = 0.25 * (1 + xe) * (1 - eta);
         N(3) = 0.25 * (1 + xe) * (1 + eta);
@@ -23,13 +23,22 @@ switch shape_order
         dN_deta(3) = 0.25 * (1 + xe) * 1;
         dN_deta(4) = 0.25 * (1 - xe) * 1;
     otherwise
-        disp('You entered an unsupported shape function order.');
+        disp('You entered an unsupported number of nodes per element.');
 end
 
-% x(xe) transformation to the parametric domain
-x_xe = 0.0;
+% x(xe, eta) and y(xe, eta) transformation to the parametric domain
+x_xe_eta = 0.0;
+y_xe_eta = 0.0;
 dx_dxe = 0.0;
-for i = 1:shape_order
-    x_xe = x_xe + coordinates(LM(elem, i)) * N(i);
-    dx_dxe = dx_dxe + coordinates(LM(elem,i)) * dN(i);
+dy_dxe = 0.0;
+dx_deta = 0.0;
+dy_deta = 0.0;
+
+for i = 1:num_nodes_per_elem
+    x_xe_eta = x_xe_eta + coordinates(LM(elem, 1)) * N(i);
+    y_xe_eta = y_xe_eta + coordinates(LM(elem, 2)) * N(i);
+    dx_dxe = dx_dxe + coordinates(LM(elem,1)) * dN_dxe(i);
+    dy_dxe = dy_dxe + coordinates(LM(elem,2)) * dN_dxe(i);
+    dx_deta = dx_deta + coordinates(LM(elem,1)) * dN_deta(i);
+    dy_deta = dy_deta + coordinates(LM(elem,2)) * dN_deta(i);
 end
