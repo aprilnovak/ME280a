@@ -1,8 +1,5 @@
 clear all
 
-% select which type of plot you want to make - at least one flag must equal 1
-N_plot_flag = 1;                % 1 - plot the solutions for various N
-
 L = 1.0;                        % problem domain
 k_freq = 2;                     % forcing frequency
 num_elem = 5;                   % number of finite elements (initial guess)
@@ -19,12 +16,8 @@ fontsize = 16;                  % fontsize for plots
 % form the permutation matrix for assembling the global matrices
 [permutation] = permutation(shape_order);
 
-if (N_plot_flag)
-     N_elem = [32];
-else
-    disp('Either N_plot_flag or k_plot_flag has to equal 1.');
-end
 
+N_elem = [32];
 
 
 % index for collecting error
@@ -119,10 +112,9 @@ energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution
 energy_norm = energy_norm_top ./ energy_norm_bottom;
 sprintf('energy norm: %f', energy_norm)
 
-if (N_plot_flag)
-    plot(physical_domain, solution_FE)
-    hold on
-end
+plot(physical_domain, solution_FE)
+hold on
+
 
 % uncomment to find out how many elements are needed to reach the error
 % tolerance
@@ -132,16 +124,13 @@ e = e + 1;
 
 end
 
-if (N_plot_flag)
-    plot(physical_domain, solution_analytical)
-    h = legend('N = 2', 'N = 4', 'N = 8', 'N = 16', 'N = 32', 'N = 64', 'N = 128','analytical', 'Location', 'southeast');
-    set(h, 'FontSize', fontsize - 2);
-    xlabel('Problem domain', 'FontSize', fontsize)
-    ylabel(sprintf('Solution for k = %i', k_freq), 'FontSize', fontsize)
-    text(0.85, 0.5, sprintf('k = %i', k_freq), 'FontSize', fontsize, 'FontWeight', 'bold', 'EdgeColor', [0 0 0])
-    saveas(gcf, sprintf('Nplot_for_k_%i', k_freq), 'jpeg')
-    close all
-end
+plot(physical_domain, solution_analytical)
+h = legend('N = what','analytical', 'Location', 'southeast');
+set(h, 'FontSize', fontsize - 2);
+xlabel('Problem domain', 'FontSize', fontsize)
+ylabel(sprintf('Solution for k = %i', k_freq), 'FontSize', fontsize)
+%saveas(gcf, sprintf('Nplot_for_k_%i', k_freq), 'jpeg')
+close all
 
 
 % uncomment to find out how many elements are needed to reach the error
