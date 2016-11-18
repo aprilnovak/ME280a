@@ -10,8 +10,8 @@ left_value = To;                %
 right = 'Neumann';              % boundary condition at theta = 0
 right_value = 1.0;              % 
 fontsize = 16;                  % fontsize for plots
-Nr = 2;                         % number of radial layers
-No = 4;                        % number of theta layers
+Nr = 1;                         % number of radial layers
+No = 3;                        % number of theta layers
 N_elem = Nr * No;               % number of elements
 num_nodes = (Nr + 1) * (No + 1);% number of nodes
 num_nodes_per_elem = 4;         % linear elements
@@ -20,7 +20,7 @@ ro = 4;                         % outer radius of arch
 dt = (ro - ri)/Nr;              % thickness of each radial layer
 
 % form the permutation matrix for assembling the global matrices
-[permutation] = permutation(shape_order);
+[permutation] = permutation(num_nodes_per_elem);
 
 for num_elem = N_elem
     
@@ -58,8 +58,8 @@ for num_elem = N_elem
              for l = 1:length(qp) % xe loop
                  %for i = 1:num_nodes_per_elem
                      [N, dN_dxe, dN_deta, x_xe_eta, y_xe_eta, dx_dxe, dx_deta, dy_dxe, dy_deta, B] = shapefunctions(qp(l), qp(ll), num_nodes_per_elem, coordinates, LM, elem);
-                     F = [dx_dxe, dx_deta; dy_dxe, dy_deta];
-                     J = det(F);
+                     F_mat = [dx_dxe, dx_deta; dy_dxe, dy_deta];
+                     J = det(F_mat);
                      
                      % assemble the (elemental) forcing vector
                      %f(i) = f(i) - wt(ll) * wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe_eta / L) * N(i) * dx_dxe;
@@ -68,12 +68,12 @@ for num_elem = N_elem
                      for j = 1:num_nodes_per_elem
                          % assemble the (elemental) stiffness matrix
                          %k(i,j) = k(i,j) + wt(ll) * wt(l) * transpose(inv(F) * B) * k_th * inv(F) * B * J;
-                         k = k + wt(ll) * wt(l) * transpose(inv(F) * B) * k_th * inv(F) * B * J;
+                         k = k + wt(ll) * wt(l) * transpose(inv(F_mat) * B) * k_th * inv(F_mat) * B * J;
                      end
                  %end
              end
         end
-
+        
          % place the elemental k matrix into the global K matrix
          for m = 1:length(permutation(:,1))
             i = permutation(m,1);
@@ -111,7 +111,7 @@ for a_row = 1:num_nodes
 end
 
 % assemble the solution in the physical domain
-[solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_elem, shape_order, coordinates, physical_domain);
+[coefficients_mat] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_elem, shape_order, coordinates, physical_domain);
 
 % plot(physical_domain, solution_FE)
 % hold on

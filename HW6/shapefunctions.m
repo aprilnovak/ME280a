@@ -36,7 +36,6 @@ dx_deta = 0.0;
 dy_deta = 0.0;
 
 for i = 1:num_nodes_per_elem
-    coordinates(LM(elem, i), 1)
     x_xe_eta = x_xe_eta + coordinates(LM(elem, i), 1) * N(i);
     y_xe_eta = y_xe_eta + coordinates(LM(elem, i), 2) * N(i);
     

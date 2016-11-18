@@ -394,6 +394,32 @@ k_{2,1}^{e=1}, & k_{2,2}^{e=1}+k_{1,1}^{e=2}, & k_{1,2}^{e=2}, & k_{2,4}^{e=1}, 
 \end{bmatrix}
 \end{equation}
 
+Then, after the global system is solved, the solution must be postprocessed to give the solution over each element. Over each element, the solution is of the form:
+
+\begin{equation}
+T(x,y)=C_1+C_2x+C_3y+C_4xy
+\end{equation}
+
+where \(x,y\) are the physical coordinates in the real domain. Solving the FE problem gives four constants per element that can be used to determine the form of \(T(x,y)\) over each element:
+
+\begin{equation}
+\begin{aligned}
+\begin{bmatrix}
+T(\text{local node 1})\\T(\text{local node 2})\\T(\text{local node 3})\\T(\text{local node 4})
+\end{bmatrix}=\begin{bmatrix}
+1 & x_1 & y_1 & x_1y_1\\
+1 & x_2 & y_2 & x_2y_2\\
+1 & x_3 & y_3 & x_3y_3\\
+1 & x_4 & y_4 & x_4y_4\\
+\end{bmatrix}
+\begin{bmatrix}
+C_1\\C_2\\C_3\\C_4
+\end{bmatrix}
+\end{aligned}
+\end{equation}
+
+where the subscripts indicate the local node numberings. This linear system is solved over each element to find the coefficients that determine the solution over that element.
+
 \subsection{Shape Functions}
 
 The shape functions for 2-D finite elements are a natural extension of the shape functions used in lower dimensions. This choice of shape functions represents a nodal basis, since the shape functions go to zero at all nodes except for the node for which they are defined. These shape functions are defined beginning with the bottom left node and moving in a counterclockwise manner around the master element domain. The bilinear shape functions are:
