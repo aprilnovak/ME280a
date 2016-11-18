@@ -103,7 +103,7 @@ The purpose of this study is to construct the Finite Element (FE) problem statem
 
 This section details the problem statement and mathematical method used for solving the problem.
 
-\subsection{The Weak Form}
+\subsection{The Analytical Solution}
 
 This problem solves the heat conduction problem, with a governing equation given by:
 
@@ -111,7 +111,76 @@ This problem solves the heat conduction problem, with a governing equation given
 \nabla\cdot(k\nabla T)+f=0
 \end{equation}
 
-where \(k\) is the thermal conductivity, \(T\) the temperature (scalar), and \(f\) a volumetric heat source/sink. The weak form is obtained by multiplying through by a test function \(\psi\) and integrating over the body:
+where \(k\) is the thermal conductivity, \(T\) the temperature (scalar), and \(f\) a volumetric heat source/sink. This problem is to be solved with two different sets of specifications. For one of these sets, there is an analytical solution to offer a comparison to ensure that the code functions correctly, and for the second, there is no analytical solution. Both specifications have the following boundary conditions:
+
+\begin{equation}
+\begin{aligned}
+T(\theta=\pi)=T_0\\
+-k\nabla T\cdot\hat{n}|_{\theta=0}=q_o(r)\\
+-k\nabla T\cdot\hat{n}|_{\theta\neq0\cup \theta\neq\pi}=0\\
+\end{aligned}
+\end{equation}
+
+For the analytical solution, these specifications are:
+
+\begin{equation}
+\label{eq:AnalyticalSpecs}
+\begin{aligned}
+T_o=110\\
+q_o(r)=\frac{20}{r}\\
+f(r,\theta)=\frac{40}{r^2}\sin{(2\theta)}\\
+\end{aligned}
+\end{equation}
+
+To obtain the analytical solution, the governing equation is written explicitly in polar coordinates:
+
+\begin{equation}
+\frac{1}{r}\frac{\partial}{\partial r}\left(kr\frac{\partial T}{\partial r}\right)+\frac{1}{r^2}\frac{\partial}{\partial\theta}\left(k\frac{\partial T}{\partial\theta}\right)+\frac{40}{r^2}\sin{(2\theta)}=0
+\end{equation}
+
+where \(f(r,\theta)\) has been inserted from Eq. \eqref{eq:AnalyticalSpecs}. Because \(k\) is constant with these specifications, it can be moved outside the derivatives. Because boundary conditions are only asymmetric in the \(\theta\) direction (i.e. boundary conditions are insulated on the \(r\)-sides of the tube), the solution is not a function of \(r\). 
+
+\begin{equation}
+k\frac{\partial}{\partial\theta}\left(\frac{\partial T}{\partial\theta}\right)+40\sin{(2\theta)}=0
+\end{equation}
+
+Rearranging, and integrating once in \(\theta\):
+
+\begin{equation}
+d\left(\frac{d T}{d\theta}\right)=-\frac{40}{k}\sin{(2\theta)}d\theta\quad\rightarrow\quad \frac{dT}{d\theta}=\frac{20}{k}\cos{(2\theta)}+C_o
+\end{equation}
+
+Integrating once more:
+
+\begin{equation}
+T(\theta)=\frac{10}{k}\sin{(2\theta)}+C_o\theta+C_1
+\end{equation}
+
+where \(C_o\) and \(C_1\) are constants of integration. These constants are determined by applying the boundary conditions:
+
+\begin{equation}
+T(\pi)=T_o=C_o\pi+C_1
+\end{equation}
+
+\begin{equation}
+-k\frac{1}{r}\frac{dT(\theta=0)}{d\theta}=-k\frac{1}{r}\left(\frac{20}{k}+C_o\right)=\frac{20}{r}
+\end{equation}
+
+These equations give:
+
+\begin{equation}
+\begin{aligned}
+C_1=T_o-\frac{40}{k}\pi\\
+C_o=\frac{40}{k}\\
+\end{aligned}
+\end{equation}
+
+
+
+
+\subsection{The Weak Form}
+
+The weak form is obtained by multiplying through by a test function \(\psi\) and integrating over the body:
 
 \begin{equation}
 \label{eq:StrongForm2}
