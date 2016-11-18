@@ -20,8 +20,10 @@ fontsize = 16;                  % fontsize for plots
 Nr = 3;                         % number of radial layers
 No = 12;                        % number of theta layers
 N_elem = Nr * No;               % number of elements
+num_nodes = (Nr + 1) * (No + 1);% number of nodes
 ri = 3;                         % inner radius of arch
 ro = 4;                         % outer radius of arch
+dt = (ro - ri)/Nr;              % thickness of each radial layer
 
 for num_elem = N_elem
     
@@ -33,44 +35,17 @@ for num_elem = N_elem
     solution_analytical = 10 .* sin(2 .* physical_domain) ./ k_th + C_o .* physical_domain + C_1;
     solution_analytical_derivative = -(1 ./ E) * k_th * k_th * cos(2 * pi * k_th * physical_domain ./ L) * L ./ (2 * pi * k_th) + C_1;
 
+    % for a 2-D mesh polar mesh
+    [coordinates_polar] = polar_mesh(No, Nr, dt, num_nodes, ri, ro);
+
+    plot(coordinates_polar(:,1), coordinates_polar(:,2), '*')
+    xlim([-ro, ro])
+    ylim([-ro/2, ro + ro/2])
+    %saveas(gcf, 'Mesh', 'jpeg')
     
+    % original meshing (Cartesian)
+    [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
     
-    
-    
-    % perform the meshing
-    num_nodes = (shape_order - 1) * num_elem + 1;
-
-% for evenly-spaced nodes, on a 2-D mesh
-coordinates = zeros(num_nodes, 2);
-
-% in 1-D, the first node starts at (0,0), and the rest are evenly-spaced
-for i = 2:num_nodes
-   coordinates(i,:) = [coordinates(i - 1, 1) + L/(num_nodes - 1), 0];
-end
-
-% Which nodes correspond to which elements depends on the shape function
-% used. Each row in the LM corresponds to one element.
-num_nodes_per_element = shape_order;
-
-LM = zeros(num_elem, num_nodes_per_element); 
-
-for i = 1:num_elem
-    for j = 1:num_nodes_per_element
-        LM(i,j) = num_nodes_per_element * (i - 1) + j - (i - 1);
-    end
-end
-
-
-
-
-
-
-
-
-
-
-
-
     % specify the boundary conditions
     [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
 
@@ -138,20 +113,20 @@ end
 % assemble the solution in the physical domain
 [solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_element, shape_order, coordinates, physical_domain);
 
-plot(physical_domain, solution_FE)
-hold on
+% plot(physical_domain, solution_FE)
+% hold on
 
 
 
 end
 
-plot(physical_domain, solution_analytical)
-h = legend('N = what','analytical', 'Location', 'southeast');
-set(h, 'FontSize', fontsize - 2);
-xlabel('Problem domain', 'FontSize', fontsize)
-ylabel(sprintf('Solution for k = %i', k_th), 'FontSize', fontsize)
+% plot(physical_domain, solution_analytical)
+% h = legend('N = what','analytical', 'Location', 'southeast');
+% set(h, 'FontSize', fontsize - 2);
+% xlabel('Problem domain', 'FontSize', fontsize)
+% ylabel(sprintf('Solution for k = %i', k_th), 'FontSize', fontsize)
 %saveas(gcf, sprintf('Nplot_for_k_%i', k_th), 'jpeg')
-close all
+%close all
 
 
 % uncomment to find out how many elements are needed to reach the error
