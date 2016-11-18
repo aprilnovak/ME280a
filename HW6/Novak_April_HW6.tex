@@ -427,265 +427,63 @@ where \(R\) is the radius of the current node. For instance, \(R=r_i\) for the v
   \centering
   \includegraphics[width=10cm]{Mesh.jpg}
   \caption{Mesh for \(N_r=3, N_\theta=12\), with global node numbers given next to each node.}
+  \label{fig:Mesh}
 \end{figure}
-
-
-
-
-This process is fairly complicated, and reveals why meshing software is so valuable. The process here is left fairly general that it can apply for any values of \(N_\theta, N_c, N_t\), but any slight change in the geometry completely invalidates the program. The final mesh for \(N_c=8, N_\theta=8, N_t=3\) is shown below. This mesh is shown because the requested mesh with only \(N_c=4\) is relatively difficult to perceive in a 3-D plot in Matlab, so the following plot better reveals the mesh. Lines are drawn between each coordinate.
-
-
-
-The coarser mesh, for \(N_c=4, N_\theta=8, N_t=3\) is shown below, again with lines connecting each coordinate for better visibility.
-
-
-
-The mesh in Fig. \ref{fig:CoarseMesh} is shown below without the lines connecting each coordinate.
-
-
-
-Note that this assignment did not provide the dimensions of the tube, so I assumed that the inner radius of each arch was 1, the radius of the inner hole of the tube 0.3, and the thickness of the tube 0.2.
 
 \subsection{The Connectivity Matrix}
 
-In order for this mesh to be useful for finite element implementation, a connectivity function must be defined to relate the local node numbering to the global node numbering. The mesh generated numbers the global nodes according to the order in which they were generated. For instance, the first 8 nodes are in the inner layer of the first slice, the next 8 are in the second layer of the first slice, and so on for the first slice. Then, moving to the next \(\Theta\) slice, the node numbering again begins on the inside of the tube and moves counterclockwise in layers until reaching the outside of the tube. This is shown schematically in the figures above by the black lines connecting the coordinates \textit{in the order in which the coordinates are generated}.
-
-The connectivity matrix is an \(N\times8\) matrix, where \(N\) is the total number of elements and 8 is the number of local nodes per element (linear elements are assumed). The local node numbering is performed according to a clockwise fashion. The following schematic shows the node numbering, where the left portion shows the front face, and the right portion shows the back face, all while looking at the front face (i.e. the back face is not written with the perspective of looking at the outward-facing portion of the back face).
+In order for this mesh to be useful for finite element implementation, a connectivity function must be defined to relate the local node numbering to the global node numbering. The connectivity matrix is an \(N\times4\) matrix, where \(N\) is the total number of elements and 4 is the number of local nodes per element (bilinear elements are assumed). The local node numbering is performed according to a counterclockwise fashion, beginning with the ``bottom left'' node of each element, as shown below:
 
 \begin{equation}
 \begin{aligned}
-4 -- 3 & \quad\quad & 8 -- 7\\
-2 -- 1 & \quad\quad & 6 -- 5\\
+4 -- 3 \\
+1 -- 2 \\
 \end{aligned}
 \end{equation}
 
-So, for each slice, the nodes on the face of each element can be determined using a numbering scheme that follows the order in which the nodes were defined. Beginning with \(\theta=0\), and moving counterclockwise, the local nodes are numbered, moving progressively outwards in the layers until reaching the last node for a particular slice. 
-
-There are \(N_t\cdot N_c\cdot N_\theta\) total elements. For each slice, the nodes are numbered moving counterclockwise, beginning at the same node that is meshed first. After each layer is complete, the numbering moves to the next layer in the same fashion. Once an entire slice is complete, the next slice is also meshed. This defines only the \textit{frontal} node numberings shown in the above equation. For example, for \(N_\theta=2, N_t=3, N_c=4\), the connectivity matrix \(\textbf{LM}\) looks like the following \textit{before} the nodes on the backs of the first 12 elements are related to the nodes on the fronts of the next 12 elements.
+The location matrix for the mesh shown in Fig. \ref{fig:Mesh} is shown below in order to illustrate the node numbering scheme and to be as explicit as possible about the meshing technique.
 
 \begin{equation}
 \textbf{LM}=
 \begin{bmatrix}
-1 & 2 & 5 & 6 & 0 & 0 & 0 & 0\\
-2 & 3 & 6 & 7 & 0 & 0 & 0 & 0\\
-3 & 4 & 7 & 8 & 0 & 0 & 0 & 0\\
-4 & 1 & 8 & 5 & 0 & 0 & 0 & 0\\
-5 & 6 & 9 & 10 & 0 & 0 & 0 & 0\\
-6 & 7 & 10 & 11 & 0 & 0 & 0 & 0\\
-7 & 8 & 11 & 12 & 0 & 0 & 0 & 0\\
-8 & 5 & 12 & 9 & 0 & 0 & 0 & 0\\
-9 & 10 & 13 & 14 & 0 & 0 & 0 & 0\\
-10 & 11 & 14 & 15 & 0 & 0 & 0 & 0\\
-11 & 12 & 15 & 16 & 0 & 0 & 0 & 0\\
-12 & 9 & 16 & 13 & 0 & 0 & 0 & 0\\
-17 & 18 & 21 & 22 & 0 & 0 & 0 & 0\\
-18 & 19 & 22 & 23 & 0 & 0 & 0 & 0\\
-19 & 20 & 23 & 24 & 0 & 0 & 0 & 0\\
-20 & 17 & 24 & 21 & 0 & 0 & 0 & 0\\
-21 & 22 & 25 & 26 & 0 & 0 & 0 & 0\\
-22 & 23 & 26 & 27 & 0 & 0 & 0 & 0\\
-23 & 24 & 27 & 28 & 0 & 0 & 0 & 0\\
-24 & 21 & 28 & 25 & 0 & 0 & 0 & 0\\
-25 & 26 & 29 & 30 & 0 & 0 & 0 & 0\\
-26 & 27 & 30 & 31 & 0 & 0 & 0 & 0\\
-27 & 28 & 31 & 32 & 0 & 0 & 0 & 0\\
-28 & 25 & 32 & 29 & 0 & 0 & 0 & 0\\
-33 & 34 & 37 & 38 & 0 & 0 & 0 & 0\\
-34 & 35 & 38 & 39 & 0 & 0 & 0 & 0\\
-35 & 36 & 39 & 40 & 0 & 0 & 0 & 0\\
-36 & 33 & 40 & 37 & 0 & 0 & 0 & 0\\
-37 & 38 & 41 & 42 & 0 & 0 & 0 & 0\\
-38 & 39 & 42 & 43 & 0 & 0 & 0 & 0\\
-39 & 40 & 43 & 44 & 0 & 0 & 0 & 0\\
-40 & 37 & 44 & 41 & 0 & 0 & 0 & 0\\
-41 & 42 & 45 & 46 & 0 & 0 & 0 & 0\\
-42 & 43 & 46 & 47 & 0 & 0 & 0 & 0\\
-43 & 44 & 47 & 48 & 0 & 0 & 0 & 0\\
-44 & 41 & 48 & 45 & 0 & 0 & 0 & 0\\
+1 & 5 & 6 & 2 \\
+2 & 6 & 7 & 3 \\
+3 & 7 & 8 & 4 \\
+5 & 9 & 10 & 6 \\
+6 & 10 & 11 & 7 \\
+7 & 11 & 12 & 8 \\
+9 & 13 & 14 & 10 \\
+10 & 14 & 15 & 11 \\
+11 & 15 & 16 & 12 \\
+13 & 17 & 18 & 14 \\
+14 & 18 & 19 & 15 \\
+15 & 19 & 20 & 16 \\
+17 & 21 & 22 & 18 \\
+18 & 22 & 23 & 19 \\
+19 & 23 & 24 & 20 \\
+21 & 25 & 26 & 22 \\
+22 & 26 & 27 & 23 \\
+23 & 27 & 28 & 24 \\
+25 & 29 & 30 & 26 \\
+26 & 30 & 31 & 27 \\
+27 & 31 & 32 & 28 \\
+29 & 33 & 34 & 30 \\
+30 & 34 & 35 & 31 \\
+31 & 35 & 36 & 32 \\
+33 & 37 & 38 & 34 \\
+34 & 38 & 39 & 35 \\
+35 & 39 & 40 & 36 \\
+37 & 41 & 42 & 38 \\
+38 & 42 & 43 & 39 \\
+39 & 43 & 44 & 40 \\
+41 & 45 & 46 & 42 \\
+42 & 46 & 47 & 43 \\
+43 & 47 & 48 & 44 \\
+45 & 49 & 50 & 46 \\
+46 & 50 & 51 & 47 \\
+47 & 51 & 52 & 48 \\
 \end{bmatrix}
 \end{equation}
-
-This is not the final form for the connectivity matrix (a.k.a. location matrix). Because the slices lay exactly on top of one another, the front nodes of the second slice are exactly the back nodes on the previous slice. With this knowledge, the back nodes for each element can be assigned based on the frontal nodes of the following slice. Then, the last \(N_cN_t\) rows in the location matrix above can be deleted, since they refer to the frontal nodes of a slice that does not technically exist (there are only 2 slices, but 3 planes defining those slices). With this information, the final form of the location matrix becomes, for \(N_\theta=2, N_t=3, N_c=4\) for example:
-
-\begin{equation}
-\textbf{LM}=
-\begin{bmatrix}
-1 & 2 & 5 & 6 & 17 & 18 & 21 & 22\\
-2 & 3 & 6 & 7 & 18 & 19 & 22 & 23\\
-3 & 4 & 7 & 8 & 19 & 20 & 23 & 24\\
-4 & 1 & 8 & 5 & 20 & 17 & 24 & 21\\
-5 & 6 & 9 & 10 & 21 & 22 & 25 & 26\\
-6 & 7 & 10 & 11 & 22 & 23 & 26 & 27\\
-7 & 8 & 11 & 12 & 23 & 24 & 27 & 28\\
-8 & 5 & 12 & 9 & 24 & 21 & 28 & 25\\
-9 & 10 & 13 & 14 & 25 & 26 & 29 & 30\\
-10 & 11 & 14 & 15 & 26 & 27 & 30 & 31\\
-11 & 12 & 15 & 16 & 27 & 28 & 31 & 32\\
-12 & 9 & 16 & 13 & 28 & 25 & 32 & 29\\
-17 & 18 & 21 & 22 & 33 & 34 & 37 & 38\\
-18 & 19 & 22 & 23 & 34 & 35 & 38 & 39\\
-19 & 20 & 23 & 24 & 35 & 36 & 39 & 40\\
-20 & 17 & 24 & 21 & 36 & 33 & 40 & 37\\
-21 & 22 & 25 & 26 & 37 & 38 & 41 & 42\\
-22 & 23 & 26 & 27 & 38 & 39 & 42 & 43\\
-23 & 24 & 27 & 28 & 39 & 40 & 43 & 44\\
-24 & 21 & 28 & 25 & 40 & 37 & 44 & 41\\
-25 & 26 & 29 & 30 & 41 & 42 & 45 & 46\\
-26 & 27 & 30 & 31 & 42 & 43 & 46 & 47\\
-27 & 28 & 31 & 32 & 43 & 44 & 47 & 48\\
-28 & 25 & 32 & 29 & 44 & 41 & 48 & 45\\
-\end{bmatrix}
-\end{equation}
-
-Each row in the location matrix corresponds to an elements, and each column to a local node number, so that \(LM(1,4)\) indicates the global node number of local node number 4 in element 1. This method is extended to the case for \(N_\theta=8, N_c=4, N_t=3\), where the purpose of the previous discussion for a fewer number of circumferential elements was simply to illustrate the process by which the location matrix is generated. So, for the problem statement in this homework assignment (\(N_\theta=8, N_c=4, N_t=3\)):
-
-\begin{equation}
-\label{eq:LMFinalForm}
-\textbf{LM}=
-\begin{bmatrix}LM_1 \\ LM_2\end{bmatrix}
-\end{equation}
-
-where, in order to be able to print the matrix, the following components are defined to simply be stacked on top of each other as in Eq. \eqref{eq:LMFinalForm}.
-
-\begin{equation}
-LM_1=
-\begin{bmatrix}
-1 & 2 & 5 & 6 & 17 & 18 & 21 & 22\\
-2 & 3 & 6 & 7 & 18 & 19 & 22 & 23\\
-3 & 4 & 7 & 8 & 19 & 20 & 23 & 24\\
-4 & 1 & 8 & 5 & 20 & 17 & 24 & 21\\
-5 & 6 & 9 & 10 & 21 & 22 & 25 & 26\\
-6 & 7 & 10 & 11 & 22 & 23 & 26 & 27\\
-7 & 8 & 11 & 12 & 23 & 24 & 27 & 28\\
-8 & 5 & 12 & 9 & 24 & 21 & 28 & 25\\
-9 & 10 & 13 & 14 & 25 & 26 & 29 & 30\\
-10 & 11 & 14 & 15 & 26 & 27 & 30 & 31\\
-11 & 12 & 15 & 16 & 27 & 28 & 31 & 32\\
-12 & 9 & 16 & 13 & 28 & 25 & 32 & 29\\
-17 & 18 & 21 & 22 & 33 & 34 & 37 & 38\\
-18 & 19 & 22 & 23 & 34 & 35 & 38 & 39\\
-19 & 20 & 23 & 24 & 35 & 36 & 39 & 40\\
-20 & 17 & 24 & 21 & 36 & 33 & 40 & 37\\
-21 & 22 & 25 & 26 & 37 & 38 & 41 & 42\\
-22 & 23 & 26 & 27 & 38 & 39 & 42 & 43\\
-23 & 24 & 27 & 28 & 39 & 40 & 43 & 44\\
-24 & 21 & 28 & 25 & 40 & 37 & 44 & 41\\
-25 & 26 & 29 & 30 & 41 & 42 & 45 & 46\\
-26 & 27 & 30 & 31 & 42 & 43 & 46 & 47\\
-27 & 28 & 31 & 32 & 43 & 44 & 47 & 48\\
-28 & 25 & 32 & 29 & 44 & 41 & 48 & 45\\
-33 & 34 & 37 & 38 & 49 & 50 & 53 & 54\\
-34 & 35 & 38 & 39 & 50 & 51 & 54 & 55\\
-35 & 36 & 39 & 40 & 51 & 52 & 55 & 56\\
-36 & 33 & 40 & 37 & 52 & 49 & 56 & 53\\
-37 & 38 & 41 & 42 & 53 & 54 & 57 & 58\\
-38 & 39 & 42 & 43 & 54 & 55 & 58 & 59\\
-39 & 40 & 43 & 44 & 55 & 56 & 59 & 60\\
-40 & 37 & 44 & 41 & 56 & 53 & 60 & 57\\
-41 & 42 & 45 & 46 & 57 & 58 & 61 & 62\\
-42 & 43 & 46 & 47 & 58 & 59 & 62 & 63\\
-43 & 44 & 47 & 48 & 59 & 60 & 63 & 64\\
-44 & 41 & 48 & 45 & 60 & 57 & 64 & 61\\
-49 & 50 & 53 & 54 & 65 & 66 & 69 & 70\\
-50 & 51 & 54 & 55 & 66 & 67 & 70 & 71\\
-51 & 52 & 55 & 56 & 67 & 68 & 71 & 72\\
-52 & 49 & 56 & 53 & 68 & 65 & 72 & 69\\
-53 & 54 & 57 & 58 & 69 & 70 & 73 & 74\\
-54 & 55 & 58 & 59 & 70 & 71 & 74 & 75\\
-55 & 56 & 59 & 60 & 71 & 72 & 75 & 76\\
-56 & 53 & 60 & 57 & 72 & 69 & 76 & 73\\
-57 & 58 & 61 & 62 & 73 & 74 & 77 & 78\\
-58 & 59 & 62 & 63 & 74 & 75 & 78 & 79\\
-59 & 60 & 63 & 64 & 75 & 76 & 79 & 80\\
-60 & 57 & 64 & 61 & 76 & 73 & 80 & 77\\
-65 & 66 & 69 & 70 & 81 & 82 & 85 & 86\\
-\end{bmatrix}
-\end{equation}
-
-\begin{equation}
-LM_2=
-\begin{bmatrix}
-66 & 67 & 70 & 71 & 82 & 83 & 86 & 87\\
-67 & 68 & 71 & 72 & 83 & 84 & 87 & 88\\
-68 & 65 & 72 & 69 & 84 & 81 & 88 & 85\\
-69 & 70 & 73 & 74 & 85 & 86 & 89 & 90\\
-70 & 71 & 74 & 75 & 86 & 87 & 90 & 91\\
-71 & 72 & 75 & 76 & 87 & 88 & 91 & 92\\
-72 & 69 & 76 & 73 & 88 & 85 & 92 & 89\\
-73 & 74 & 77 & 78 & 89 & 90 & 93 & 94\\
-74 & 75 & 78 & 79 & 90 & 91 & 94 & 95\\
-75 & 76 & 79 & 80 & 91 & 92 & 95 & 96\\
-76 & 73 & 80 & 77 & 92 & 89 & 96 & 93\\
-81 & 82 & 85 & 86 & 97 & 98 & 101 & 102\\
-82 & 83 & 86 & 87 & 98 & 99 & 102 & 103\\
-83 & 84 & 87 & 88 & 99 & 100 & 103 & 104\\
-84 & 81 & 88 & 85 & 100 & 97 & 104 & 101\\
-85 & 86 & 89 & 90 & 101 & 102 & 105 & 106\\
-86 & 87 & 90 & 91 & 102 & 103 & 106 & 107\\
-87 & 88 & 91 & 92 & 103 & 104 & 107 & 108\\
-88 & 85 & 92 & 89 & 104 & 101 & 108 & 105\\
-89 & 90 & 93 & 94 & 105 & 106 & 109 & 110\\
-90 & 91 & 94 & 95 & 106 & 107 & 110 & 111\\
-91 & 92 & 95 & 96 & 107 & 108 & 111 & 112\\
-92 & 89 & 96 & 93 & 108 & 105 & 112 & 109\\
-97 & 98 & 101 & 102 & 113 & 114 & 117 & 118\\
-98 & 99 & 102 & 103 & 114 & 115 & 118 & 119\\
-99 & 100 & 103 & 104 & 115 & 116 & 119 & 120\\
-100 & 97 & 104 & 101 & 116 & 113 & 120 & 117\\
-101 & 102 & 105 & 106 & 117 & 118 & 121 & 122\\
-102 & 103 & 106 & 107 & 118 & 119 & 122 & 123\\
-103 & 104 & 107 & 108 & 119 & 120 & 123 & 124\\
-104 & 101 & 108 & 105 & 120 & 117 & 124 & 121\\
-105 & 106 & 109 & 110 & 121 & 122 & 125 & 126\\
-106 & 107 & 110 & 111 & 122 & 123 & 126 & 127\\
-107 & 108 & 111 & 112 & 123 & 124 & 127 & 128\\
-108 & 105 & 112 & 109 & 124 & 121 & 128 & 125\\
-113 & 114 & 117 & 118 & 129 & 130 & 133 & 134\\
-114 & 115 & 118 & 119 & 130 & 131 & 134 & 135\\
-115 & 116 & 119 & 120 & 131 & 132 & 135 & 136\\
-116 & 113 & 120 & 117 & 132 & 129 & 136 & 133\\
-117 & 118 & 121 & 122 & 133 & 134 & 137 & 138\\
-118 & 119 & 122 & 123 & 134 & 135 & 138 & 139\\
-119 & 120 & 123 & 124 & 135 & 136 & 139 & 140\\
-120 & 117 & 124 & 121 & 136 & 133 & 140 & 137\\
-121 & 122 & 125 & 126 & 137 & 138 & 141 & 142\\
-122 & 123 & 126 & 127 & 138 & 139 & 142 & 143\\
-123 & 124 & 127 & 128 & 139 & 140 & 143 & 144\\
-124 & 121 & 128 & 125 & 140 & 137 & 144 & 141\\
-\end{bmatrix}
-\end{equation}
-
-\subsection{Mesh Quality}
-
-In order for the integrals in the weak form to remain finite when transformed to the master element, the Jacobian of the transformation must be positive. For a 3-D implementation, this means that \(\mathscr{J}\equiv\det{(\textbf{F})}>0\). A mesh has poor quality if it has elements with negative or zero Jacobians. This can occur for nonconvex elements, where some region of the master domain is mapped outside of the element when transforming back to the physical domain, or when the node numbering is performed incorrectly within an element such that the element is mapped inside-out. The Jacobian is not necessarily constant over an element, and it is required that the Jacobian be positive everywhere in the element - if the Jacobian were allowed to be negative over some regions of the element, but positive over others, this could cause singularities in the stiffness matrix.
-
-\section{Computational Cost}
-
-The cost of a 3-D finite element simulation of a vector-valued equation such as the equation of linear elasticity results in element stiffness matrices of size \(24\times24\) when using trilinear shape functions. For a cubical mesh, with \(M\times M\) elements, there are \(3(M+1)^3\) total unknowns in the mesh, so the global stiffness matrix is of size \((3(M+1)^3)\times(3(M+1)^3)\). If the symmetry of the local stiffness matrices is taken into account (they will always be symmetric for linear differential equations so long as the Bubnov-Galerkin approach is used), then the required storage per element drops from 576 to 300. 
-
-If the Conjugate Gradient (CG) method is used to solve the matrix system \(\textbf{K}\textbf{a}=\textbf{R}\), then this represents repeated application of a \(24\times24\) matrix and a \(24\times1\) vector, which is an \(\mathscr{O}(N)\) operation. This is performed for each iteration, so the cost for the CG method scales as \(\mathscr{O}(IN)\), where \(I\) is the number of iterations needed to reach a particular tolerance in the solve.
-
-The cost of a solve refers to both the storage required and the number of floating point operations required. There are three ways to perform the storage for a mesh consisting of \(M\times M\times M\) linear elements:
-
-\begin{enumerate}
-\item Direct storage - all zeros are stored, and no shortcuts are made by saving element-by-element. This requires \((3(M+1)^3)\times(3(M+1)^3)\approx9M^6\)
-\item Element-by-element storage: no zeros are stored. This requires \(24\times24\times M^3=576M^3\)
-\item Element-by-element storage, taking advantage of the symmetry of the element stiffness matrices. This requires \(300M^3\)
-\end{enumerate} 
-
-So, the storage scales cubically when using element-by-element storage as opposed to direct storage. The number of floating point operations is significantly reduced when using an iterative solver. The total number of unknowns is \(3(M+1)^3\), so the ratio of the direct solver (Gaussian elimination) to the CG method is:
-
-\begin{equation}
-\frac{\mathscr{O}(N^3)}{I\mathscr{O}(N)}=\frac{\left(3(M+1)^3\right)^2}{I}=\frac{9(M+1)^6}{I}
-\end{equation}
-
-where \(N=3(M+1)^3\) is the total number of unknowns. For \(N_t\times N_c\times N_\theta\) elements, there are \((N_t+1)N_c(N_\theta+1)\) total nodes. So, if there are 3 unknowns per node, and if a CG solver takes \(I\mathscr{O}(N)\) operations, then the total number of operations required is:
-
-\begin{equation}
-\text{Operations with CG method}=3I(N_t+1)N_c(N_\theta+1)
-\end{equation}
- 
- where \(I\) is the number of iterations.
 
 \section{Appendix}
 

@@ -37,7 +37,7 @@ for num_elem = N_elem
     % for a 2-D mesh polar mesh
     [coordinates_polar, LM_polar] = polar_mesh(No, Nr, dt, num_nodes, ri, ro, num_elem);
     
-    % mesh of the semi-circle, with node numbering
+%     % mesh of the semi-circle, with node numbering
 %     x = coordinates_polar(:,1);
 %     y = coordinates_polar(:,2);
 %     scatter(x,y)
@@ -48,7 +48,12 @@ for num_elem = N_elem
 %     text(x+dx, y+dy, c);
 %     xlim([-ro-2*dx, ro+5*dx])
 %     ylim([-ro/2, ro + ro/2])
-    %saveas(gcf, 'Mesh', 'jpeg')
+%     %saveas(gcf, 'Mesh', 'jpeg')
+    
+%     % output the LM for report
+%     for e = 1:length(LM_polar)
+%        fprintf('%i & %i & %i & %i \\\\\n', LM_polar(e, 1), LM_polar(e,2), LM_polar(e,3), LM_polar(e,4))
+%     end
     
     % original meshing (Cartesian)
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
