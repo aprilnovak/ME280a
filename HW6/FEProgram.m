@@ -1,9 +1,10 @@
 clear all
 
 L = 1.0;                        % problem domain
-k_freq = 2;                     % forcing frequency
+k_th = 2;                       % thermal conductivity
 shape_order = 2;                % number of nodes per element
 E = 0.1;                        % elastic modulus
+To = 110;                       % temperature at theta = pi
 left = 'Dirichlet';             % left boundary condition 
 left_value = 0.0;               % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
@@ -23,9 +24,10 @@ for num_elem = N_elem
     % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
     physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
-    C_1 = (right_value + (k_freq^2 * sin(2 * pi * k_freq) * (L / (2 * pi * k_freq))^2 / E)) / L;
-    solution_analytical = (1 ./ E) .* -k_freq.^2 .* sin(2 .* pi .* k_freq .* physical_domain ./ L) .* (L ./ (2 .* pi .* k_freq)).^2 + C_1 .* physical_domain + left_value;
-    solution_analytical_derivative = -(1 ./ E) * k_freq * k_freq * cos(2 * pi * k_freq * physical_domain ./ L) * L ./ (2 * pi * k_freq) + C_1;
+    C_o = 40 / k_th;
+    C_1 = To - C_o * pi;
+    solution_analytical = 10 .* sin(2 .* physical_domain) ./ k_th + C_o .* physical_domain + C_1;
+    solution_analytical_derivative = -(1 ./ E) * k_th * k_th * cos(2 * pi * k_th * physical_domain ./ L) * L ./ (2 * pi * k_th) + C_1;
 
     % perform the meshing
     [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
@@ -49,7 +51,7 @@ for num_elem = N_elem
                  [N, dN, x_xe, dx_dxe] = shapefunctions(qp(l), shape_order, coordinates, LM, elem);
 
                  % assemble the (elemental) forcing vector
-                 f(i) = f(i) - wt(l) * k_freq * k_freq * sin(2 * pi * k_freq * x_xe / L) * N(i) * dx_dxe;
+                 f(i) = f(i) - wt(l) * k_th * k_th * sin(2 * pi * k_th * x_xe / L) * N(i) * dx_dxe;
 
                  for j = 1:num_nodes_per_element
                      % assemble the (elemental) stiffness matrix
@@ -108,11 +110,11 @@ plot(physical_domain, solution_analytical)
 h = legend('N = what','analytical', 'Location', 'southeast');
 set(h, 'FontSize', fontsize - 2);
 xlabel('Problem domain', 'FontSize', fontsize)
-ylabel(sprintf('Solution for k = %i', k_freq), 'FontSize', fontsize)
-%saveas(gcf, sprintf('Nplot_for_k_%i', k_freq), 'jpeg')
+ylabel(sprintf('Solution for k = %i', k_th), 'FontSize', fontsize)
+%saveas(gcf, sprintf('Nplot_for_k_%i', k_th), 'jpeg')
 close all
 
 
 % uncomment to find out how many elements are needed to reach the error
 % tolerance
-%sprintf('For k = %i, number elements: %i', k_freq, num_elem)
+%sprintf('For k = %i, number elements: %i', k_th, num_elem)
