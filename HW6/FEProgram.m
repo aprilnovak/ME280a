@@ -2,7 +2,6 @@ clear all
 
 L = 1.0;                        % problem domain
 k_freq = 2;                     % forcing frequency
-num_elem = 5;                   % number of finite elements (initial guess)
 shape_order = 2;                % number of nodes per element
 E = 0.1;                        % elastic modulus
 left = 'Dirichlet';             % left boundary condition 
@@ -19,15 +18,7 @@ fontsize = 16;                  % fontsize for plots
 
 N_elem = [32];
 
-
-% index for collecting error
-e = 1;
-
 for num_elem = N_elem
-% uncomment to find how many elements are required to reach the error
-% tolerance
-% while energy_norm > tolerance
-%     num_elem = num_elem + 1;
     
     % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
@@ -106,21 +97,10 @@ end
 % assemble the solution in the physical domain
 [solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_element, shape_order, coordinates, physical_domain);
 
-% compute the energy norm
-energy_norm_bottom = sqrt(trapz(physical_domain, solution_analytical_derivative .* E .* solution_analytical_derivative));
-energy_norm_top = sqrt(trapz(physical_domain, (solution_derivative_FE - solution_analytical_derivative) .* E .* (solution_derivative_FE - solution_analytical_derivative)));
-energy_norm = energy_norm_top ./ energy_norm_bottom;
-sprintf('energy norm: %f', energy_norm)
-
 plot(physical_domain, solution_FE)
 hold on
 
 
-% uncomment to find out how many elements are needed to reach the error
-% tolerance
-%end
-e_N(e) = energy_norm;
-e = e + 1;
 
 end
 
