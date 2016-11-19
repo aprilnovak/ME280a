@@ -8,10 +8,10 @@ To = 110;                       % temperature at theta = pi
 left = 'Dirichlet';             % boundary condition at theta = pi
 left_value = To;                % 
 right = 'Neumann';              % boundary condition at theta = 0
-right_value = 1.0;              % 
+right_value = 1.0;              % dummy
 fontsize = 16;                  % fontsize for plots
 Nr = 1;                         % number of radial layers
-No = 12;                        % number of theta layers
+No = 3;                        % number of theta layers
 N_elem = Nr * No;               % number of elements
 num_nodes = (Nr + 1) * (No + 1);% number of nodes
 num_nodes_per_elem = 4;         % linear elements
@@ -29,14 +29,10 @@ for num_elem = N_elem
     physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
     C_o = 40 / k_th;
     C_1 = To - C_o * pi;
-    solution_analytical = 10 .* sin(2 .* physical_domain) ./ k_th + C_o .* physical_domain + C_1;
     
     % for a 2-D mesh polar mesh
     [coordinates, LM] = polar_mesh(No, Nr, dt, num_nodes, ri, ro, num_elem);
     %[plot] = mesh_plots(coordinates, num_nodes, ro, LM);
-    
-    % original meshing (Cartesian)
-    %[num_nodes, num_nodes_per_elem, LM, coordinates] = mesh(L, num_elem, shape_order);
     
     % specify the boundary conditions
     [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes, Nr, No);
@@ -49,8 +45,6 @@ for num_elem = N_elem
     F = zeros(num_nodes, 1);
 
     for elem = 1:num_elem
-        %k = zeros(num_nodes_per_elem);
-        %f = zeros(num_nodes_per_elem, 1);
         k = 0;
         f = 0;
 
@@ -65,9 +59,19 @@ for num_elem = N_elem
                      % assemble the (elemental) forcing vector
                      f = f + wt(ll) * wt(l) * (40 * sin(2 * theta) / (r^2)) * transpose(N) * J;
                      
-                     for j = 1:num_nodes_per_elem
-                         % assemble the (elemental) stiffness matrix
-                         k = k + wt(ll) * wt(l) * transpose(inv(F_mat) * B) * k_th * inv(F_mat) * B * J;
+                     % assemble the (elemental) stiffness matrix
+                     k = k + wt(ll) * wt(l) * transpose(inv(F_mat) * B) * k_th * inv(F_mat) * B * J;
+                    
+                     % apply flux boundary conditions
+                     if elem == num_elem % only the last element has Neumann BCs
+                         q_flux = 20 / r;
+                         
+                         % in the physical domain
+                         N_hat = [0, -1];
+                         % in the master domain
+                         n_hat = [1, 0]';
+                         
+                         f = f + wt(ll) * wt(l) * q_flux * transpose(N) * J * (N_hat * transpose(inv(F_mat)) * n_hat);
                      end
              end
         end
@@ -111,8 +115,7 @@ end
 % assemble the solution in the physical domain
 [mat] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_elem, shape_order, coordinates, physical_domain);
 
-% plot(physical_domain, solution_FE)
-% hold on
+subplot(1,2,1)
 start_theta = pi - pi/No;
 end_theta = pi;
 for i = 1:length(mat(:,1))
@@ -120,11 +123,28 @@ for i = 1:length(mat(:,1))
     x = r .* cos(theta);
     y = r .* sin(theta);
     z = mat(i,1) + mat(i,2).*x + mat(i,3).*y + mat(i,4).*x.*y;
-    surf(x,y,z)
+    surf(x,y,z, 'EdgeColor', 'none')
     hold on
     end_theta = start_theta;
     start_theta = start_theta - pi/No;
 end
+
+% analytical solution
+subplot(1,2,2)
+ylabel('Analytical Solution')
+start_theta = pi - pi/No;
+end_theta = pi;
+for i = 1:length(mat(:,1))
+    [r, theta] = meshgrid(ri:0.1:ro, linspace(start_theta, end_theta, length(ri:0.1:ro)));
+    x = r .* cos(theta);
+    y = r .* sin(theta);
+    z = 10 * sin(2*theta)/k_th + C_o*theta + C_1;
+    surf(x,y,z, 'EdgeColor', 'none')
+    hold on
+    end_theta = start_theta;
+    start_theta = start_theta - pi/No;
+end
+
 
 end
 
