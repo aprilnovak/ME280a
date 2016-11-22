@@ -276,28 +276,30 @@ The definitions for all the terms that appear above have been given previously. 
 \subsubsection{The Finite Element Weak Form - Penalty Method}
 \label{sec:Penalty}
 
-The penalty method is a means by which to apply Dirichlet boundary conditions without the tedious need to separate rows and columns from the stiffness and loading vectors. From Eq. \eqref{eq:FEWeakFormFinal}, the weak form for a finite element implementation requires that the weight functions are zero on essential boundaries. The penalty method relaxes this requirement, and adds a term to the weak form to account for violation of a Dirichlet boundary condition on a Dirichlet boundary. This method is widely-used, but is not strictly required to apply Dirichlet boundary conditions - the alternative of separating rows and columns containing known quantities, and subtracting from the load vector, can always be performed. The penalty method adds a term to Eq. \eqref{eq:FEWeakFormFinal}:
+The penalty method is a means by which to apply Dirichlet boundary conditions without the tedious need to separate rows and columns from the stiffness and loading vectors. From Eq. \eqref{eq:FEWeakFormFinal}, the weak form for a finite element implementation requires that the weight functions are zero on essential boundaries. The penalty method relaxes this requirement, and adds a term to the weak form to account for violation of a Dirichlet boundary condition on a Dirichlet boundary. This method is widely-used, but is not strictly required to apply Dirichlet boundary conditions - the alternative of separating rows and columns containing known quantities, and subtracting from the load vector, can always be performed. The penalty method adds a term to the weak form of the form \(P^{*}\int_{\Gamma_d}(\textbf{N}\Psi)\cdot(\bar{c}-\textbf{N}\Phi)d\Gamma\) into Eq. \eqref{eq:FEWeakFormFinal}:
 
 \begin{tcolorbox}
 \begin{equation}
 \label{eq:WeakFormPenalty}
 \begin{aligned}
-\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } \textbf{u}|_{\Gamma_u}=\textbf{d} \text{ and so that }\forall\ \textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega),\\
-\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}|_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
-\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T(\bar{\bar{\phi}}\textbf{a})dA=\int_{\partial\Omega}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T\textbf{d}dA\\
+\text{Find }\Phi\in \textbf{H}^\phi(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } \Phi|_{\Gamma_d}=\bar{\Phi} \text{ and so that }\forall\ \Psi \in \textbf{H}^\psi(\Omega)\subset \textbf{H}^1(\Omega)\\
+\text{and for }q\in L^2(\Gamma_q)\text{ and }f\in L^2(\Omega)\\
+\int_{\Omega}\textbf{B}^TD\textbf{B}\Phi d\Omega+\int_{\Omega}\tau \textbf{N}^T\textbf{N}\Phi d\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\textbf{N}\Phi d\Gamma=-\int_{\Gamma_q}q\textbf{N}^Td\Gamma+\int_{\Omega}f\textbf{N}^Td\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\bar{c}d\Gamma
 \end{aligned}
 \end{equation}
 \end{tcolorbox}
 
-where \(P^{*}\) represents something like a spring constant, and is a large, positive number. A high value of this artificial spring constant will apply a traction to ``force'' the displacement boundary to be satisfied on \(\Gamma_u\), the displacement boundary. In other words, \(P^{*}(\textbf{d}-\textbf{u})\approx\textbf{t}_{penalty}\), so the penalty term represents a traction that enforces the Dirichlet boundary condition. This term, however, would never be applied if we still required \(\textbf{v}|_{\Gamma_u}=\textbf{0}\), and so the kinematic restrictions on the weight functions are dropped, and they do not need to be zero on the Dirichlet boundaries.
-
-The penalty method is motivated by the fact that, for symmetric systems for which a potential can be defined, an augmented potential can be defined, whose variation is the weak from in Eq. \eqref{eq:WeakFormPenalty}:
+where \(\bar{c}\) is a vector of known concentrations on the Dirichlet boundary and \(P^{*}\) represents something like a spring constant, and is a large, positive number. A high value of this artificial spring constant will apply a traction to ``force'' the displacement boundary to be satisfied on \(\Gamma_d\), the displacement boundary. In other words, the penalty term represents a traction that enforces the Dirichlet boundary condition. This term, however, would never be applied if we still required \(\Psi|_{\Gamma_d}=\textbf{0}\), and so the kinematic restrictions on the weight functions are dropped, and they do not need to be zero on the Dirichlet boundaries. With this weak form, the matrix equation \(\textbf{K}\Phi=\textbf{R}\) remains the same, but the contents of \(\textbf{K}\) and \(\textbf{R}\) change to:
 
 \begin{equation}
-\mathscr{T}(u)=\mathscr{T}(u)+P^{*}\int_{\Gamma_u}(\textbf{d}-\textbf{u})(\textbf{d}-\textbf{u})dA
+\begin{aligned}
+\textbf{K}\equiv&\ \int_{\Omega}\textbf{B}^TD\textbf{B} d\Omega+\int_{\Omega}\tau \textbf{N}^T\textbf{N} d\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\textbf{N} d\Gamma\\
+\textbf{R}\equiv&\ -\int_{\Gamma_q}q\textbf{N}^Td\Gamma+\int_{\Omega}f\textbf{N}^Td\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\bar{c}d\Gamma\\
+\end{aligned}
 \end{equation}
 
-Hence, the penalty method with this interpretation is a quadratic addition to the potential energy. 
+These additional penalty terms are only added for elements that are on Dirichlet boundaries, which is evident from the \(\Gamma_d\) appearing in the integral bounds.
+
 
 \subsection{Finite Element Implementation}
 \label{sec:FEElement}
