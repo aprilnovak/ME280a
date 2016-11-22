@@ -89,14 +89,14 @@
 \setcounter{tocdepth}{4}
 \begin{document}
 
-\title{ME 280a: HW 5}
+\title{ME 280a: HW 7}
 \author{April Novak}
 
 \maketitle
 
 \section{Introduction and Objectives}
 
-The purpose of this study is to describe in great detail the process to solve a 3-D elastics problem, and also to generate a 3-D mesh with the appropriate connectivity matrix to be used for placing the local matrices and vectors into the global matrices and vectors.
+The purpose of this study is to describe the process for solving a 3-D diffusion-reaction equation with no time dependence, and then to describe the differences in the solution method once the problem is allowed to have time dependence. Then, a simple 1-D diffusion-reaction equation is solved as a transient case with Backward Euler (BE) time stepping.
 
 \section{Procedure}
 \label{sec:Procedure}
@@ -105,7 +105,7 @@ This section details the problem statement and mathematical method used for solv
 
 \subsection{Theoretical Problem Statement}
 
-The theory of elasticity is based on the continuum approximation, which assumes that the length scale on which solid particles exchange momentum is much smaller than the length scale characterizing the problem. An Eulerian perspective is adopted in the derivation of the governing equations, since control-volume-based approaches are much more amenable to solution than Lagrangian approaches (at least for small-deformation problems). Before deriving the governing equation, some preliminaries are necessary. The deformation gradient tensor \(\textbf{F}\) is used to map between two different coordinate systems. One of these coordinates frames is defined by the coordinates \(x_i\) (the present coordinates), and the other by \(X_i\) (the reference coordinates):
+Before deriving the governing equation, some preliminaries are necessary. The deformation gradient tensor \(\textbf{F}\) is used to map between two different coordinate systems. One of these coordinates frames is defined by the coordinates \(x_i\) (the present coordinates), and the other by \(X_i\) (the reference coordinates):
 
 \begin{equation}
 \label{eq:DeformationGradient}
@@ -119,205 +119,60 @@ The Jacobian \(\mathscr{J}\) is defined as the determinant of the deformation gr
 \mathscr{J}\equiv \det{\textbf{F}}
 \end{equation}
 
-Finally, to have a physically meaningful transformation between two coordinate frames, the Jacobian must be positive. A balance of linear momentum in an arbitrary continuum is:
+Finally, to have a physically meaningful transformation between two coordinate frames, the Jacobian must be positive. The diffusion-reaction equation to be solved in this assignment represents a balance between the time rate of change of the concentration in a control volume with the diffusion of mass into the control volume, a reaction that either produces or removes mass from the volume, and any sources of mass:
 
 \begin{equation}
-\label{eq:Cauchy}
-\frac{d}{dt}\int_{\Omega}\rho\dot{\textbf{u}}dV=\int_{\partial\Omega}\textbf{t}dS+\int_{\Omega}\rho\textbf{b}dV
+\label{eq:DiffusionReaction}
+\dot{c}=\nabla\cdot(D\nabla c)-\tau c+f
 \end{equation}
 
-where \(\Omega\) is the domain of the continuum (a volume), \(\rho\) is the density, \(\textbf{u}\) is the displacement vector, \(\partial\Omega\) represents the boundary of the volume domain (a surface \(S\)), \(\textbf{t}\) represents the traction (loading on a surface), and \(\textbf{b}\) represents a body force such as gravity. Eq. \eqref{eq:Cauchy} is no more than the Cauchy balance of linear momentum. By the Cauchy theorem, where surface forces are balanced on a tetrahedron, the traction is equivalent to:
-
-\begin{equation}
-\label{eq:Traction}
-\textbf{t}\equiv\bar{\bar{\sigma}}^T\cdot\hat{n}
-\end{equation}
-
-where \(\hat{n}\) is a unit normal and \(\bar{\bar{\sigma}}\) is the stress tensor, with components \(\sigma_{ji}\), where \(j\) refers to the face on which the stress acts, and \(i\) the direction in which the stress points. The transpose appears in the above equation because, in fluids scenarios, the stress is usually defined in the opposite manner such that the first index refers to the direction in which the stress points, and the second index the face on which the stress acts. The stress tensor is symmetric in virtually in applications for which there are no ``micro-stresses'' in the body. In other words, from a balance of angular momentum, and by inserting the Cauchy balance of momentum in Eq. \eqref{eq:Cauchy}, the stress tensor is symmetric so long as the only moments on the body are due to the stress and body forces. Inserting Eq. \eqref{eq:Traction} into Eq. \eqref{eq:Cauchy}:
-
-\begin{equation}
-\label{eq:Cauchy2}
-\frac{d}{dt}\int_{\Omega}\rho\dot{\textbf{u}}dV=\int_{\partial\Omega}\bar{\bar{\sigma}}^T\cdot\hat{n}dS+\int_{\Omega}\rho\textbf{b}dV
-\end{equation}
-
-If mass is conserved in this continuum (it is assumed so), then the material derivative on the LHS of the above equation can be moved inside the integration to act only on \(\dot{\textbf{u}}\). This can conceptually be understood if the integral is divided into a finite sum over material elements. In a material element, mass is assumed conserved such that the time rate of change of \(\rho dV\) is zero, which is why the time derivative acts only on \(\dot{\textbf{u}}\). This also assumes that the coordinate system is not moving in time.
-
-\begin{equation}
-\label{eq:Cauchy3}
-\int_{\Omega}\rho\ddot{\textbf{u}}dV=\int_{\partial\Omega}\bar{\bar{\sigma}}^T\cdot\hat{n}dS+\int_{\Omega}\rho\textbf{b}dV
-\end{equation}
-
-Applying Gauss's divergence theorem, which implicitly assumes that \(\bar{\bar{\sigma}}\) is sufficiently smooth, and dropping the transpose on the stress tensor with the assumption that it is symmetric:
-
-\begin{equation}
-\label{eq:Cauchy4}
-\int_{\Omega}\rho\ddot{\textbf{u}}dV=\int_{\Omega}\nabla\cdot\bar{\bar{\sigma}}dV+\int_{\Omega}\rho\textbf{b}dV
-\end{equation}
-
-Then, by rearranging:
-
-\begin{equation}
-\label{eq:Cauchy5}
-\int_{\Omega}\left(\rho\ddot{\textbf{u}}-\nabla\cdot\bar{\bar{\sigma}}-\rho\textbf{b}\right)dV=0
-\end{equation}
-
-Because the selection of the control volume was arbitrary, the integrand must equal zero:
-
-\begin{equation}
-\label{eq:Cauchy6}
-\rho\ddot{\textbf{u}}=\nabla\cdot\bar{\bar{\sigma}}+\rho\textbf{b}
-\end{equation}
-
-Eq. \eqref{eq:Cauchy6} represents a balance of linear momentum, and is very general. It applies equally to fluids and solids, until a constitutive relationship is introduced for \(\bar{\bar{\sigma}}\). The theory of linear elasticity is now introduced in order to provide this constitutive relationship. From the definition of the deformation gradient tensor \(\textbf{F}\) in Eq. \eqref{eq:DeformationGradient}, the Lagrangian strain tensor \(\textbf{E}\) is defined as:
-
-\begin{equation}
-\textbf{E}\equiv\frac{1}{2}\left(\nabla\textbf{u}+(\nabla\textbf{u})^T+\underbrace{(\nabla\textbf{u})^T\cdot\nabla\textbf{u}}_\text{higher-order term}\right)
-\end{equation}
-
-With the linear theory of elasticity, deformations are assumed to be small such that the higher order term above can be neglected. The infinitesimal strain \(\textbf{e}\) is defined as:
-
-\begin{equation}
-\textbf{e}\equiv\frac{1}{2}\left(\nabla\textbf{u}+(\nabla \textbf{u})^T\right)
-\end{equation}
-
-and for small deformations, \(\textbf{E}\approx\textbf{e}\). (Note: I couldn't figure out how to get the ``epsilon'' variable to work out, so epsilon is replaced by \(e\) in this document). A similar derivation of a conservation of energy equation gives:
-
-\begin{equation}
-\rho\dot{w}=\bar{\bar{\sigma}}:\nabla\dot{\textbf{u}}-\nabla\cdot\textbf{q}+\rho z
-\end{equation}
-
-where \(w\) is the internal energy per unit mass, \(\textbf{q}\) the heat flux vector, and \(z\) the volumetric heating source. If thermal effects are neglected, then the above equation simplifies to:
-
-\begin{equation}
-\rho\dot{w}=\bar{\bar{\sigma}}:\nabla\dot{\textbf{u}}
-\end{equation}
-
-Applying the chain rule to the LHS above:
-
-\begin{equation}
-\rho\frac{\partial w}{\partial \textbf{e}}:\frac{d\textbf{e}}{dt}=\bar{\bar{\sigma}}:\nabla\dot{\textbf{u}}
-\end{equation}
-
-from which it is clear that:
-
-\begin{equation}
-\label{eq:StressDef}
-\bar{\bar{\sigma}}=\rho\frac{\partial w}{\partial\textbf{e}}
-\end{equation}
-
-In order to develop a constitutive relationship for the theory of linear elasticity, it is assumed that a stored elastic energy function exists that depends only on the deformation. For small strains beginning from an undeformed state, energy is stored in the material. The stored elastic energy function \(W\) is by definition:
-
-\begin{equation}
-W\equiv \rho w
-\end{equation}
-
-The simplest function that satisfies Eq. \eqref{eq:StressDef} is:
-
-\begin{equation}
-W=\frac{1}{2}\textbf{e}:\textbf{IE}:\textbf{e}
-\end{equation}
-
-where \(\textbf{IE}\) is the fourth rank elasticity tensor. With these assumptions, the constitutive relationship for the stress tensor becomes:
-
-\begin{equation}
-\label{eq:1}
-\bar{\bar{\sigma}}=\textbf{IE}:\textbf{e}
-\end{equation}
-
-Due to the linear relationship between stress and strain, this constitutive relationship is referred to as the ``theory of linear elasticity.'' Because \(\textbf{IE}\) is a fourth-order tensor, it has 81 unique entries (\(3^4=81\)). However, because the stress tensor is symmetric, there are actually only 36 unique entries. With all 36 constants, the relationship in Eq. \eqref{eq:1} is:
-
-\begin{equation}
-\begin{bmatrix}\sigma_{11} \\ \sigma_{22} \\ \sigma_{33} \\ \sigma_{12} \\ \sigma_{23} \\ \sigma_{31}\end{bmatrix}=
-\begin{bmatrix}E_{1111} & E_{1122} & E_{1133} & E_{1112} & E_{1123} & E_{1113} \\
-E_{2211} & E_{2222} & E_{2233} & E_{2212} & E_{2223} & E_{2213} \\
-E_{3311} & E_{3322} & E_{3333} & E_{3312} & E_{3323} & E_{3313}\\
-E_{1211} & E_{1222} & E_{1233} & E_{1212} & E_{1223} & E_{1213}\\
-E_{2311} & E_{2322} & E_{2333} & E_{2312} & E_{2323} & E_{2313}\\
-E_{1311} & E_{1322} & E_{1333} & E_{1312} & E_{1323} & E_{1313}\\
-\end{bmatrix}
-\begin{bmatrix}e_{11} \\ e_{22} \\ e_{33} \\ 2e_{12} \\ 2e_{23} \\ 2e_{31}\\
-\end{bmatrix}
-\end{equation}
-
-where the strain vector shows that \(e_{12}=e_{21}\). For isotropic materials, \(\textbf{IE}\) simplifies by defining two parameters, \(\kappa\) and \(\mu\):
-
-\begin{equation}
-\textbf{IE}=\begin{bmatrix}\kappa+\frac{4}{3}\mu & \kappa-\frac{2}{3}\mu & \kappa-\frac{2}{3}\mu & 0 & 0 & 0\\
-\kappa-\frac{2}{3}\mu & \kappa+\frac{4}{3}\mu & \kappa-\frac{2}{3}\mu & 0 & 0 & 0\\
-\kappa-\frac{2}{3}\mu & \kappa-\frac{2}{3}\mu & \kappa+\frac{4}{3}\mu & 0 & 0 & 0\\
-0 & 0 & 0 & \mu & 0 & 0\\
-0 & 0 & 0 & 0 & \mu & 0\\
-0 & 0 & 0 & 0 & 0 & \mu\\
-\end{bmatrix}
-\end{equation}
-
-The eigenvalues of \(\textbf{IE}\) are directly proportional to \(\mu\) and \(\kappa\), and hence both \(\mu\) and \(\kappa\) must be positive in order to retain the positive definiteness of \(\textbf{IE}\). Combining the above results with the conservation of momentum statement in Eq. \eqref{eq:Cauchy6}, the balance of momentum for a linear elastic system is:
-
-\begin{equation}
-\label{eq:Cauchy7}
-\rho\ddot{\textbf{u}}=\nabla\cdot(\textbf{IE}:\nabla \textbf{u})+\rho\textbf{b}
-\end{equation}
-
-The finite element implementation, beginning with the weak form, is discussed next.
+where \(c\) is the concentration, an overhead dot represents differentiation in time, \(D\) the diffusion coefficient, \(\tau\) the reaction rate frequency, and \(f\) the concentration source per unit time. This problem is to be solved to determine the concentration. In general, the diffusion coefficient can be an \(n\)-th order tensor, where \(n\) is the number of spatial dimensions, but for this assignment, is assumed to be a scalar, such that the medium is isotropic.
 
 \subsection{The Weak Form}
 
-The weak form of Eq. \eqref{eq:Cauchy7} is obtained by multiplying through by a test function \(\textbf{v}\), where, like \(\textbf{u}\), \(\textbf{v}\) is a vector-valued function. Then, integrating over the body:
+The weak form of Eq. \eqref{eq:DiffusionReaction} is obtained by multiplying through by a test function \(v\). Then, integrating over the body:
 
 \begin{equation}
 \label{eq:StrongForm2}
-\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\Omega}(\nabla\cdot\bar{\bar{\sigma}})\cdot\textbf{v}d\Omega+\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega
+\int_{\Omega}\dot{c}vd\Omega=\int_{\Omega}\nabla\cdot(D\nabla c)vd\Omega-\int_{\Omega}\tau cvd\Omega+\int_{\Omega}fvd\Omega
 \end{equation}
 
-To apply the product rule, use the following identity:
+where \(\Omega\) is the entire domain. Applying the product rule to the diffusion term:
 
 \begin{equation}
-\nabla\cdot(\bar{\bar{\sigma}}\cdot\textbf{v})=(\nabla\cdot\bar{\bar{\sigma}})\cdot\textbf{v}+\nabla\textbf{v}:\bar{\bar{\sigma}}
+\int_{\Omega}\dot{c}vd\Omega=-\int_{\Omega}(\nabla v)D(\nabla c)d\Omega+\int_{\Gamma}D\nabla c\cdot\hat{n}vd\Gamma-\int_{\Omega}\tau cvd\Omega+\int_{\Omega}fvd\Omega
 \end{equation}
 
-Using this identity in Eq. \eqref{eq:StrongForm2}:
-
-\begin{equation}
-\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\Omega}\left(\nabla\cdot(\bar{\bar{\sigma}}\cdot\textbf{v})-\nabla\textbf{v}:\bar{\bar{\sigma}}\right)d\Omega+\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega
-\end{equation}
-
-The divergence theorem can be applied to the first term on the RHS to give:
-
-\begin{equation}
-\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\bar{\bar{\sigma}}\cdot\textbf{v}\cdot\hat{n}dS-\int_{\Omega}\nabla\textbf{v}:\bar{\bar{\sigma}}d\Omega+\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega
-\end{equation}
-
-where \(S\) is the boundary area of the volume \(\Omega\) with unit normal vector \(\hat{n}\). The traction is defined from Eq. \eqref{eq:Traction}, and hence the above simplifies to:
+where \(\Gamma\) is the boundary area of the domain \(\Omega\) with unit normal vector \(\hat{n}\). The boundary integral applies over the entire domain \(\Gamma=\Gamma_q\cup\Gamma_d\), where \(\Gamma_q\) is the boundary on which the mass flux is specified (Neumann boundary condition) and \(\Gamma_d\) is the boundary on which the concentration is specified (Dirichlet boundary condition). Because the value of the mass flux is unknown on the Dirichlet boundaries, specifying the third term above on the boundaries would be difficult, and hence for simplicity, the shape functions are assumed to equal zero on the Dirichlet boundaries. With this simplification:
 
 \begin{equation}
 \begin{aligned}
-\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\textbf{t}\cdot\textbf{v}dA-& \int_{\Omega}\nabla\textbf{v}:\bar{\bar{\sigma}}d\Omega& +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega\\
-\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\textbf{t}\cdot\textbf{v}dA-& \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}\ d\Omega& +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega\\
+\int_{\Omega}\dot{c}vd\Omega=-\int_{\Omega}(\nabla v)D(\nabla c)d\Omega-\int_{\Gamma_q}qvd\Gamma-\int_{\Omega}\tau cvd\Omega+\int_{\Omega}fvd\Omega
 \end{aligned}
 \end{equation}
 
-For convenience, it is assumed that the weight function \(\textbf{v}\) goes to zero on the displacement boundaries such that the area integral that appears in the weak form above applies strictly to boundaries on which the traction is specified. Hence, the weak form can be stated as:
+where \(q\equiv -D(\nabla c)\cdot\hat{n}\). Hence, the weak form can be stated as:
 
 \begin{tcolorbox}
 \begin{equation}
 \label{eq:WeakFormQ1}
 \begin{aligned}
-\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } \textbf{u}|_{\Gamma_u}=\textbf{d} \text{ and so that }\forall\ \textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega), \textbf{v}|_{\Gamma_u}=\textbf{0},\\
-\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}|_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
-\int_{\Omega}\rho\ddot{\textbf{u}}\cdot \textbf{v}d\Omega=\int_{\partial\Omega}\textbf{t}\cdot\textbf{v}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\rho\textbf{b}\cdot\textbf{v}d\Omega\\
+\text{Find }c\in H^c(\Omega)\subset H^1(\Omega) \text{ so that } c|_{\Gamma_d}=\bar{c} \text{ and so that }\forall\ v \in H^v(\Omega)\subset H^1(\Omega), v|_{\Gamma_d}=0,\\
+\text{and for }q\in L^2(\Gamma_q)\text{ and }f\in L^2(\Omega)\\
+\int_{\Omega}\dot{c}vd\Omega=-\int_{\Omega}(\nabla v)D(\nabla c)d\Omega-\int_{\Gamma_q}qvd\Gamma-\int_{\Omega}\tau cvd\Omega+\int_{\Omega}fvd\Omega
 \end{aligned}
 \end{equation}
 \end{tcolorbox}
 
-where \(\textbf{d}\) is the vector of known displacements on the displacement boundary, \(\textbf{t}^{*}\) is a vector of known tractions on the traction boundary, and \(\Gamma_u\)  and \(\Gamma_t\) indicate the portions of the boundary for which there are known displacements and tractions, respectively. This weak form is more general than the strong form because it does not assume differentiability of the stress. The particular weighted residual method to be applied is the Bubnov-Galerkin method, where both the solution and the weight function are expanded in the same basis functions. Hence, both the displacement and the weight function are in \(\textbf{H}^1(\Omega)\), the space necessary to ensure finite integrals in the weak form above. For other methods such as the Petrov-Galerkin method, where different shape functions are used to expand the solution and weight function, \(\textbf{u}\) and \(\textbf{v}\) do not necessarily need to come from the same space, but they must be in at least \(\textbf{H}^1(\Omega)\).
+where \(\bar{c}\) is the vector of known concentrations on the displacement boundary. This weak form is more general than the strong form because it does not assume twice-differentiability of the concentration. The particular weighted residual method to be applied is the Bubnov-Galerkin method, where both the solution and the weight function are expanded in the same basis functions. Hence, both the displacement and the weight function are in \(H^1(\Omega)\), the space necessary to ensure finite integrals in the weak form above. 
 
-The space \(\textbf{H}^1(\Omega)\) is a Hilbert-space norm, where the 1 superscript indicates that it contains all functions whose highest finite derivative is the first derivative. This is the space from which the shape and weight functions most come because at most a first derivative is required in the weak form. For other applications, where for example, the highest derivative present in the weak form is a second derivative, then the weight and shape functions would need to be in \(\textbf{H}^2(\Omega)\) in order for all integrals to remain finite. In other words, \(\textbf{u}\) is in \(\textbf{H}^1(\Omega)\) if the following statement is true:
+The space \(H^1(\Omega)\) is a Hilbert-space norm, where the 1 superscript indicates that it contains all functions whose highest finite derivative is the first derivative. This is the space from which the shape and weight functions must come because at most a first derivative is required in the weak form. For other applications, where for example, the highest derivative present in the weak form is a second derivative, then the weight and shape functions would need to be in \(H^2(\Omega)\) in order for all integrals to remain finite. In other words, \(c\) is in \(H^1(\Omega)\) if the following statement is true:
 
 \begin{equation}
-\|\textbf{u}\|^2_{\textbf{H}^1(\Omega)}=\int_{\Omega}\left(\frac{\partial u_i}{\partial x_j}\right)^2d\Omega+\int_{\Omega}u_iu_id\Omega<\infty
+\|c\|^2_{{H}^1(\Omega)}=\int_{\Omega}\left(\frac{\partial c}{\partial x}\right)^2d\Omega+\int_{\Omega}u^2d\Omega<\infty
 \end{equation}
 
-where suffix notation is implied. Because \(\textbf{u}\) is vector-valued, the space of approximation functions must also be vector-valued. This simple extension then requires that each component of \(\textbf{u}\) be in \(H^1(\Omega)\). This is indicated by boldface in Eq. \eqref{eq:WeakFormQ1}. Because the traction and body load also appear in the integrals in Eq. \eqref{eq:WeakFormQ1}, there is a requirement on the space of functions from which they can inhabit. From the weak form, no differentiation of these functions is required, so they must be within \(\textbf{H}^0(\Omega)\), sometimes referred to as \(\textbf{L}^2(\Omega)\). The weak form in Eq. \eqref{eq:WeakFormQ1} is equivalent to the strong form in Eq. \eqref{eq:Cauchy7} provided that the solution is sufficiently differentiable that the higher derivatives required in the strong form are defined. Next, the specifics of the finite element implementation are given in order to specify the above to the finite element method.
+Because the flux and source also appear in the integrals in Eq. \eqref{eq:WeakFormQ1}, there is a requirement on the space of functions from which they can inhabit. From the weak form, no differentiation of these functions is required, so they must be within \(H^0(\Omega)\), sometimes referred to as \(L^2(\Omega)\). The weak form in Eq. \eqref{eq:WeakFormQ1} is equivalent to the strong form provided that the solution is sufficiently differentiable that the higher derivatives required in the strong form are defined. Next, the specifics of the finite element implementation are given in order to specify the above to the finite element method.
 
 \subsubsection{The Finite Element Weak Form}
 
