@@ -176,100 +176,70 @@ Because the flux and source also appear in the integrals in Eq. \eqref{eq:WeakFo
 
 \subsubsection{The Finite Element Weak Form}
 
-This section covers the details regarding finite element implementation of Eq. \eqref{eq:WeakFormQ1}. To implement this weak form, first the displacement, body force, traction, and weight function must be defined:
+This section covers the details regarding finite element implementation of Eq. \eqref{eq:WeakFormQ1}. To implement this weak form, first the solution for the concentration \(c\) and the weight function \(v\) are expanded in a series of shape functions:
 
 \begin{equation}
-\textbf{u}=\begin{bmatrix}u_1\\u_2\\u_3\end{bmatrix},\quad\textbf{f}=\begin{bmatrix}\rho b_1\\\rho b_2\\\rho b_3\end{bmatrix},\quad\textbf{t}=\begin{bmatrix}t_1\\t_2\\t_3\end{bmatrix},\quad\textbf{v}=\begin{bmatrix}v_1\\v_2\\v_3\end{bmatrix}
+\begin{aligned}
+c^h=&\ \sum_{j=1}^{n_{en}}a_j\phi_j=&\textbf{N}\Phi\\
+v^h=&\ \sum_{i=1}^{n_{en}}b_i\phi_i=&\textbf{N}\Psi\\
+\end{aligned}
 \end{equation}
 
-The governing conservation of momentum equation is a vector-valued equation, so each component of \(\textbf{u}\), and the weight function \(\textbf{v}\), are expanded in a series of shape functions:
+where \(a\) are the expansion coefficients to be solved for, \(\phi\) are the expansion functions defined in the physical domain, and the \(h\) superscript indicates that this approximation occurs over each element, with \(n_{en}\) nodes per element. Because \(c\) is a scalar, there are \(n_{en}\) unknowns per element. The number and order of these shape functions determines the order of the finite element approximation. For convenience, the shape functions and unknowns are grouped into vectors:
 
 \begin{equation}
-\label{eq:UExpansion}
-\textbf{u}^h=\begin{bmatrix}\sum_{i=1}^{n_{en}}a_i\phi_i\\\sum_{i=1}^{n_{en}}a_{i+n_{en}}\phi_i\\\sum_{i=1}^{n_{en}}a_{i+2n_{en}}\phi_i\end{bmatrix}
+\textbf{N}\equiv\begin{bmatrix}\phi_1 & \phi_2 & \phi_3 & \phi_4 & \phi_5 & \phi_6 & \phi_7 & \phi_8\end{bmatrix}
 \end{equation}
-
-where the above expansion applies over a single element with \(n_{en}\) nodes per element. \(3n_{en}\) unknowns are solved for in each element for a 3-D problem. A similar expansion is performed for the weight function:
 
 \begin{equation}
-\textbf{v}^h=\begin{bmatrix}\sum_{i=1}^{n_{en}}b_i\phi_i\\\sum_{i=1}^{n_{en}}b_{i+n_{en}}\phi_i\\\sum_{i=1}^{n_{en}}b_{i+2n_{en}}\phi_i\end{bmatrix}
+\begin{aligned}
+\Phi\equiv&\ \begin{bmatrix}a_1 & a_2 & a_3 & a_4 & a_5 & a_6 & a_7 & a_8\end{bmatrix}^T\\
+\Psi\equiv&\ \begin{bmatrix}b_1 & b_2 & b_3 & b_4 & b_5 & b_6 & b_7 & b_8\end{bmatrix}^T\
+\end{aligned}
 \end{equation}
 
-The number and order of these shape functions determines the order of the finite element approximation. The weak form in Eq. \eqref{eq:WeakFormQ1} can be written in matrix form as follows, noting that the dot product of two vectors can be written as \(\textbf{a}\cdot\textbf{b}=\textbf{b}^T\textbf{a}\):
+where a trilinear approximation has been assumed, such that in 3-D there are 8 nodes per element, with each node having one associated unknown. The gradient of the solution and the weight function are required in the weak form. This can be expressed conveniently as:
+
+\begin{equation}
+\begin{aligned}
+\nabla c=&\ \frac{\partial c}{\partial x_1}\hat{x_1}+\frac{\partial c}{\partial x_2}\hat{x_2}+\frac{\partial c}{\partial x_3}\hat{x_3}\\
+=&\ \begin{bmatrix}\frac{\partial \phi_1}{\partial x_1} & \frac{\partial \phi_2}{\partial x_1} & \frac{\partial \phi_3}{\partial x_1} & \frac{\partial \phi_4}{\partial x_1} & \frac{\partial \phi_5}{\partial x_1} & \frac{\partial \phi_6}{\partial x_1} & \frac{\partial \phi_7}{\partial x_1} & \frac{\partial \phi_8}{\partial x_1}\\
+\frac{\partial \phi_1}{\partial x_2} & \frac{\partial \phi_2}{\partial x_2} & \frac{\partial \phi_3}{\partial x_2} & \frac{\partial \phi_4}{\partial x_2} & \frac{\partial \phi_5}{\partial x_2} & \frac{\partial \phi_6}{\partial x_2} & \frac{\partial \phi_7}{\partial x_2} & \frac{\partial \phi_8}{\partial x_2}\\
+\frac{\partial \phi_1}{\partial x_3} & \frac{\partial \phi_2}{\partial x_3} & \frac{\partial \phi_3}{\partial x_3} & \frac{\partial \phi_4}{\partial x_3} & \frac{\partial \phi_5}{\partial x_3} & \frac{\partial \phi_6}{\partial x_3} & \frac{\partial \phi_7}{\partial x_3} & \frac{\partial \phi_8}{\partial x_3}\\ \end{bmatrix}
+\Phi\\
+=&\ \textbf{B}\Phi\\
+\end{aligned}
+\end{equation}
+
+The gradient of the shape function is defined similarly. Inserting these approximations into the weak form:
 
 \begin{equation}
 \label{eq:FEStep1}
-\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\Gamma_t}\textbf{v}^T\textbf{t}dA- \int_{\Omega}\nabla\textbf{v}:\textbf{IE}:\nabla\textbf{u}d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
+\int_{\Omega}\textbf{N}\dot{\Phi}\cdot(\textbf{N}\Psi)d\Omega=-\int_{\Omega}D(\textbf{B}\Psi)\cdot(\textbf{B}\Phi)d\Omega-\int_{\Gamma_q}q(\textbf{N}\Psi)d\Gamma-\int_{\Omega}\tau (\textbf{N}\Phi)\cdot(\textbf{N}\Psi)d\Omega+\int_{\Omega}f(\textbf{N}\Psi)d\Omega
 \end{equation}
 
-where the penalty term has been included for completeness (though it could be neglected if static condensation were to be performed on the matrix system prior to solving). To transform the second term on the RHS, use the identity of the second order inner product:
+where it has been assumed that the shape functions are not functions of time, such that the time derivative acts only on the vector of unknowns \(\Phi\). The dot product is defined such that \(\textbf{a}\cdot\textbf{b}=\textbf{a}^T\textbf{b}\), and noting the equivalency between \(\textbf{N}\Psi\) and \((\textbf{N}\Psi)^T\)
 
 \begin{equation}
-A:B=A_{ij}B_{ij}=\text{Tr}(A^TB)
+\int_{\Omega}(\textbf{N}\Psi)^T\textbf{N}\dot{\Phi}d\Omega=-\int_{\Omega}(\textbf{B}\Psi)^TD(\textbf{B}\Phi)d\Omega-\int_{\Gamma_q}q(\textbf{N}\Psi)^Td\Gamma-\int_{\Omega}\tau (\textbf{N}\Psi)^T(\textbf{N}\Phi)d\Omega+\int_{\Omega}f(\textbf{N}\Psi)^Td\Omega
 \end{equation}
 
-Then, the transpose of a product is:
+Then, because \((\textbf{a}\textbf{b})^T=\textbf{b}^T\textbf{a}^T\):
 
 \begin{equation}
-(AB)^T=A^TB^T
+\int_{\Omega}\Psi^T\textbf{N}^T\textbf{N}\dot{\Phi}d\Omega=-\int_{\Omega}\Psi^T\textbf{B}^TD(\textbf{B}\Phi)d\Omega-\int_{\Gamma_q}q\Psi^T\textbf{N}^Td\Gamma-\int_{\Omega}\tau \Psi^T\textbf{N}^T(\textbf{N}\Phi)d\Omega+\int_{\Omega}f\Psi^T\textbf{N}^Td\Omega
 \end{equation}
 
-% get to deformation tensor!
-
-Then, Eq. \eqref{eq:FEStep1} becomes:
+Then, because \(\Psi^T\) appears in every term, it can effectively be cancelled (the above could be rearranged so that \(\Psi^T\) multiplies a large term, and then if that entire integral must be zero, then the integrand must also be zero). 
 
 \begin{equation}
-\int_{\Omega}\rho\textbf{v}^T\ddot{\textbf{u}}d\Omega=\int_{\Gamma_t}\textbf{v}^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\textbf{v})^T\textbf{IE}(\textbf{D}\textbf{u})d\Omega +\int_{\Omega}\textbf{v}^T\rho\textbf{b}d\Omega+P^{*}\int_{\Gamma_u}\textbf{v}^T(\textbf{d}-\textbf{u})dA\\
+\int_{\Omega}\textbf{N}^T\textbf{N}\dot{\Phi}d\Omega+\int_{\Omega}\textbf{B}^TD\textbf{B}\Phi d\Omega+\int_{\Omega}\tau \textbf{N}^T\textbf{N}\Phi d\Omega=-\int_{\Gamma_q}q\textbf{N}^Td\Gamma+\int_{\Omega}f\textbf{N}^Td\Omega
 \end{equation}
 
-where \(\textbf{D}\) is the deformation tensor:
+At this point, it is assumed that the system is in steady state. Then, the above reduces to the following:
 
 \begin{equation}
-\label{eq:D}
-\textbf{D}=\begin{bmatrix}\frac{\partial}{\partial x_1} & 0 & 0\\
-0 & \frac{\partial}{\partial x_2} & 0\\
-0 & 0 & \frac{\partial}{\partial x_3}\\
-\frac{\partial}{\partial x_2} & \frac{\partial}{\partial x_1} & 0\\
-0 & \frac{\partial}{\partial x_3} & \frac{\partial}{\partial x_2}\\
-\frac{\partial}{\partial x_3} & 0 & \frac{\partial}{\partial x_1}\end{bmatrix}
-\end{equation}
-
-The goal is to solve for the expansion coefficients on \(\textbf{u}\). This requires decomposing the expansion in Eq. \eqref{eq:UExpansion} into a matrix containing just the shape functions and a vector containing the unknowns. This can be done in two different ways - the first way is to organize all the expansion coefficients pertaining to \(u_1\) in a vector \(\textbf{a}\), following by all the coefficients for \(u_2\), and followed by all the coefficients for \(u_3\). This is the approach used in this class. An alternative method is to organize the vector of unknowns such that all unknowns for a node appear together, i.e. the first three entries would be the coefficients pertaining to \(u_1\), then \(u_2\), then \(u_3\), for the first node. This second approach is used in ME 180, but is not used here. So, the displacement is organized as:
-
-\begin{equation}
-\textbf{u}^h=\bar{\bar{\phi}}\textbf{a}
-\end{equation}
-
-where \(\textbf{a}\) is a vector of unknowns containing all the unknowns pertaining to the \(x\)-displacement first, following by all the unknowns pertaining to the \(y\)-displacement second, and for the \(z\)-displacement third. The matrix \(\bar{\bar{\phi}}\) is defined in a different manner depending on the particular value of the node number:
-
-\begin{equation}
-\bar{\bar{\phi}}=
-\begin{cases}(\phi_i, 0, 0)^T & i < N\\(0, \phi_i, 0)^T & N+1\leq i\leq 2N \\ (0, 0, \phi_i)^T & 2N+1\leq i\leq 3N
-\end{cases}
-\end{equation}
-
-The Bubnov-Galerkin method is used so that the approximation for \(\textbf{v}\) is performed in the same manner as for \(\textbf{u}\), so that:
-
-\begin{equation}
-\textbf{v}^h=\bar{\bar{\phi}}\textbf{b}
-\end{equation}
-
-Inserting these matrix forms into the weak form gives:
-
-\begin{equation}
-\int_{\Omega}\rho(\bar{\bar{\phi}}\textbf{b})^T\bar{\bar{\phi}}\ddot{\textbf{a}}d\Omega=\int_{\Gamma_t}(\bar{\bar{\phi}}\textbf{b})^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\bar{\bar{\phi}}\textbf{b})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +\int_{\Omega}(\bar{\bar{\phi}}\textbf{b})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}}\textbf{b})^T(\textbf{d}-\bar{\bar{\phi}}\textbf{a})dA\\
-\end{equation}
-
-where the fact that the shape functions are not functions of time has been included in the first term and the body force \(\rho\textbf{b}\) has been replaced by \(\textbf{f}\) to avoid confusion with the expansion coefficients of the weight function. Because \(\textbf{b}\) is arbitrary, the above can be rearranged such that \(\textbf{b}\) acts on a single term. Then, because that term, multiplied by an arbitrary term, must be zero, it can be concluded that the term equals zero. In other words, \(\textbf{b}\) can be ``canceled'' from each term, though this isn't exactly what is happening.
-
-\begin{equation}
-\int_{\Omega}\rho(\bar{\bar{\phi}})^T\bar{\bar{\phi}}\ddot{\textbf{a}}d\Omega=\int_{\Gamma_t}(\bar{\bar{\phi}})^T\textbf{t}dA- \int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T(\textbf{d}-\bar{\bar{\phi}}\textbf{a})dA\\
-\end{equation}
-
-At this point, it is assumed that the system is in steady state. Then, the above reduces to the following, where the penalty term is split up into the portion that is a function of \(\textbf{a}\) and the portion that is not:
-
-\begin{equation}
-\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega +P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T(\bar{\bar{\phi}}\textbf{a})dA=\int_{\partial\Omega}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T\textbf{d}dA\\
+\int_{\Omega}\textbf{B}^TD\textbf{B}\Phi d\Omega+\int_{\Omega}\tau \textbf{N}^T\textbf{N}\Phi d\Omega=-\int_{\Gamma_q}q\textbf{N}^Td\Gamma+\int_{\Omega}f\textbf{N}^Td\Omega
 \end{equation}
 
 For simplicity, the above terms can be defined as matrices:
@@ -277,31 +247,31 @@ For simplicity, the above terms can be defined as matrices:
 \begin{equation}
 \label{eq:FEWeakForm}
 \begin{aligned}
-\textbf{K}\equiv\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}})d\Omega +P^{*}\int_{\Gamma_u}\bar{\bar{\phi}}^T\bar{\bar{\phi}}dA\\
-\textbf{R}\equiv\int_{\Gamma_t}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega+P^{*}\int_{\Gamma_u}(\bar{\bar{\phi}})^T\textbf{d}dA\\
+\textbf{K}\equiv&\ \int_{\Omega}\textbf{B}^TD\textbf{B}\Phi d\Omega+\int_{\Omega}\tau \textbf{N}^T\textbf{N}\Phi d\Omega\\
+\textbf{R}\equiv&\ -\int_{\Gamma_q}q\textbf{N}^Td\Gamma+\int_{\Omega}f\textbf{N}^Td\Omega\\
 \end{aligned}
 \end{equation}
 
 to give the matrix system:
 
 \begin{equation}
-\textbf{K}\textbf{a}=\textbf{R}
+\textbf{K}\Phi=\textbf{R}
 \end{equation}
 
-So, the weak form for the FE method is:
+where \(\Phi\) represents what is to be solved for over the domain. So, the weak form for the time-independent FE method (with Dirichlet boundary conditions applied using static condensation by removing them from the matrix system) is:
 
 \begin{tcolorbox}
 \begin{equation}
 \label{eq:FEWeakFormFinal}
 \begin{aligned}
-\text{Find }\textbf{u}\in \textbf{H}^u(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } \textbf{u}|_{\Gamma_u}=\textbf{d} \text{ and so that }\forall\ \textbf{v} \in \textbf{H}^v(\Omega)\subset \textbf{H}^1(\Omega), \textbf{v}|_{\Gamma_u}=\textbf{0},\\
-\text{and for }\textbf{t}\in\textbf{L}^2(\Gamma_t), \textbf{t}=\textbf{t}^{*}|_{\Gamma_t}\text{ and }\textbf{b}\in\textbf{L}^2(\Omega)\\
-\int_{\Omega}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}}\textbf{a})d\Omega =\int_{\partial\Omega}(\bar{\bar{\phi}})^T\textbf{t}dA+\int_{\Omega}(\bar{\bar{\phi}})^T\textbf{f}d\Omega\\
+\text{Find }\Phi\in \textbf{H}^\phi(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } \Phi|_{\Gamma_d}=\bar{\Phi} \text{ and so that }\forall\ \Psi \in \textbf{H}^\psi(\Omega)\subset \textbf{H}^1(\Omega), \Psi|_{\Gamma_d}=\textbf{0},\\
+\text{and for }q\in L^2(\Gamma_q)\text{ and }f\in L^2(\Omega)\\
+\int_{\Omega}\textbf{B}^TD\textbf{B}\Phi d\Omega+\int_{\Omega}\tau \textbf{N}^T\textbf{N}\Phi d\Omega=-\int_{\Gamma_q}q\textbf{N}^Td\Gamma+\int_{\Omega}f\textbf{N}^Td\Omega
 \end{aligned}
 \end{equation}
 \end{tcolorbox}
 
-where the penalty term has been removed because it is asked for explicitly in the next portion of this assignment. The definitions for all the terms that appear above have been given previously. Section \ref{sec:Penalty} will show the weak form with the penalty method, while Section \ref{sec:FEElement} will show how the above is applied element-by-element.
+The definitions for all the terms that appear above have been given previously. Section \ref{sec:Penalty} will show the weak form with the penalty method, while Section \ref{sec:FEElement} will show how the above is applied element-by-element.
 
 \subsubsection{The Finite Element Weak Form - Penalty Method}
 \label{sec:Penalty}
