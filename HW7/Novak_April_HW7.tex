@@ -491,7 +491,7 @@ The shape functions for 3-D finite elements are a natural extension of the shape
 
 \section{Mesh Generator}
 
-This section discusses the mesh generator used to mesh the tubular ``S'' structure given in the assignment. The meshing begins in each \(\theta\)-chunk. For the circular cross-section structure, the \(x\) and \(y\) coordinates are related to each other by:
+This section discusses the mesh generator used to mesh the tubular ``S'' structure given in the assignment, and is largely a repeat of the mesh used for assignment 5, except that it has been modified to work for an unknown that is a scalar quantity, rather than a vector quantity. While the mesh is the same as that for assignment 5, the location matrix now does not need to have an associated matrix that relates the three unknowns for each node to their position in the global matrix (here, there is only one unknown per node). The meshing begins in each \(\theta\)-chunk. For the circular cross-section structure, the \(x\) and \(y\) coordinates are related to each other by:
 
 \begin{equation}
 \label{eq:xy}
@@ -799,10 +799,6 @@ LM_2=
 124 & 121 & 128 & 125 & 140 & 137 & 144 & 141\\
 \end{bmatrix}
 \end{equation}
-
-\subsection{Mesh Quality}
-
-In order for the integrals in the weak form to remain finite when transformed to the master element, the Jacobian of the transformation must be positive. For a 3-D implementation, this means that \(\mathscr{J}\equiv\det{(\textbf{F})}>0\). A mesh has poor quality if it has elements with negative or zero Jacobians. This can occur for nonconvex elements, where some region of the master domain is mapped outside of the element when transforming back to the physical domain, or when the node numbering is performed incorrectly within an element such that the element is mapped inside-out. The Jacobian is not necessarily constant over an element, and it is required that the Jacobian be positive everywhere in the element - if the Jacobian were allowed to be negative over some regions of the element, but positive over others, this could cause singularities in the stiffness matrix.
 
 \section{Computational Cost}
 
