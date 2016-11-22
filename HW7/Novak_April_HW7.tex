@@ -312,21 +312,19 @@ This section provides in explicit detail the forms of the element stiffness matr
 \begin{equation}
 \label{eq:FEWeakForm_element}
 \begin{aligned}
-\textbf{K}^e\equiv\int_{\Omega_e}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}})d\Omega_e +P^{*}\int_{\Gamma_{u,e}}\bar{\bar{\phi}}^T\bar{\bar{\phi}}dA_e\\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\bar{\bar{\phi}})^T\textbf{t}dA_e+\int_{\Omega_e}(\bar{\bar{\phi}})^T\textbf{f}d\Omega_e+P^{*}\int_{\Gamma_{u,e}}(\bar{\bar{\phi}})^T\textbf{d}dA_e\\
+\textbf{K}^e\equiv&\ \int_{\Omega_e}\textbf{B}^TD\textbf{B} d\Omega+\int_{\Omega_e}\tau \textbf{N}^T\textbf{N} d\Omega+P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\textbf{N} d\Gamma\\
+\textbf{R}^e\equiv&\ -\int_{\Gamma_{q,e}}q\textbf{N}^Td\Gamma+\int_{\Omega_e}f\textbf{N}^Td\Omega+P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\bar{c}d\Gamma\\
 \end{aligned}
 \end{equation}
 \end{tcolorbox}
 
-where \(\Gamma_{u,e}\) is the intersection of the boundary of element \(e\) with the displacement boundary and \(\Gamma_{t,e}\) is the intersection of the boundary of element \(e\) with the traction boundary. All of these integrals are performed in the master domain using quadrature rules. This master domain is a cube defined over \(-1\leq\xi_1\leq1, -1\leq\xi_2\leq1, -1\leq\xi_3\leq1\). In order to transform between the physical and master domain, a transformation rule is needed to map between \(x,y,z\) and \(\xi_1,\xi_2,\xi_3\). This transformation rule can take many forms, but a convenient one is to simply use the shape function expansion:
+where \(\Gamma_{d,e}\) is the intersection of the boundary of element \(e\) with the Dirichlet boundary and \(\Gamma_{q,e}\) is the intersection of the boundary of element \(e\) with the Neumann boundary. All of these integrals are performed in the master domain using quadrature rules. This master domain is a cube defined over \(-1\leq\xi_1\leq1, -1\leq\xi_2\leq1, -1\leq\xi_3\leq1\). In order to transform between the physical and master domain, a transformation rule is needed to map between \(x,y,z\) and \(\xi_1,\xi_2,\xi_3\). This transformation rule can take many forms, but a convenient one is to simply use the shape function expansion:
 
 \begin{equation}
 x_i=\sum_{j=1}^{n_{en}}X_{i,j}\phi_j(\xi_1,\xi_2,\xi_3)
 \end{equation}
 
-where the shape functions are defined over the master element, \(X_{i,j}\) are the physical (real) coordinates, and \(i\) refers to the fact that the above expansion is assumed to apply equally for \(x_1\), \(x_2\) and \(x_3\). This mapping, which uses the shape functions as the basis for the mapping, is called a parametric map. 
-
-So, all the integrals in \(\textbf{K}^e\) and \(\textbf{R}^e\) are performed over a single element by transforming the integrals to the master domain. The integrals in the physical domain are with respect to \(\bar{dx}\), and to transform them to the master domain, the deformation gradient tensor \(\textbf{F}\) defined by Eq. \eqref{eq:DeformationGradient} is used. Using the chain rule reveals the form of \(\textbf{F}\):
+where the shape functions from here forward are implied to be defined over the master element, \(X_{i,j}\) are the physical (real) coordinates, and \(i\) refers to the fact that the above expansion is assumed to apply equally for \(x_1\), \(x_2\) and \(x_3\). This mapping, which uses the shape functions as the basis for the mapping, is called a parametric map. So, all the integrals in \(\textbf{K}^e\) and \(\textbf{R}^e\) are performed over a single element by transforming the integrals to the master domain. The integrals in the physical domain are with respect to \(\bar{dx}\), and to transform them to the master domain, the deformation gradient tensor \(\textbf{F}\) defined by Eq. \eqref{eq:DeformationGradient} is used. Using the chain rule reveals the form of \(\textbf{F}\):
 
 \begin{equation}
 \label{eq:FForm}
@@ -361,72 +359,61 @@ where \(\hat{n}\) is a unit normal to the master element surface (must be determ
 \begin{equation}
 \label{eq:FEWeakForm_element}
 \begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\textbf{D}\bar{\bar{\phi}})^T\textbf{IE}(\textbf{D}\bar{\bar{\phi}})|\textbf{F}|d\xi_1d\xi_2d\xi_3 +P^{*}\int_{\Gamma_{u,e}}(\bar{\bar{\phi}})^T\bar{\bar{\phi}}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\bar{\bar{\phi}})^T\textbf{t}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\bar{\bar{\phi}})^T\textbf{f}\ |\textbf{F}|d\xi_1d\xi_2d\xi_3+P^{*}\int_{\Gamma_{u,e}}(\bar{\bar{\phi}})^T\textbf{d}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{K}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}\textbf{B}^TD\textbf{B} |\textbf{F}|d\xi_1d\xi_2d\xi_3+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}\tau \textbf{N}^T\textbf{N} |\textbf{F}|d\xi_1d\xi_2d\xi_3+P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\textbf{N} (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{R}^e\equiv&\ -\int_{\Gamma_{q,e}}q\textbf{N}^T(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}f\textbf{N}^T|\textbf{F}|d\xi_1d\xi_2d\xi_3+P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\bar{c}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
 \end{aligned}
 \end{equation}
 
-where it is implied in the area integrals that one of the spatial coordinates is set to \(\pm 1\) according to the orientation of the surface. To accurately perform the integration in the master element, everything within the integrand must also be converted to the master coordinate frame. Hence, the deformation gradient becomes:
+where it is implied in the area integrals that one of the spatial coordinates is set to \(\pm 1\) according to the orientation of the surface. To accurately perform the integration in the master element, everything within the integrand must also be converted to the master coordinate frame. Hence, \(\textbf{B}\) becomes:
 
 \begin{equation}
-\label{eq:D}
-\textbf{D}=\begin{bmatrix}\frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1} & 0 & 0\\
-0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2} & 0\\
-0 & 0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3}\\
-\frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2} & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1} & 0\\
-0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3} & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_2}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_2}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_2}\\
-\frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_3}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_3}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_3} & 0 & \frac{\partial}{\partial\xi_1}\frac{\partial\xi_1}{\partial x_1}+\frac{\partial}{\partial\xi_2}\frac{\partial\xi_2}{\partial x_1}+\frac{\partial}{\partial\xi_3}\frac{\partial\xi_3}{\partial x_1}\end{bmatrix}
+\begin{bmatrix}\frac{\partial\xi_1}{\partial x} & \frac{\partial\xi_2}{\partial x} & \frac{\partial \xi_3}{\partial x}\\
+\frac{\partial\xi_1}{\partial y} & \frac{\partial\xi_2}{\partial y} & \frac{\partial\xi_3}{\partial y}\\
+\frac{\partial\xi_1}{\partial z} & \frac{\partial\xi_2}{\partial z} & \frac{\partial\xi_3}{\partial z}\\
+\end{bmatrix}
+\begin{bmatrix}
+\frac{\partial \phi_1}{\partial \xi_1} & \frac{\partial \phi_2}{\partial \xi_1} & \frac{\partial \phi_3}{\partial \xi_1} & \frac{\partial \phi_4}{\partial \xi_1} & \frac{\partial \phi_5}{\partial \xi_1} & \frac{\partial \phi_6}{\partial \xi_1} & \frac{\partial \phi_7}{\partial \xi_1} & \frac{\partial \phi_8}{\partial \xi_1}\\
+\frac{\partial \phi_1}{\partial \xi_2} & \frac{\partial \phi_2}{\partial \xi_2} & \frac{\partial \phi_3}{\partial \xi_2} & \frac{\partial \phi_4}{\partial \xi_2} & \frac{\partial \phi_5}{\partial \xi_2} & \frac{\partial \phi_6}{\partial \xi_2} & \frac{\partial \phi_7}{\partial \xi_2} & \frac{\partial \phi_8}{\partial \xi_2}\\
+\frac{\partial \phi_1}{\partial \xi_3} & \frac{\partial \phi_2}{\partial \xi_3} & \frac{\partial \phi_3}{\partial \xi_3} & \frac{\partial \phi_4}{\partial \xi_3} & \frac{\partial \phi_5}{\partial \xi_3} & \frac{\partial \phi_6}{\partial \xi_3} & \frac{\partial \phi_7}{\partial \xi_3} & \frac{\partial \phi_8}{\partial \xi_3}\\ 
+\end{bmatrix}
+=
+\textbf{B}
 \end{equation}
 
-In addition, the matrix \(\bar{\bar{\phi}}\) is defined in terms of the shape functions over the master domain (indicated with hats below):
+As mentioned previously, it is implied that all shape functions appearing in this section are defined over the master domain. So, \(\textbf{B}\) is replaced by \(\textbf{F}^{-1}\mathscr{B}\), where \(\mathscr{B}\) is the second matrix on the LHS above. This leads to the following element-wise stiffness matrix and load vector:
 
-\begin{equation}
-\bar{\bar{\phi}}=
-\begin{cases}(\hat{\phi}_i, 0, 0)^T & i < N\\(0, \hat{\phi}_i, 0)^T & N+1\leq i\leq 2N \\ (0, 0, \hat{\phi}_i)^T & 2N+1\leq i\leq 3N
-\end{cases}
-\end{equation}
-
-So, for trilinear bricks, the element stiffness and load vectors become:
-
-\begin{tcolorbox}
 \begin{equation}
 \label{eq:FEWeakForm_element2}
 \begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3 +\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\ \\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3+\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{K}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\textbf{F}^{-1}\mathscr{B})^TD(\textbf{F}^{-1}\mathscr{B}) |\textbf{F}|d\xi_1d\xi_2d\xi_3+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}\tau \textbf{N}^T\textbf{N} |\textbf{F}|d\xi_1d\xi_2d\xi_3+\quad\\
+&\ P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\textbf{N} (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{R}^e\equiv&\ -\int_{\Gamma_{q,e}}q\textbf{N}^T(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}f\textbf{N}^T|\textbf{F}|d\xi_1d\xi_2d\xi_3+\quad\\
+&\ P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\bar{c}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
 \end{aligned}
 \end{equation}
-\end{tcolorbox}
 
-where \(3\) is the number of spatial dimensions (3 for 3-D) and \(24\) is the number of unknowns per element (8 for 3-D). The net result is that \(\textbf{K}^e\) is a \(24\times24\) matrix, and \(\textbf{R}^e\) is a \(24\times1\) column vector. The trilinear brick shape functions (in the master domain) are defined in Eq. \eqref{eq:Bricks}. The unit normals are of length 3, and are oriented such that the correct dimensions are obtained in the matrix and load integrals above.
-
-All the integrals above are performed using quadrature. To integrate in higher than a single dimension using a Gaussian quadrature rule, simply apply the rule in each direction. So, in 1-D, where a single loop sums over all the quadrature points, three loops are needed to sum over the \(\xi_1,\xi_2,\xi_3\) directions. For instance, the integrals above, in quadrature form, are:
+The trilinear brick shape functions (in the master domain) are defined in Eq. \eqref{eq:Bricks}. The unit normals are of length 3, and are oriented such that the correct dimensions are obtained in the matrix and load integrals above. All the integrals above are performed using quadrature. To integrate in higher than a single dimension using a Gaussian quadrature rule, simply apply the rule in each direction. So, in 1-D, where a single loop sums over all the quadrature points, three loops are needed to sum over the \(\xi_1,\xi_2,\xi_3\) directions. For instance, the integrals above, in quadrature form, are:
 
 \begin{equation}
 \label{eq:FEWeakForm_element3}
 \begin{aligned}
-\textbf{K}^e=\sum_{q=1}^g\sum_{r=1}^g\sum_{s=1}^gw_qw_gw_s\left\{(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}\right\} +\quad\\
-\sum_{r=1}^g\sum_{s=1}^gw_gw_s\left\{\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\right\}\\
+\textbf{K}^e=\sum_{q=1}^g\sum_{r=1}^g\sum_{s=1}^gw_qw_gw_s\left\{(\textbf{F}^{-1}\mathscr{B})^TD(\textbf{F}^{-1}\mathscr{B}) |\textbf{F}|+\tau \textbf{N}^T\textbf{N} |\textbf{F}|\right\} +\quad\\
+\sum_{r=1}^g\sum_{s=1}^gw_gw_s\left\{P^{*}\textbf{N}^T\textbf{N} (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}\right\}\\
 \ \\
-\textbf{R}^e\equiv\sum_{q=1}^g\sum_{r=1}^g\sum_{s=1}^gw_qw_gw_s(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}+\quad\\
-\sum_{r=1}^g\sum_{s=1}^gw_gw_s\left\{\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\right\}\\
+\textbf{R}^e\equiv\sum_{q=1}^g\sum_{r=1}^g\sum_{s=1}^gw_qw_gw_sf\textbf{N}^T|\textbf{F}|+\quad\\
+\sum_{r=1}^g\sum_{s=1}^gw_gw_s\left\{-q\textbf{N}^T(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}+P^{*}\textbf{N}^T\bar{c}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}\right\}\\
 \end{aligned}
 \end{equation}
 
-where \(g\) is the number of quadrature points, where the same quadrature rule has been assumed to be applied in each spatial dimension. It is implied that in the area integrals, \(d\hat{A}_e\) refers to one of \(d\xi_1d\xi_2\), \(d\xi_2d\xi_3, d\xi_3d\xi_1\), depending on the particular surface.
-
-To be as explicit as possible, there are essentially four types of elements. The element stiffness matrix and load vector for each of these possible combinations is shown below for completeness.
+where \(g\) is the number of quadrature points, where the same quadrature rule has been assumed to be applied in each spatial dimension. It is implied that in the area integrals, \(d\hat{A}_e\) refers to one of \(d\xi_1d\xi_2\), \(d\xi_2d\xi_3, d\xi_3d\xi_1\), depending on the particular surface. To be as explicit as possible, there are essentially four types of elements. The element stiffness matrix and load vector for each of these possible combinations is shown below for completeness.
 
 \begin{enumerate}
 \item an element on the interior (no displacement or traction boundaries)
 
 \begin{equation}
 \begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3\\
-\textbf{R}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3\\
+\textbf{K}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\textbf{F}^{-1}\mathscr{B})^TD(\textbf{F}^{-1}\mathscr{B}) |\textbf{F}|d\xi_1d\xi_2d\xi_3+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}\tau \textbf{N}^T\textbf{N} |\textbf{F}|d\xi_1d\xi_2d\xi_3\\
+\textbf{R}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}f\textbf{N}^T|\textbf{F}|d\xi_1d\xi_2d\xi_3\\
 \end{aligned}
 \end{equation}
 
@@ -434,10 +421,9 @@ To be as explicit as possible, there are essentially four types of elements. The
 
 \begin{equation}
 \begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3 +\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\ \\
-\textbf{R}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3+\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{K}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\textbf{F}^{-1}\mathscr{B})^TD(\textbf{F}^{-1}\mathscr{B}) |\textbf{F}|d\xi_1d\xi_2d\xi_3+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}\tau \textbf{N}^T\textbf{N} |\textbf{F}|d\xi_1d\xi_2d\xi_3+\quad\\
+&\ P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\textbf{N} (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{R}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}f\textbf{N}^T|\textbf{F}|d\xi_1d\xi_2d\xi_3+P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\bar{c}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
 \end{aligned}
 \end{equation}
 
@@ -445,9 +431,8 @@ To be as explicit as possible, there are essentially four types of elements. The
 
 \begin{equation}
 \begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3\\
-\ \\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3\\
+\textbf{K}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\textbf{F}^{-1}\mathscr{B})^TD(\textbf{F}^{-1}\mathscr{B}) |\textbf{F}|d\xi_1d\xi_2d\xi_3+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}\tau \textbf{N}^T\textbf{N} |\textbf{F}|d\xi_1d\xi_2d\xi_3\\
+\textbf{R}^e\equiv&\ -\int_{\Gamma_{q,e}}q\textbf{N}^T(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}f\textbf{N}^T|\textbf{F}|d\xi_1d\xi_2d\xi_3\\
 \end{aligned}
 \end{equation}
 
@@ -455,11 +440,10 @@ To be as explicit as possible, there are essentially four types of elements. The
 
 \begin{equation}
 \begin{aligned}
-\textbf{K}^e\equiv\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{IE}}_{6\times6}(\underbrace{\textbf{D}}_{6\times3}\underbrace{\bar{\bar{\phi}}}_{3\times24})\underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3 +\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\bar{\bar{\phi}}}_{3\times24}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
-\ \\
-\textbf{R}^e\equiv\int_{\Gamma_{t,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{t}}_{3\times1}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\underbrace{\textbf{f}}_{3\times1}\ \underbrace{|\textbf{F}|}_\text{scalar}d\xi_1d\xi_2d\xi_3+\quad\\
-\underbrace{P^{*}}_\text{scalar}\int_{\Gamma_{u,e}}(\underbrace{\bar{\bar{\phi}}}_{3\times24})^T\textbf{d}(\underbrace{\mathscr{J}}_\text{scalar}\ (\underbrace{\textbf{F}}_{3\times3})^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{K}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\textbf{F}^{-1}\mathscr{B})^TD(\textbf{F}^{-1}\mathscr{B}) |\textbf{F}|d\xi_1d\xi_2d\xi_3+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}\tau \textbf{N}^T\textbf{N} |\textbf{F}|d\xi_1d\xi_2d\xi_3+\quad\\
+&\ P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\textbf{N} (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{R}^e\equiv&\ -\int_{\Gamma_{q,e}}q\textbf{N}^T(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}f\textbf{N}^T|\textbf{F}|d\xi_1d\xi_2d\xi_3+\quad\\
+&\ P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\bar{c}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
 \end{aligned}
 \end{equation}
 \end{enumerate}
@@ -468,7 +452,7 @@ Care must be taken for determining if an element is on a Dirichlet boundary. If 
 
 \subsubsection{Global-Local Transformation}
 
-After all computations over the elements are complete, all the local stiffness matrices and load vectors must be organized into the global stiffness matrix and load vector. The placement of local matrices into the global matrix is performed using a connectivity matrix that relates the local node numbers to the global node numbers. A connectivity matrix is usually organized so that each row corresponds to a single element. Then, each column in that row refers to each local node to that element, and the information held in the connectivity matrix are the global node numbers relating to the local node numbers. For example, for a 2-D domain with four elements, and global node numbering beginning in the bottom left corner and moving up to the top right corner, the connectivity matrix (also called the location matrix in this document) has the following form:
+After all computations over the elements are complete, all the local stiffness matrices and load vectors must be organized into the global stiffness matrix and load vector. The placement of local matrices into the global matrix is performed using a connectivity matrix that relates the local node numbers to the global node numbers. A connectivity matrix is usually organized so that each row corresponds to a single element. Then, each column in that row refers to each local node in that element, and the information held in the connectivity matrix are the global node numbers relating to the local node numbers. For example, for a 2-D domain with four elements, and global node numbering beginning in the bottom left corner and moving up to the top right corner, the connectivity matrix (also called the location matrix \textbf{LM} in this document) has the following form:
 
 \begin{equation}
 \textbf{LM}=\begin{bmatrix}
@@ -504,9 +488,6 @@ The shape functions for 3-D finite elements are a natural extension of the shape
 \phi_8(\xi_1,\xi_2,\xi_3)=\frac{1}{8}(1-\xi_1)(1+\xi_2)(1+\xi_3)\\
 \end{aligned}
 \end{equation}
-
-This gives 24 total unknowns per element (since the unknown is vector-valued with three components). 
-
 
 \section{Mesh Generator}
 
