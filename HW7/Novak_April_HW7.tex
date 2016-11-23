@@ -233,6 +233,7 @@ Then, because \((\textbf{a}\textbf{b})^T=\textbf{b}^T\textbf{a}^T\):
 Then, because \(\Psi^T\) appears in every term, it can effectively be cancelled (the above could be rearranged so that \(\Psi^T\) multiplies a large term, and then if that entire integral must be zero, then the integrand must also be zero). 
 
 \begin{equation}
+\label{eq:LastTransient}
 \int_{\Omega}\textbf{N}^T\textbf{N}\dot{\Phi}d\Omega+\int_{\Omega}\textbf{B}^TD\textbf{B}\Phi d\Omega+\int_{\Omega}\tau \textbf{N}^T\textbf{N}\Phi d\Omega=-\int_{\Gamma_q}q\textbf{N}^Td\Gamma+\int_{\Omega}f\textbf{N}^Td\Omega
 \end{equation}
 
@@ -451,6 +452,7 @@ where \(g\) is the number of quadrature points, where the same quadrature rule h
 Care must be taken for determining if an element is on a Dirichlet boundary. If it is, then penalty terms must be added, and if not, the penalty terms are absent. So, whether or not the penalty method is used, there is some amount of bookkeeping required to record which nodes correspond to Dirichlet boundaries.
 
 \subsubsection{Global-Local Transformation}
+\label{sec:GlobalLocal}
 
 After all computations over the elements are complete, all the local stiffness matrices and load vectors must be organized into the global stiffness matrix and load vector. The placement of local matrices into the global matrix is performed using a connectivity matrix that relates the local node numbers to the global node numbers. A connectivity matrix is usually organized so that each row corresponds to a single element. Then, each column in that row refers to each local node in that element, and the information held in the connectivity matrix are the global node numbers relating to the local node numbers. For example, for a 2-D domain with four elements, and global node numbering beginning in the bottom left corner and moving up to the top right corner, the connectivity matrix (also called the location matrix \textbf{LM} in this document) has the following form:
 
@@ -827,6 +829,82 @@ where \(N=(M+1)^3\) is the total number of unknowns. For \(N_t\times N_c\times N
 \end{equation}
  
  where \(I\) is the number of iterations.
+ 
+ \section{Time-Dependent Implementation}
+ 
+ This section will describe the FE solution to the transient problem in Eq. \eqref{eq:DiffusionReaction}, beginning from Eq. \eqref{eq:WeakFormPenalty}. The time term that was last included in Eq. \eqref{eq:LastTransient} can simply be added back into the stiffness matrix portion:
+ 
+\begin{tcolorbox}
+\begin{equation}
+\label{eq:WeakFormPenalty}
+\begin{aligned}
+\text{Find }\Phi\in \textbf{H}^\phi(\Omega)\subset \textbf{H}^1(\Omega) \text{ so that } \Phi|_{\Gamma_d}=\bar{\Phi}, \Phi(t=0)=\bar{c_0}\\
+\text{ and so that }\forall\ \Psi \in \textbf{H}^\psi(\Omega)\subset \textbf{H}^1(\Omega)\text{ and for }q\in L^2(\Gamma_q)\text{ and }f\in L^2(\Omega)\\
+\int_{\Omega}\textbf{N}^T\textbf{N}\dot{\Phi}d\Omega+\int_{\Omega}\textbf{B}^TD\textbf{B}\Phi d\Omega+\int_{\Omega}\tau \textbf{N}^T\textbf{N}\Phi d\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\textbf{N}\Phi d\Gamma=\quad\\
+-\int_{\Gamma_q}q\textbf{N}^Td\Gamma+\int_{\Omega}f\textbf{N}^Td\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\bar{c}d\Gamma
+\end{aligned}
+\end{equation}
+\end{tcolorbox}
+
+where now the only difference is that the time term is included in the weak form, and included in the weak form is the requirement that the solution satisfy the initial condition. All computations occur over each individual element, and the weak form above can be transformed to integrals in the master domain following the procedure described previously. Then, the matrix system to be solved becomes:
+
+\begin{equation}
+\textbf{M}\dot{\Phi}+\textbf{K}\Phi=\textbf{R}
+\end{equation}
+
+where these matrices are defined as follows over the entire domain:
+
+\begin{equation}
+\begin{aligned}
+\textbf{M}\equiv&\ \int_{\Omega}\textbf{N}^T\textbf{N}d\Omega\\
+\textbf{K}\equiv&\ \int_{\Omega}\textbf{B}^TD\textbf{B} d\Omega+\int_{\Omega}\tau \textbf{N}^T\textbf{N} d\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\textbf{N} d\Gamma\\
+\textbf{R}\equiv&\ -\int_{\Gamma_q}q\textbf{N}^Td\Gamma+\int_{\Omega}f\textbf{N}^Td\Omega+P^{*}\int_{\Gamma_d}\textbf{N}^T\bar{c}d\Gamma\\
+\end{aligned}
+\end{equation}
+
+Over each element, these matrices are as follows:
+
+\begin{equation}
+\label{eq:FEWeakForm_element2}
+\begin{aligned}
+\textbf{M}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}\textbf{N}^T\textbf{N}|\textbf{F}|d\xi_1d\xi_2d\xi_3\\
+\textbf{K}^e\equiv&\ \int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}(\textbf{F}^{-1}\mathscr{B})^TD(\textbf{F}^{-1}\mathscr{B}) |\textbf{F}|d\xi_1d\xi_2d\xi_3+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}\tau \textbf{N}^T\textbf{N} |\textbf{F}|d\xi_1d\xi_2d\xi_3+\quad\\
+&\ P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\textbf{N} (\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\textbf{R}^e\equiv&\ -\int_{\Gamma_{q,e}}q\textbf{N}^T(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e+\int_{-1}^{1}\int_{-1}^{1}\int_{-1}^{1}f\textbf{N}^T|\textbf{F}|d\xi_1d\xi_2d\xi_3+\quad\\
+&\ P^{*}\int_{\Gamma_{d,e}}\textbf{N}^T\bar{c}(\mathscr{J}\ \textbf{F}^{-T}\cdot\hat{N})\cdot\hat{n}d\hat{A}_e\\
+\end{aligned}
+\end{equation}
+
+As can be seen, the element stiffness matrix and load vectors do not change, but rather a mass matrix \(\textbf{M}\) must now be computed for each element. The local mass matrices are assembled into this matrix by the same procedure as described in Section \ref{sec:GlobalLocal}, and the location matrix that is used to populate the global stiffness matrix is equivalently used to populate the global mass matrix. However, the procedure up until now is not fully complete, since an approximation is needed to describe how the value of the FE solution changes in time, since separable space-time finite elements are used. Taylor series are used to derive several common finite difference approximations to the first derivative that appears in this equation. Expanding a quantity \(a\) in a Taylor series about \(t+\Delta t\):
+
+\begin{equation}
+a(t+\Delta t)\approx a(t)+\frac{da}{dt}\Delta t+\cdots
+\end{equation}
+
+If the higher order terms indicates by the ellipses above are neglected, an approximation to the first derivative is obtained:
+
+\begin{equation}
+\frac{da}{dt}\approx\frac{a(t+\Delta t)-a(t)}{\Delta t}
+\end{equation}
+
+Because the highest neglected term is of order \(\Delta t^2\), this discretization scheme is a first-order scheme. The above discretization scheme is termed an Euler method, and can be either implicit or explicit, depending on the point in time at which \(da/dt\) is to be evaluated. If \(da/dt\) is evaluated at \(t+\Delta t\), then the scheme is implicit, and is unconditionally stable. If evaluated at \(t\), then the scheme is explicit, which is conditionally stable for sufficiently small time steps, which may be a large limitation on the computational cost of a simulation. Using this first-order approximation to the first derivative in the governing equations, some options for time discretization are:
+
+\begin{equation}
+\begin{aligned}
+\textbf{M}\frac{\Phi^{k+1}-\Phi^k}{\Delta t}+\textbf{K}\Phi^{k}=\textbf{R} & \quad\quad\text{ explicit }\\
+\textbf{M}\frac{\Phi^{k+1}-\Phi^k}{\Delta t}+\textbf{K}\Phi^{k+1}=\textbf{R} & \quad\quad\text{ implicit }\\
+\end{aligned}
+\end{equation}
+
+where \(k\) indicates the time step index. The implicit method is to be used in this assignment, so rearranging the second line above in order to isolate \(\Phi^{k+1}\)
+
+\begin{equation}
+\left(\frac{1}{\Delta t}\textbf{M}+\textbf{K}\right)\phi^{k+1}=R+\frac{1}{\Delta t}\textbf{M}\Phi^k
+\end{equation}
+
+This allows a time-marching scheme, where it is assumed that \(\Phi^k\) is always known because an initial condition is given. So, the general algorithm is a small modification to the assignment developed for the first homework. First, apply the initial condition to find \(\Phi^1\). Then, solve the above equation in a loop to find the \(\Phi\) corresponding to each subsequent time step, until the end of the simulation. The above equation is solved for the global matrices, so for each time step, the entire finite element implementation is performed.
+
+
 
 \section{Appendix}
 
