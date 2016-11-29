@@ -12,7 +12,7 @@ end_time = 5.6e3;               % end simulation time
 num_steps = 100;                % number of time steps
 dt = end_time / num_steps;      % time step size
 ic = 0.5;                       % initial condition 
-discr = 5;                      % plot every discr time steps
+discr = 10;                      % plot every discr time steps
 
 % specify D and Tau over the domain in a block structure
 D_blocks    = [2.4 2.0 1.5 0.6 1.3 0.14 1.1 2.2 2.0 1.5].* (10^(-6));
@@ -75,8 +75,8 @@ for elem = 1:num_elem
 
              % assemble the (elemental) forcing vector
              if strcmp(right, 'Neumann')
-                 if (neumann_nodes(1,1) == (elem + 1))
-                    f(i) = f(i) - neumann_nodes(2, 1) * N(j);
+                 if ((neumann_nodes(1,1) == (elem + 1)) && (i == num_nodes_per_element) && (l == 1))
+                    f(i) = f(i) - neumann_nodes(2, 1);
                  end
              end
 
