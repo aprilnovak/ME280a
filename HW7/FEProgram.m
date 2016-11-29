@@ -6,15 +6,16 @@ N_plot_flag = 1;                % 1 - plot the solutions for various N
 L = 1.0;                        % problem domain
 k_freq = 12;                    % forcing frequency
 left = 'Dirichlet';             % left boundary condition 
-left_value = -0.3;              % left Dirichlet boundary condition value
+left_value = 0.5;               % left Dirichlet boundary condition value
 right = 'Dirichlet';            % right boundary condition type
 right_value = 0.7;              % right Dirichlet boundary condition value
 fontsize = 16;                  % fontsize for plots
 num_elem = 100;                 % number of finite elements
 shape_order = 2;                % linear elements
 
-% specify E over the domain in a block structure
-E_blocks = [2.5, 1.0, 1.75, 1.25, 2.75, 3.75, 2.25, 0.75, 2.0, 1.0];
+% specify D and Tau over the domain in a block structure
+D_blocks = [2.4 2.0 1.5 0.6 1.3 0.14 1.1 2.2 2.0 1.5].* (10^(-6));
+Tau_blocks = [1.2 0.8 0.3 1.4 1.15 0.75 0.35 0.85 1.25 2.0].* (10^(-3));
 space_blocks = 0.1:0.1:L;
 
 % form the permutation matrix for assembling the global matrices
@@ -26,29 +27,16 @@ physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 
 % define the quadrature rule
 [wt, qp] = quadrature(shape_order);
 
-% interpolate E into the physical domain
-[E_physical_domain] = PhysicalInterpolation(physical_domain, space_blocks, E_blocks);
-
-% --- ANALYTICAL SOLUTION --- %
-[solution_analytical, solution_analytical_derivative, gamma] = AnalyticalSolution(L, space_blocks, left_value, E_blocks, E_physical_domain, right_value, k_freq, physical_domain);
+% interpolate D and Tau into the physical domain
+[D_physical_domain] = PhysicalInterpolation(physical_domain, space_blocks, D_blocks);
+[Tau_physical_domain] = PhysicalInterpolation(physical_domain, space_blocks, Tau_blocks);
 
 % perform the meshing
 [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
 
-j = 1;
-k = 1;
-result = zeros(length(coordinates(:,1)), 1);
-for i = 1:length(physical_domain)
-    if (abs(physical_domain(i) - coordinates(j)) < 1e-10)
-        result(k) = solution_analytical(i);
-        k = k + 1;
-        j = j + 1;
-    else
-    end
-end
-
-% interpolate E into the an elemental basis
-[E_elem, right_endpoint_index, right_endpoint_coordinate] = ElementInterpolation(coordinates, num_elem, num_nodes_per_element, space_blocks, E_blocks);
+% interpolate D and Tau into the an elemental basis
+[D_elem, right_endpoint_index, right_endpoint_coordinate] = ElementInterpolation(coordinates, num_elem, num_nodes_per_element, space_blocks, D_blocks);
+[Tau_elem, right_endpoint_index, right_endpoint_coordinate] = ElementInterpolation(coordinates, num_elem, num_nodes_per_element, space_blocks, Tau_blocks);
 
 % specify the boundary conditions
 [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
@@ -68,11 +56,11 @@ for elem = 1:num_elem
              [N, dN, x_xe, dx_dxe] = shapefunctions(qp(l), shape_order, coordinates, LM, elem);
 
              % assemble the (elemental) forcing vector
-             f(i) = f(i) - wt(l) * x_xe * (k_freq .^ 3) * cos(gamma * x_xe) * N(i) * dx_dxe;
+             f(i) = f(i) - wt(l) * x_xe * (k_freq .^ 3) * cos(x_xe) * N(i) * dx_dxe;
 
              for j = 1:num_nodes_per_element
                  % assemble the (elemental) stiffness matrix
-                 k(i,j) = k(i,j) + wt(l) * E_elem(elem) * dN(i) * dN(j) / dx_dxe;
+                 k(i,j) = k(i,j) + wt(l) * D_elem(elem) * dN(i) * dN(j) / dx_dxe;
              end
          end
      end
@@ -144,13 +132,3 @@ if (N_plot_flag)
     %close all
 end
     
-
-
-
-
-% --- analytical solution plot --- %
-% plot(physical_domain, solution_analytical)
-% xlabel('Physical Domain', 'FontSize', fontsize)
-% ylabel('Solution u(x)', 'FontSize', fontsize)
-% saveas(gcf, 'AnalyticalSoln2', 'jpeg')
-% close all
