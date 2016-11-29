@@ -1,15 +1,10 @@
 clear all
 
-% select which type of plot you want to make - at least one flag must equal 1
-N_plot_flag = 1;                % 1 - plot the solutions
-d_plot_flag = 0;                % 1 - plot the derivatives
-q_plot_flag = 1;                % 1 - plot the fluxes
-
 L = 1.0;                        % problem domain
 left = 'Dirichlet';             % left boundary condition 
 left_value = 0.5;               % left Dirichlet boundary condition value
-right = 'Neumann';              % right boundary condition type
-right_value = -(5e-6);          % right Dirichlet boundary condition value
+right = 'Neumann';            % right boundary condition type
+right_value = -(5e-6);             % right Dirichlet boundary condition value
 fontsize = 16;                  % fontsize for plots
 num_elem = 100;                 % number of finite elements
 shape_order = 2;                % linear elements
@@ -40,11 +35,15 @@ physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 
 % perform the meshing
 [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
 
+% specify the boundary conditions
+[dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
+num_dirichlet = length(dirichlet_nodes(1,:));
+
 n = 1; % index for the time step
 
 % apply the initial condition
 soln_condensed_cell = cell([1, num_steps]);
-soln_condensed_cell{1, n} = ic .* ones(1, num_nodes - 1)';
+soln_condensed_cell{1, n} = ic .* ones(1, num_nodes - num_dirichlet)';
 
 % initialize the solution and derivative cells
 soln_FE_cell = cell([1, length(physical_domain)]);
@@ -56,9 +55,6 @@ soln_derivative_FE_cell{1, n} = zeros(1, length(physical_domain));
 % interpolate D and Tau into the an elemental basis
 [D_elem, right_endpoint_index, right_endpoint_coordinate] = ElementInterpolation(coordinates, num_elem, num_nodes_per_element, space_blocks, D_blocks);
 [Tau_elem, right_endpoint_index, right_endpoint_coordinate] = ElementInterpolation(coordinates, num_elem, num_nodes_per_element, space_blocks, Tau_blocks);
-
-% specify the boundary conditions
-[dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
 
 K_cell = cell([1, num_elem]);
 M_cell = cell([1, num_elem]);
@@ -78,8 +74,10 @@ for elem = 1:num_elem
              [N, dN, x_xe, dx_dxe] = shapefunctions(qp(l), shape_order, coordinates, LM, elem);
 
              % assemble the (elemental) forcing vector
-             if (neumann_nodes(1,1) == (elem + 1))
-                f(i) = f(i) - neumann_nodes(2, 1) * N(j);
+             if strcmp(right, 'Neumann')
+                 if (neumann_nodes(1,1) == (elem + 1))
+                    f(i) = f(i) - neumann_nodes(2, 1) * N(j);
+                 end
              end
 
              for j = 1:num_nodes_per_element
@@ -153,114 +151,7 @@ for n = 1:num_steps
     n = n + 1;
 end
 
- 
-% if (N_plot_flag)
-%     plot(physical_domain, solution_FE, 'k-')
-%     hold on
-%     grid on
-%     txt = cell(length(num_elem),1);
-%     for i = 1:length(num_elem)
-%        txt{i}= sprintf('N = %i', num_elem(i));
-%     end
-%     h = legend(txt);
-%     set(h, 'FontSize', fontsize - 2);
-%     xlabel('Problem domain', 'FontSize', fontsize)
-%     ylabel(sprintf('Solution for order = %i', shape_order - 1), 'FontSize', fontsize)
-%     
-%     %saveas(gcf, sprintf('Nplot', shape_order - 1), 'jpeg')
-%     %close all
-% end
+[none] = PlotInTime(1, soln_FE_cell, physical_domain, 'Solution', discr, num_steps);
+[none] = PlotInTime(1, soln_derivative_FE_cell, physical_domain, 'Derivative of the Solution', discr, num_steps);
+[none] = PlotInTime(-D_physical_domain, soln_derivative_FE_cell, physical_domain, 'Flux = -D dc/dx', discr, num_steps);
 
-% find the maximum value in the solution
-current_max = max(soln_FE_cell{1,1});
-current_min = min(soln_FE_cell{1,1});
-
-current_max_d = max(soln_derivative_FE_cell{1,1});
-current_min_d = min(soln_derivative_FE_cell{1,1});
-
-current_max_q = max(D_physical_domain .* soln_derivative_FE_cell{1,1});
-current_min_q = min(D_physical_domain .* soln_derivative_FE_cell{1,1});
-
-for m = 2:num_steps
-    maximum = max(soln_FE_cell{1,m});
-    minimum = min(soln_FE_cell{1,m});
-    maximum_d = max(soln_derivative_FE_cell{1,m});
-    minimum_d = min(soln_derivative_FE_cell{1,m});
-    maximum_q = max(D_physical_domain .* soln_derivative_FE_cell{1,m});
-    minimum_q = min(D_physical_domain .* soln_derivative_FE_cell{1,m});
-    
-    if maximum > current_max
-        current_max = maximum;
-    end
-    
-    if minimum < current_min
-        current_min = minimum;
-    end
-    
-    if maximum_d > current_max_d
-        current_max_d = maximum_d;
-    end
-    
-    if minimum_d < current_min_d
-        current_min_d = minimum_d;
-    end
-    
-    if maximum_q > current_max_q
-        current_max_q = maximum_q;
-    end
-    
-    if minimum_q < current_min_q
-        current_min_q = minimum_q;
-    end
-end
-
-if N_plot_flag == 1
-    figure
-    plot(physical_domain, soln_FE_cell{1, 1})
-    ylim([minimum, maximum])
-    ylabel('Solution')
-    xlabel('Problem Domain')
-    hold on
-    for n = [2:discr:num_steps, num_steps]
-        if n == num_steps
-            plot(physical_domain, soln_FE_cell{1, n}, 'k-', 'LineWidth', 4)
-        else
-            plot(physical_domain, soln_FE_cell{1, n})
-        end
-        drawnow 
-    end
-end
-
-if d_plot_flag == 1
-    figure
-    plot(physical_domain, soln_derivative_FE_cell{1, 1})
-    ylim([minimum_d, maximum_d])
-    ylabel('Derivative of the Solution')
-    xlabel('Problem Domain')
-    hold on
-    for n = [2:discr:num_steps, num_steps]
-        if n == num_steps
-            plot(physical_domain, soln_derivative_FE_cell{1, n}, 'k-', 'LineWidth', 4)
-        else
-            plot(physical_domain, soln_derivative_FE_cell{1, n})
-        end
-        drawnow 
-    end
-end
-
-if q_plot_flag == 1
-    figure
-    plot(physical_domain, D_physical_domain .* soln_derivative_FE_cell{1, 1})
-    ylim([minimum_q, maximum_q])
-    ylabel('Flux')
-    xlabel('Problem Domain')
-    hold on
-    for n = [2:discr:num_steps, num_steps]
-        if n == num_steps
-            plot(physical_domain, D_physical_domain .* soln_derivative_FE_cell{1, n}, 'k-', 'LineWidth', 4)
-        else
-            plot(physical_domain, D_physical_domain .* soln_derivative_FE_cell{1, n})
-        end
-        drawnow 
-    end
-end
