@@ -90,4 +90,4 @@ for K_column = 1:num_nodes
     end
 end
 
-K_uu = sparse(K_uu);
+%K_uu = sparse(K_uu);

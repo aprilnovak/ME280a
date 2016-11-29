@@ -10,8 +10,11 @@ left_value = 0.5;               % left Dirichlet boundary condition value
 right = 'Neumann';              % right boundary condition type
 right_value = 5e-6;             % right Dirichlet boundary condition value
 fontsize = 16;                  % fontsize for plots
-num_elem = 100;                 % number of finite elements
+num_elem = 5;                   % number of finite elements
 shape_order = 2;                % linear elements
+end_time = 60;                  % end simulation time
+dt = end_time / 100;            % time step size
+ic = 0.5;                       % initial condition 
 
 % specify D and Tau over the domain in a block structure
 D_blocks = [2.4 2.0 1.5 0.6 1.3 0.14 1.1 2.2 2.0 1.5].* (10^(-6));
@@ -33,6 +36,9 @@ physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 
 
 % perform the meshing
 [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
+
+% apply the initial condition
+a_u_prev = ic .* ones(1, num_nodes - 1)';
 
 % interpolate D and Tau into the an elemental basis
 [D_elem, right_endpoint_index, right_endpoint_coordinate] = ElementInterpolation(coordinates, num_elem, num_nodes_per_element, space_blocks, D_blocks);
@@ -86,6 +92,7 @@ for elem = 1:num_elem
         i = permutation(m,1);
         j = permutation(m,2);
         K(LM(elem, i), LM(elem, j)) = K_cell{1, elem}(i, j) + K(LM(elem, i), LM(elem, j));
+        M(LM(elem, i), LM(elem, j)) = M_cell{1, elem}(i, j) + M(LM(elem, i), LM(elem, j));
      end
      
      for i = 1:length(f)
@@ -97,9 +104,14 @@ end
 
 % perform static condensation to remove known Dirichlet nodes from solve
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
+[M_uu, M_uk, F_u, F_k] = condensation(M, F, num_nodes, dirichlet_nodes);
 
-% perform the solve using Gaussian elimination
+% perform the solve using Gaussian elimination (time-independent case)
 a_u_condensed = K_uu \ (F_u - K_uk * dirichlet_nodes(2,:)');
+
+% perform the solve using Gaussian elimination (time-dependent case)
+A_mat = (1 / dt) * M_uu + K_uu;
+b_mat = F_u + (1 / dt) * (M_uu * a_u_prev + M_uk * dirichlet_nodes(2,:)') - ((1 / dt) * M_uk + K_uk) * dirichlet_nodes(2,:)';
 
 % expand a_condensed to include the Dirichlet nodes
 a = zeros(num_nodes, 1);

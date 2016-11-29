@@ -915,7 +915,17 @@ For the 1-D problem for which this is to be applied, the element mass and stiffn
 \end{aligned}
 \end{equation}
 
-where the Jacobian \(\mathscr{J}=dx/d\xi\). 
+where the Jacobian \(\mathscr{J}=dx/d\xi\). When not using the penalty method, the Dirichlet nodes must be removed from the solve, or else a singular system will result. So, the above is solved as follows, where ``u'' indicates a node whose value is unknown (not a Dirichlet node), while ``k'' indicates a node whose value is known (a Dirichlet node):
+
+\begin{equation}
+\left(\frac{1}{\Delta t}M_{uu}+K_{uu}\right)\phi_{u}^{k+1}+\left(\frac{1}{\Delta t}M_{uk}+K_{uk}\right)\phi_k^{k+1}=R_u+\frac{1}{\Delta t}\left(M_{uu}\phi_u^k+M_{uk}\phi_k^k\right)
+\end{equation}
+
+where the \(k\) that appears in the superscript indicates iteration number. Rearranging the above gives the actual equation that is solved at each time step:
+
+\begin{equation}
+\phi_{u}^{k+1}=\left(\frac{1}{\Delta t}M_{uu}+K_{uu}\right)^{-1}\left\lbrack R_u+\frac{1}{\Delta t}\left(M_{uu}\phi_u^k+M_{uk}\phi_k^k\right)-\left(\frac{1}{\Delta t}M_{uk}+K_{uk}\right)\phi_k^{k+1}\right\rbrack
+\end{equation}
 
 
 \section{Appendix}

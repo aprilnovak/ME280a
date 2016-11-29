@@ -19,13 +19,13 @@ switch left
         disp('You entered an incorrect field for the type of BC on the left boundary.');
 end
 
-i = i + 1;
 switch right
     case 'Dirichlet'
         dirichlet_nodes(1, i) = num_nodes;
         dirichlet_nodes(2, i) = right_value;
     case 'Neumann'
         neumann_nodes(1, i) = num_nodes;
+        neumann_nodes(2, i) = right_value;
     otherwise
         disp('You entered an incorrect field for the type of BC on the right boundary.');
 end
