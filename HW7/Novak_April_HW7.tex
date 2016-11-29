@@ -904,14 +904,14 @@ where \(k\) indicates the time step index. The implicit method is to be used in 
 
 This allows a time-marching scheme, where it is assumed that \(\Phi^k\) is always known because an initial condition is given. So, the general algorithm is a small modification to the assignment developed for the first homework. First, apply the initial condition to find \(\Phi^1\). Then, solve the above equation in a loop to find the \(\Phi\) corresponding to each subsequent time step, until the end of the simulation. The above equation is solved for the global matrices, so for each time step, the entire finite element implementation is performed. 
 
-For the 1-D problem for which this is to be applied, the element mass and stiffness matrices and the element load vector simplify considerably. For simplicity, this problem is not solved with the penalty method (static condensation, or the process of removing Dirichlet nodes from the matrix system and load vector, is performed instead). For 1-D, Eq. \eqref{eq:FEWeakForm_element2} simplifies to:
+For the 1-D problem for which this is to be applied, the element mass and stiffness matrices and the element load vector simplify considerably. For simplicity, this problem is not solved with the penalty method (static condensation, or the process of removing Dirichlet nodes from the matrix system and load vector, is performed instead). For 1-D and with no forcing term, Eq. \eqref{eq:FEWeakForm_element2} simplifies to:
 
 \begin{equation}
-\label{eq:FEWeakForm_element2}
+\label{eq:FEWeakForm_element5}
 \begin{aligned}
 \textbf{M}^e_{ij}\equiv&\ \int_{-1}^{1}\phi_i\phi_j\mathscr{J}d\xi\\
 \textbf{K}_{ij}^e\equiv&\ \int_{-1}^{1}\frac{d\phi_i}{d\xi}D\frac{d\phi_j}{d\xi}\frac{1}{\mathscr{J}}d\xi+\int_{-1}^{1}\tau \phi_i\phi_j \mathscr{J}d\xi\\
-\textbf{R}_{j}^e\equiv&\ -q\phi_j\biggr\rvert_{0}^{L}+\int_{-1}^{1}f\phi_j\mathscr{J}d\xi\\
+\textbf{R}_{j}^e\equiv&\ -q\phi_j\biggr\rvert_{0}^{L}\\
 \end{aligned}
 \end{equation}
 

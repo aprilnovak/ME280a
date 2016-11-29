@@ -7,8 +7,8 @@ L = 1.0;                        % problem domain
 k_freq = 12;                    % forcing frequency
 left = 'Dirichlet';             % left boundary condition 
 left_value = 0.5;               % left Dirichlet boundary condition value
-right = 'Dirichlet';            % right boundary condition type
-right_value = 0.7;              % right Dirichlet boundary condition value
+right = 'Neumann';              % right boundary condition type
+right_value = 5e-6;             % right Dirichlet boundary condition value
 fontsize = 16;                  % fontsize for plots
 num_elem = 100;                 % number of finite elements
 shape_order = 2;                % linear elements
@@ -42,13 +42,16 @@ physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 
 [dirichlet_nodes, neumann_nodes, a_k] = BCnodes(left, right, left_value, right_value, num_nodes);
 
 K_cell = cell([1, num_elem]);
+M_cell = cell([1, num_elem]);
 F_cell = cell([1, num_elem]);
 
 K = zeros(num_nodes, num_nodes);
+M = zeros(num_nodes, num_nodes);
 F = zeros(num_nodes, 1);
 
 for elem = 1:num_elem
     k = zeros(num_nodes_per_element);
+    m = zeros(num_nodes_per_element);
     f = zeros(num_nodes_per_element, 1);
 
      for l = 1:length(qp)
@@ -56,17 +59,23 @@ for elem = 1:num_elem
              [N, dN, x_xe, dx_dxe] = shapefunctions(qp(l), shape_order, coordinates, LM, elem);
 
              % assemble the (elemental) forcing vector
-             f(i) = f(i) - wt(l) * x_xe * (k_freq .^ 3) * cos(x_xe) * N(i) * dx_dxe;
+             if (neumann_nodes(1,1) == (elem + 1))
+                f(i) = f(i) - neumann_nodes(2, 1) * N(j);
+             end
 
              for j = 1:num_nodes_per_element
                  % assemble the (elemental) stiffness matrix
-                 k(i,j) = k(i,j) + wt(l) * D_elem(elem) * dN(i) * dN(j) / dx_dxe;
+                 k(i,j) = k(i,j) + wt(l) * (D_elem(elem) * dN(i) * dN(j) / dx_dxe + Tau_elem(elem) * N(i) * N(j) * dx_dxe);
+                 
+                 % assemble the (elemental) mass matrix
+                 m(i,j) = m(i,j) + wt(l) * N(i) * N(j) * dx_dxe;
              end
          end
      end
 
      % store elemental values into cells
      K_cell{1, elem} = k;
+     M_cell{1, elem} = m;
      F_cell{1, elem} = f;   
 end
     
@@ -84,7 +93,7 @@ for elem = 1:num_elem
      end 
 end
 
-K = sparse(K);
+%K = sparse(K);
 
 % perform static condensation to remove known Dirichlet nodes from solve
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
@@ -113,12 +122,9 @@ end
 [solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_element, shape_order, coordinates, physical_domain);
 
 if (N_plot_flag)
-    plot(physical_domain, solution_FE, '-k')
+    plot(physical_domain, solution_FE, 'k-')
     hold on
-end
-
-
-if (N_plot_flag)
+    grid on
     txt = cell(length(num_elem),1);
     for i = 1:length(num_elem)
        txt{i}= sprintf('N = %i', num_elem(i));
@@ -132,3 +138,4 @@ if (N_plot_flag)
     %close all
 end
     
+%plot(physical_domain, solution_derivative_FE)
