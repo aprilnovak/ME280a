@@ -1,19 +1,19 @@
 clear all
 
 % select which type of plot you want to make - at least one flag must equal 1
-N_plot_flag = 1;                % 1 - plot the solutions for various N
+N_plot_flag = 0;                % 1 - plot the solutions for various N
 
 L = 1.0;                        % problem domain
-k_freq = 12;                    % forcing frequency
 left = 'Dirichlet';             % left boundary condition 
 left_value = 0.5;               % left Dirichlet boundary condition value
 right = 'Neumann';              % right boundary condition type
 right_value = 5e-6;             % right Dirichlet boundary condition value
 fontsize = 16;                  % fontsize for plots
-num_elem = 5;                   % number of finite elements
+num_elem = 100;                 % number of finite elements
 shape_order = 2;                % linear elements
-end_time = 60;                  % end simulation time
-dt = end_time / 100;            % time step size
+end_time = 5.6e3;               % end simulation time
+num_steps = 100;                % number of time steps
+dt = end_time / num_steps;      % time step size
 ic = 0.5;                       % initial condition 
 
 % specify D and Tau over the domain in a block structure
@@ -38,7 +38,12 @@ physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 
 [num_nodes, num_nodes_per_element, LM, coordinates] = mesh(L, num_elem, shape_order);
 
 % apply the initial condition
+n = 1; % index for the time step
 a_u_prev = ic .* ones(1, num_nodes - 1)';
+soln_condensed_cell = cell([1, num_steps]);
+soln_condensed_cell{1, n} = ic .* ones(1, num_nodes - 1)';
+soln_FE_cell = cell([1, length(physical_domain)]);
+soln_FE_cell{1, n} = ic .* ones(1, length(physical_domain));
 
 % interpolate D and Tau into the an elemental basis
 [D_elem, right_endpoint_index, right_endpoint_coordinate] = ElementInterpolation(coordinates, num_elem, num_nodes_per_element, space_blocks, D_blocks);
@@ -100,8 +105,6 @@ for elem = 1:num_elem
      end 
 end
 
-%K = sparse(K);
-
 % perform static condensation to remove known Dirichlet nodes from solve
 [K_uu, K_uk, F_u, F_k] = condensation(K, F, num_nodes, dirichlet_nodes);
 [M_uu, M_uk, F_u, F_k] = condensation(M, F, num_nodes, dirichlet_nodes);
@@ -109,29 +112,38 @@ end
 % perform the solve using Gaussian elimination (time-independent case)
 a_u_condensed = K_uu \ (F_u - K_uk * dirichlet_nodes(2,:)');
 
-% perform the solve using Gaussian elimination (time-dependent case)
-A_mat = (1 / dt) * M_uu + K_uu;
-b_mat = F_u + (1 / dt) * (M_uu * a_u_prev + M_uk * dirichlet_nodes(2,:)') - ((1 / dt) * M_uk + K_uk) * dirichlet_nodes(2,:)';
 
-% expand a_condensed to include the Dirichlet nodes
-a = zeros(num_nodes, 1);
+for n = 1:num_steps
+    % perform the very first solve using Gaussian elimination (time-dependent case)
+    A_mat = (1 / dt) * M_uu + K_uu;
+    b_mat = F_u + (1 / dt) * (M_uu * soln_condensed_cell{1,n} + M_uk * dirichlet_nodes(2,:)') - ((1 / dt) * M_uk + K_uk) * dirichlet_nodes(2,:)';
+    a_u_condensed = A_mat \ b_mat;
+    soln_condensed_cell{1, n+1} = a_u_condensed;
 
-a_row = 1;
-i = 1;      % index for dirichlet_nodes
-j = 1;      % index for expanded row
+    % expand a_condensed to include the Dirichlet nodes
+    a = zeros(num_nodes, 1);
 
-for a_row = 1:num_nodes
-    if (find(dirichlet_nodes(1, :) == a_row))
-        a(a_row) = dirichlet_nodes(2,i);
-        i = i + 1;
-    else
-        a(a_row) = a_u_condensed(j);
-        j = j + 1;
+    a_row = 1;
+    i = 1;      % index for dirichlet_nodes
+    j = 1;      % index for expanded row
+
+    for a_row = 1:num_nodes
+        if (find(dirichlet_nodes(1, :) == a_row))
+            a(a_row) = dirichlet_nodes(2,i);
+            i = i + 1;
+        else
+            a(a_row) = a_u_condensed(j);
+            j = j + 1;
+        end
     end
+
+    % assemble the solution in the physical domain
+    [solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_element, shape_order, coordinates, physical_domain);
+    soln_FE_cell{n+1} = solution_FE;
+    
+    n = n + 1;
 end
 
-% assemble the solution in the physical domain
-[solution_FE, solution_derivative_FE] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_element, shape_order, coordinates, physical_domain);
 
 if (N_plot_flag)
     plot(physical_domain, solution_FE, 'k-')
@@ -151,3 +163,29 @@ if (N_plot_flag)
 end
     
 %plot(physical_domain, solution_derivative_FE)
+
+% find the maximum value in the solution
+current_max = max(soln_FE_cell{1,1});
+current_min = min(soln_FE_cell{1,1});
+for m = 2:num_steps
+    maximum = max(soln_FE_cell{1,m});
+    minimum = min(soln_FE_cell{1,m});
+    
+    if maximum > current_max
+        current_max = maximum;
+    end
+    
+    if minimum < current_min
+        current_min = minimum;
+    end
+end
+
+plot(physical_domain, soln_FE_cell{1, 1})
+ylim([minimum, maximum])
+ylabel('Solution')
+xlabel('Problem Domain')
+hold on
+for n = 2:num_steps
+    plot(physical_domain, soln_FE_cell{1, n})
+    drawnow 
+end
