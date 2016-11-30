@@ -18,7 +18,6 @@ for m = 2:num_steps
     end
 end
 
-figure
 plot(physical_domain, param .* func{1, 1})
 ylim([minimum, maximum])
 ylabel(y_label)
@@ -33,7 +32,6 @@ for n = [2:discr:num_steps, num_steps]
         plot(physical_domain, param .* func{1, n}, 'Color', [1.0 - dc, 0.0, dc])
     end
     drawnow 
-    
     dc = dc + 0.01;
 end
 

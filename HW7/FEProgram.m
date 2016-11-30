@@ -9,7 +9,7 @@ fontsize = 16;                  % fontsize for plots
 num_elem = 100;                 % number of finite elements
 shape_order = 2;                % linear elements
 end_time = 6.5e3;               % end simulation time
-num_steps = 10000;                % number of time steps
+num_steps = 100;                % number of time steps
 dt = end_time / num_steps;      % time step size
 ic = 0.5;                       % initial condition 
 discr = 100;                     % plot every discr time steps
@@ -96,8 +96,7 @@ for elem = 1:num_elem
      F_cell{1, elem} = f;   
 end
     
-% assemble into the global matrices
-for elem = 1:num_elem
+for elem = 1:num_elem % assemble into the global matrices
      m = 1;
      for m = 1:length(permutation(:,1))
         i = permutation(m,1);
@@ -148,6 +147,5 @@ for n = 1:num_steps
 end
 
 [none] = PlotInTime(1, soln_FE_cell, physical_domain, 'Solution', discr, num_steps);
-%[none] = PlotInTime(1, soln_derivative_FE_cell, physical_domain, 'Derivative of the Solution', discr, num_steps);
 [none] = PlotInTime(-D_physical_domain, soln_derivative_FE_cell, physical_domain, 'Flux = -D dc/dx', discr, num_steps);
-saveas(gcf, '10000_100', 'jpeg')
+%saveas(gcf, '10000_100', 'jpeg')

@@ -18,11 +18,6 @@ t = 0.2;                            % thickness of the tube wall
 layer_thickness = t / (Nt);         % thickness of each ring
 angle = (2*pi) / Nc;                % angle in horizontal plane
 
-
-
-% global node numbering begins on the inner surface, and moves clockwise
-% until reaching the outer surface
-
 % each row represents one coordinate of a global node
 coordinates = zeros(Nt * Nc, 3);
 Angle = pi / (No / 2);
@@ -37,7 +32,6 @@ Theta = 0;  % angle in each plane
 % find the x-coordinates of the No + 1 slices
 x_centers = zeros(1, No + 1);
 x_centers(1) = x;
-
 theta_inc = pi / (No / 2);
 theta = theta_inc;
 
@@ -54,8 +48,6 @@ for l = 2:((No/2) + 1)
     x_centers(j) = second_part_start + x_centers(l);
     j = j + 1;
 end
-
-
 
 % create a vector of the y-coordinates
 z_centers = zeros(1, No + 1);
@@ -75,11 +67,7 @@ for l = 2:((No/2) + 1)
     j = j + 1;
 end
 
-
-
-
-% mesh in the theta direction
-for l = 1:(No + 1)
+for l = 1:(No + 1) % mesh in the theta direction
 
     % for each plane
     theta = 0;
@@ -155,24 +143,6 @@ X = coordinates(:,1);
 Y = coordinates(:,2);
 Z = coordinates(:,3);
 
-% scatter3(X, Y, Z)
-% span = (max(X)-min(X))/2;
-% xlim([min(X), max(X)])
-% zlim([-span, span])
-% xlabel('x')
-% ylabel('y')
-% zlabel('z')
-
-% hold on
-% plot3(X, Y, Z, 'k-')
-% span = (max(X)-min(X))/2;
-% xlim([min(X), max(X)])
-% zlim([-span, span])
-% xlabel('x')
-% ylabel('y')
-% zlabel('z')
-
-
 % generate the connectivity matrix
 num_elem = No * Nc * Nt;
 LM = zeros(num_elem, num_nodes_per_elem);
@@ -203,11 +173,6 @@ for l = 1:(No + 1) % for each slice, assign the front node values
    e = e + Nc * Nt;
 end
 
-% print the LM for the case before relating front to back nodes
-%for e = 1:length(LM)
-%    fprintf('%i & %i & %i & %i & %i & %i & %i & %i\\\\\n', LM(e, 1), LM(e,2), LM(e,3), LM(e,4), LM(e,5), LM(e,6), LM(e,7), LM(e,8))
-%end
-
 % assign the back face values - front values for second slice are
 % back values for first slice, etc.
 i = 1;
@@ -218,12 +183,5 @@ for j = 1:No
     i = i + Nc*Nt;
 end
 
-% delete the unecessary last "chunk" in the LM, since the last slice
-% has the back values determined as if they were the frontal values of
-% another slice
+% delete the unecessary last "chunk" in the LM
 LM = LM(1:num_elem, :);
-
-% print the final LM
-% for e = 1:length(LM)
-%    fprintf('%i & %i & %i & %i & %i & %i & %i & %i\\\\\n', LM(e, 1), LM(e,2), LM(e,3), LM(e,4), LM(e,5), LM(e,6), LM(e,7), LM(e,8))
-% end

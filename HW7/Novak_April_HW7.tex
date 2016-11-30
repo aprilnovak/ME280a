@@ -931,7 +931,7 @@ Because the material properties are constant in time, and because separable spac
 
 \section{Results}
 
-This section shows the results for the 1-D diffusion-reaction equation for an end time of 6.5e3 seconds. The three plots that follow show the time evolution. Fig. \ref{fig:100} shows the results for 100 time steps, Fig. \ref{fig:1000} for 1000 time steps, and Fig. \ref{fig:10000} for 10000 time steps. The time progression is shown beginning with red color early in the transient and progressing to purple/blue towards the end of the time period. The blue line shows the initial condition, and the black line shows the solution at the last time step. Also plotted is the flux \(-Ddc/dx\) as a function of time to show how the Neumann boundary condition is satisfied.
+This section shows the results for the 1-D diffusion-reaction equation for an end time of 6.5e3 seconds. The three plots that follow show the time evolution. Fig. \ref{fig:100} shows the results for 100 time steps, Fig. \ref{fig:1000} for 1000 time steps, and Fig. \ref{fig:10000} for 10000 time steps. The time progression is shown beginning with red color early in the transient and progressing to purple/blue towards the end of the time period. The blue line shows the initial condition, and the black line shows the solution at the last time step (the final time solution). Also plotted is the flux \(-Ddc/dx\) as a function of time to show how the Neumann boundary condition is satisfied.
 
 \begin{figure}[H]
   \centering
@@ -949,19 +949,72 @@ This section shows the results for the 1-D diffusion-reaction equation for an en
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=16cm]{10000_100.jpg}
-  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 10000 time steps for every 100 time steps.}
+  \includegraphics[width=16cm]{10000.jpg}
+  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 10000 time steps for every 10 time steps.}
     \label{fig:10000}
 \end{figure}
 
-Because there are so many time steps for the 10000 time step case, Fig. \ref{fig:10000} is plotted every 100 times steps instead of every 10 time steps as for the 100 and 1000 time step cases.
+Because there are so many time steps for the 10000 time step case, Fig. \ref{fig:10000} is re-plotted every 100 times steps instead of every 10 time steps in Fig. \ref{fig:10000_100}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{10000_100.jpg}
+  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 10000 time steps for every 100 time steps.}
+    \label{fig:10000_100}
+\end{figure}
+
+As can be seen, there is relatively little difference in the results obtained for the three different time steps, except that with a finer time step, the solution results are obtained at more instances in time. This is beneficial early in the transient, especially because, as can be seen from Fig. \ref{fig:100}, in the first few time steps the solution changes very rapidly, but as time progresses, begins to approach a steady state. Adaptive time stepping would therefore be very beneficial for this approach to equilibrium case, since then large numbers of time steps could be used early in the transient, and fewer later as the solution stops changing as much.
 
 \section{Appendix}
 
 This section contains the complete code used in this assignment. 
 
+\subsection{\texttt{FEProgram.m}}
+This program contains the master program for running the FE problem.
+\lstinputlisting[language=Matlab]{FEProgram.m}
+
 \subsection{\texttt{MeshGenerator.m}}
 This program generates the mesh and connectivity matrix.
 \lstinputlisting[language=Matlab]{MeshGenerator.m}
+
+\subsection{\texttt{BCnodes.m}}
+This function applies the boundary conditions.
+\lstinputlisting[language=Matlab]{BCnodes.m}
+
+\subsection{\texttt{ElementInterpolation.m}}
+This function interpolates the material property data into an element basis.
+\lstinputlisting[language=Matlab]{ElementInterpolation.m}
+
+\subsection{\texttt{PhysicalInterpolation.m}}
+This function interpolates the material property data into the physical domain.
+\lstinputlisting[language=Matlab]{PhysicalInterpolation.m}
+
+\subsection{\texttt{PlotInTime.m}}
+This function performs the plotting for this assignment.
+\lstinputlisting[language=Matlab]{PlotInTime.m}
+
+\subsection{\texttt{condensation.m}}
+This function performs the static condensation to remove Dirichlet nodes from the solve.
+\lstinputlisting[language=Matlab]{condensation.m}
+
+\subsection{\texttt{mesh.m}}
+This function meshes the domain.
+\lstinputlisting[language=Matlab]{mesh.m}
+
+\subsection{\texttt{permutation.m}}
+This function meshes the domain.
+\lstinputlisting[language=Matlab]{permutation.m}
+
+\subsection{\texttt{postprocess.m}}
+This function postprocesses the results into the physical domain.
+\lstinputlisting[language=Matlab]{postprocess.m}
+
+\subsection{\texttt{quadrature.m}}
+This function selects the quadrature rule.
+\lstinputlisting[language=Matlab]{quadrature.m}
+
+\subsection{\texttt{shapefunctions.m}}
+This function provides the shape functions.
+\lstinputlisting[language=Matlab]{shapefunctions.m}
 
 \end{document}
