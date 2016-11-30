@@ -1,4 +1,4 @@
-function [none] = PlotInTime(param, func, physical_domain, y_label, discr, num_steps, plot_num)
+function [none] = PlotInTime(param, func, physical_domain, y_label, discr, num_steps)
 
 linewidth = 2;
 
@@ -18,7 +18,7 @@ for m = 2:num_steps
     end
 end
 
-subplot(1,2,plot_num)
+figure
 plot(physical_domain, param .* func{1, 1})
 ylim([minimum, maximum])
 ylabel(y_label)

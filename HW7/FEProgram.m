@@ -3,8 +3,8 @@ clear all
 L = 1.0;                        % problem domain
 left = 'Dirichlet';             % left boundary condition 
 left_value = 0.5;               % left Dirichlet boundary condition value
-right = 'Neumann';              % right boundary condition type
-right_value = -(5e-6);          % right Dirichlet boundary condition value
+right = 'Neumann';            % right boundary condition type
+right_value = -(5e-6);             % right Dirichlet boundary condition value
 fontsize = 16;                  % fontsize for plots
 num_elem = 100;                 % number of finite elements
 shape_order = 2;                % linear elements
@@ -147,7 +147,7 @@ for n = 1:num_steps
     n = n + 1;
 end
 
-[none] = PlotInTime(1, soln_FE_cell, physical_domain, 'Solution', discr, num_steps, 1);
-%[none] = PlotInTime(1, soln_derivative_FE_cell, physical_domain, 'Derivative of the Solution', discr, num_steps, 2);
-[none] = PlotInTime(-D_physical_domain, soln_derivative_FE_cell, physical_domain, 'Flux = -D dc/dx', discr, num_steps, 2);
+[none] = PlotInTime(1, soln_FE_cell, physical_domain, 'Solution', discr, num_steps);
+%[none] = PlotInTime(1, soln_derivative_FE_cell, physical_domain, 'Derivative of the Solution', discr, num_steps);
+[none] = PlotInTime(-D_physical_domain, soln_derivative_FE_cell, physical_domain, 'Flux = -D dc/dx', discr, num_steps);
 saveas(gcf, '10000_100', 'jpeg')
