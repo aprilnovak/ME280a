@@ -936,14 +936,25 @@ This section shows the results for the 1-D diffusion-reaction equation for an en
 \begin{figure}[H]
   \centering
   \includegraphics[width=16cm]{100.jpg}
-  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 100 time steps in 10 second increments.}
+  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 100 time steps for every 10 time steps.}
+  \label{fig:100}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=16cm]{1000.jpg}
-  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 1000 time steps in 10 second increments.}
+  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 1000 time steps for every 10 time steps.}
+    \label{fig:1000}
 \end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{10000_100.jpg}
+  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 10000 time steps for every 100 time steps.}
+    \label{fig:10000}
+\end{figure}
+
+Because there are so many time steps for the 10000 time step case, Fig. \ref{fig:10000} is plotted every 100 times steps instead of every 10 time steps as for the 100 and 1000 time step cases.
 
 \section{Appendix}
 
