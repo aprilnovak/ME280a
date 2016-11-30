@@ -10,8 +10,8 @@ left_value = To;                %
 right = 'Neumann';              % boundary condition at theta = 0
 right_value = 1.0;              % dummy
 fontsize = 16;                  % fontsize for plots
-Nr = 2;                         % number of radial layers
-No = 8;                         % number of theta layers
+Nr = 1;                         % number of radial layers
+No = 16;                        % number of theta layers
 N_elem = Nr * No;               % number of elements
 num_nodes = (Nr + 1) * (No + 1);% number of nodes
 num_nodes_per_elem = 4;         % linear elements
@@ -59,22 +59,23 @@ for num_elem = N_elem
                      % assemble the (elemental) forcing vector
                      f = f + wt(ll) * wt(l) * (40 * sin(2 * theta) / (r^2)) * transpose(N) * J;
                      
-                     % assemble the (elemental) stiffness matrix
-                     k = k + wt(ll) * wt(l) * transpose(inv(F_mat) * B) * k_th * inv(F_mat) * B * J;
-                    
+                     % assemble the (elemental) stiffness matrix - correct
+                     k = k + wt(ll) * wt(l) * transpose(inv(F_mat) * B) * k_th * inv(F_mat) * B * J;      
              end
              
              % apply flux boundary conditions (xe is constant, so this is
-             % outside of the xe loop)
-             if elem == num_elem % only the last element has Neumann BCs
+             % outside of the xe loop). Only the last Nr elements have BCs.
+             if (num_elem - Nr) <= elem
                  q_flux = 20 / r;
 
                  % in the physical domain
                  N_hat = [0, -1];
                  % in the master domain
                  n_hat = [1, 0]';
-
-                 f = f + wt(ll) * wt(l) * q_flux * transpose(N) * J * (N_hat * transpose(inv(F_mat)) * n_hat);
+                 
+                 % using both quadrature points (incorrect?) gives good
+                 % results...
+                 f = f + wt(ll) * q_flux * transpose(N) * J * (N_hat * transpose(inv(F_mat)) * n_hat);
              end
         end
 
