@@ -10,3 +10,9 @@ switch shape_order
     otherwise
         disp('You entered an unsupported shape function order for the quadrature rule.');
 end
+
+wt = [(322-13*sqrt(70))/900, (322+13*sqrt(70))/900, 128/225, (322+13*sqrt(70))/900, (322-13*sqrt(70))/900];
+qp = [-(1/3)*sqrt(5+2*sqrt(10/7)), -(1/3)*sqrt(5-2*sqrt(10/7)), 0.0, (1/3)*sqrt(5-2*sqrt(10/7)), (1/3)*sqrt(5+2*sqrt(10/7))];
+ 
+%wt = [1];
+%qp = [0];

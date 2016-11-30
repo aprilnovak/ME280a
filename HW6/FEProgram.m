@@ -1,7 +1,7 @@
 clear all
 
 L = pi;                         % problem domain (theta)
-k_th = 2;                       % thermal conductivity
+k_th = 1;                       % thermal conductivity
 shape_order = 2;                % number of nodes per element
 E = 0.1;                        % elastic modulus
 To = 110;                       % temperature at theta = pi
@@ -11,7 +11,7 @@ right = 'Neumann';              % boundary condition at theta = 0
 right_value = 1.0;              % dummy
 fontsize = 16;                  % fontsize for plots
 Nr = 1;                         % number of radial layers
-No = 3;                        % number of theta layers
+No = 4;                         % number of theta layers
 N_elem = Nr * No;               % number of elements
 num_nodes = (Nr + 1) * (No + 1);% number of nodes
 num_nodes_per_elem = 4;         % linear elements
@@ -27,7 +27,7 @@ for num_elem = N_elem
     % --- ANALYTICAL SOLUTION --- %
     parent_domain = -1:0.01:1;
     physical_domain = linspace(0, L, num_elem * length(parent_domain) - (num_elem - 1));
-    C_o = 40 / k_th;
+    C_o = 0;
     C_1 = To - C_o * pi;
     
     % for a 2-D mesh polar mesh
@@ -51,7 +51,7 @@ for num_elem = N_elem
         for ll = 1:length(qp) % eta loop
              for l = 1:length(qp) % xe loop
                      [N, dN_dxe, dN_deta, x_xe_eta, y_xe_eta, dx_dxe, dx_deta, dy_dxe, dy_deta, B] = shapefunctions(qp(l), qp(ll), num_nodes_per_elem, coordinates, LM, elem);
-                     F_mat = [dx_dxe, dx_deta; dy_dxe, dy_deta];
+                     F_mat = transpose([dx_dxe, dx_deta; dy_dxe, dy_deta]);
                      J = det(F_mat);
                      r = sqrt(x_xe_eta^2 + y_xe_eta^2);
                      theta = acos(x_xe_eta / r);
@@ -75,7 +75,7 @@ for num_elem = N_elem
                      end
              end
         end
-        
+
          % place the elemental k matrix into the global K matrix
          for m = 1:length(permutation(:,1))
             i = permutation(m,1);
