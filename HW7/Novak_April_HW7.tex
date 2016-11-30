@@ -927,6 +927,23 @@ where the \(k\) that appears in the superscript indicates iteration number. Rear
 \phi_{u}^{k+1}=\left(\frac{1}{\Delta t}M_{uu}+K_{uu}\right)^{-1}\left\lbrack R_u+\frac{1}{\Delta t}\left(M_{uu}\phi_u^k+M_{uk}\phi_k^k\right)-\left(\frac{1}{\Delta t}M_{uk}+K_{uk}\right)\phi_k^{k+1}\right\rbrack
 \end{equation}
 
+Because the material properties are constant in time, and because separable space-time finite elements are used, the matrices above only need to be computed once, and then simply are re-applied in a loop until reaching the final time. 
+
+\section{Results}
+
+This section shows the results for the 1-D diffusion-reaction equation for an end time of 6.5e3 seconds. The three plots that follow show the time evolution. Fig. \ref{fig:100} shows the results for 100 time steps, Fig. \ref{fig:1000} for 1000 time steps, and Fig. \ref{fig:10000} for 10000 time steps. The time progression is shown beginning with red color early in the transient and progressing to purple/blue towards the end of the time period. The blue line shows the initial condition, and the black line shows the solution at the last time step. Also plotted is the flux \(-Ddc/dx\) as a function of time to show how the Neumann boundary condition is satisfied.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{100.jpg}
+  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 100 time steps in 10 second increments.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{1000.jpg}
+  \caption{Time-dependent solution for concentration (red = early in transient, purple/blue = late in transient, black = at final time step) for 1000 time steps in 10 second increments.}
+\end{figure}
 
 \section{Appendix}
 

@@ -18,20 +18,23 @@ for m = 2:num_steps
     end
 end
 
-subplot(1,3,plot_num)
+subplot(1,2,plot_num)
 plot(physical_domain, param .* func{1, 1})
 ylim([minimum, maximum])
 ylabel(y_label)
 xlabel('Problem Domain')
 hold on
+dc = 0.0;
 
 for n = [2:discr:num_steps, num_steps]
     if n == num_steps
         plot(physical_domain, param .* func{1, n}, 'k-', 'LineWidth', linewidth)
     else
-        plot(physical_domain, param .* func{1, n})
+        plot(physical_domain, param .* func{1, n}, 'Color', [1.0 - dc, 0.0, dc])
     end
     drawnow 
+    
+    dc = dc + 0.01;
 end
 
 none = 0;
