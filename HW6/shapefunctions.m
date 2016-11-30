@@ -1,10 +1,5 @@
-% N         : shape functions in the master domain
-% dN        : derivative of the shape functions with respect to xe
-% x_xe      : x as a function of xe
-% dx_dxe    : derivative of x with respect to xe
 function [N, dN_dxe, dN_deta, x_xe_eta, y_xe_eta, dx_dxe, dx_deta, dy_dxe, dy_deta, B] = shapefunctions(xe, eta, num_nodes_per_elem, coordinates, LM, elem)
 
-% shape functions and their derivatives (for linear elements)
 N = zeros(num_nodes_per_elem, 1);
 dN = zeros(num_nodes_per_elem, 1);
 

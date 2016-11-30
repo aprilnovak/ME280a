@@ -10,8 +10,8 @@ left_value = To;                %
 right = 'Neumann';              % boundary condition at theta = 0
 right_value = 1.0;              % dummy
 fontsize = 16;                  % fontsize for plots
-Nr = 1;                         % number of radial layers
-No = 4;                         % number of theta layers
+Nr = 2;                         % number of radial layers
+No = 8;                         % number of theta layers
 N_elem = Nr * No;               % number of elements
 num_nodes = (Nr + 1) * (No + 1);% number of nodes
 num_nodes_per_elem = 4;         % linear elements
@@ -62,17 +62,19 @@ for num_elem = N_elem
                      % assemble the (elemental) stiffness matrix
                      k = k + wt(ll) * wt(l) * transpose(inv(F_mat) * B) * k_th * inv(F_mat) * B * J;
                     
-                     % apply flux boundary conditions
-                     if elem == num_elem % only the last element has Neumann BCs
-                         q_flux = 20 / r;
-                         
-                         % in the physical domain
-                         N_hat = [0, -1];
-                         % in the master domain
-                         n_hat = [1, 0]';
-                         
-                         f = f + wt(ll) * wt(l) * q_flux * transpose(N) * J * (N_hat * transpose(inv(F_mat)) * n_hat);
-                     end
+             end
+             
+             % apply flux boundary conditions (xe is constant, so this is
+             % outside of the xe loop)
+             if elem == num_elem % only the last element has Neumann BCs
+                 q_flux = 20 / r;
+
+                 % in the physical domain
+                 N_hat = [0, -1];
+                 % in the master domain
+                 n_hat = [1, 0]';
+
+                 f = f + wt(ll) * wt(l) * q_flux * transpose(N) * J * (N_hat * transpose(inv(F_mat)) * n_hat);
              end
         end
 
@@ -125,8 +127,11 @@ for i = 1:length(mat(:,1))
     z = mat(i,1) + mat(i,2).*x + mat(i,3).*y + mat(i,4).*x.*y;
     surf(x,y,z, 'EdgeColor', 'none')
     hold on
-    end_theta = start_theta;
-    start_theta = start_theta - pi/No;
+    
+    if (mod(i, Nr) == 0)
+        end_theta = start_theta;
+        start_theta = start_theta - pi/No;
+    end
 end
 
 % analytical solution
@@ -141,8 +146,12 @@ for i = 1:length(mat(:,1))
     z = 10 * sin(2*theta)/k_th + C_o*theta + C_1;
     surf(x,y,z, 'EdgeColor', 'none')
     hold on
-    end_theta = start_theta;
-    start_theta = start_theta - pi/No;
+
+    if (mod(i, Nr) == 0)
+        end_theta = start_theta;
+        start_theta = start_theta - pi/No;
+    end
+    
 end
 
 
