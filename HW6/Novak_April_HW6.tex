@@ -524,16 +524,52 @@ This section presents the solution obtained for the test specifications in Secti
   \label{fig:Mesh}
 \end{figure}
 
+\subsection{Impact of the Penalty Term}
 
+I did not complete the penalty term investigation, but it would be expected that a very large value of \(P^{*}\) be required to obtain the correct implementation of Dirichlet boundary conditions. Too small a value would only somewhat enforce the Dirichlet boundary conditions, but too large a parameter can also cause difficulties. Because \(P^{*}\) appears in the stiffness matrix and load vectors, if one term is significantly larger than all other terms, or if there is otherwise large discrepancies between the smallest and largest values in a matrix, then Gaussian elimination, or iterative methods as well, can cause numerical errors related to roundoff error, overflow, or underflow.
 
+\subsection{The FE Solution, Discontinuous Material Properties}
+
+I did not complete the solution for the discontinuous material properties, but all that would be required is to implement another loop within the assembly process for the element stiffness matrix and load vectors. If the global coordinates of the quadrature point (which would be determined using the master-to-physical mapping) are within the circular region, then a different value of \(k\) is used. For elements that contain any part within the circular region, a higher-order Gaussian integration scheme is used, but otherwise a 2-point scheme would be used. I plan on having this assignment be my lowest grade, so I'm not completing it so that I can study for my other finals. 
 
 \section{Appendix}
 
 This section contains the complete code used in this assignment. 
-\begin{comment}
-\subsection{\texttt{MeshGenerator.m}}
-This program generates the mesh and connectivity matrix.
-\lstinputlisting[language=Matlab]{MeshGenerator.m}
-\end{comment}
+
+\subsection{\texttt{BCnodes.m}}
+This function applies boundary conditions.
+\lstinputlisting[language=Matlab]{BCnodes.m}
+
+\subsection{\texttt{condensation.m}}
+This program performs static condensation in order to apply Dirichlet nodes.
+\lstinputlisting[language=Matlab]{condensation.m}
+
+\subsection{\texttt{FEProgram.m}}
+This program is the master function to perform the FE analysis.
+\lstinputlisting[language=Matlab]{FEProgram.m}
+
+\subsection{\texttt{mesh\_plots.m}}
+This program plots the mesh generated.
+\lstinputlisting[language=Matlab]{mesh_plots.m}
+
+\subsection{\texttt{permutation.m}}
+This program generates the permutation matrix for cycling through each element local node.
+\lstinputlisting[language=Matlab]{permutation.m}
+
+\subsection{\texttt{polar\_mesh.m}}
+This program generates the polar mesh.
+\lstinputlisting[language=Matlab]{polar_mesh.m}
+
+\subsection{\texttt{postprocess.m}}
+This program postprocesses the FE results for plotting.
+\lstinputlisting[language=Matlab]{postprocess.m}
+
+\subsection{\texttt{quadrature.m}}
+This program selects the quadrature rule.
+\lstinputlisting[language=Matlab]{quadrature.m}
+
+\subsection{\texttt{shapefunctions.m}}
+This program returns the shape functions, derivatives of shape functions, the Jacobian, and other physical-to-isoparametric quantities needed for computing the stiffness matrix and load vector.
+\lstinputlisting[language=Matlab]{shapefunctions.m}
 
 \end{document}
