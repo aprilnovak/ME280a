@@ -118,26 +118,26 @@ end
 % assemble the solution in the physical domain
 [mat] = postprocess(num_elem, parent_domain, a, LM, num_nodes_per_elem, shape_order, coordinates, physical_domain);
 
-subplot(1,2,1)
-start_theta = pi - pi/No;
-end_theta = pi;
-for i = 1:length(mat(:,1))
-    [r, theta] = meshgrid(ri:0.1:ro, linspace(start_theta, end_theta, length(ri:0.1:ro)));
-    x = r .* cos(theta);
-    y = r .* sin(theta);
-    z = mat(i,1) + mat(i,2).*x + mat(i,3).*y + mat(i,4).*x.*y;
-    surf(x,y,z, 'EdgeColor', 'none')
-    hold on
-    
-    if (mod(i, Nr) == 0)
-        end_theta = start_theta;
-        start_theta = start_theta - pi/No;
-    end
-end
+% subplot(1,2,1)
+% start_theta = pi - pi/No;
+% end_theta = pi;
+% for i = 1:length(mat(:,1))
+%     [r, theta] = meshgrid(ri:0.1:ro, linspace(start_theta, end_theta, length(ri:0.1:ro)));
+%     x = r .* cos(theta);
+%     y = r .* sin(theta);
+%     z = mat(i,1) + mat(i,2).*x + mat(i,3).*y + mat(i,4).*x.*y;
+%     surf(x,y,z, 'EdgeColor', 'none')
+%     hold on
+%     
+%     if (mod(i, Nr) == 0)
+%         end_theta = start_theta;
+%         start_theta = start_theta - pi/No;
+%     end
+% end
 
 % analytical solution
-subplot(1,2,2)
-ylabel('Analytical Solution')
+subplot(1,2,1)
+ylabel('FE Solution')
 start_theta = pi - pi/No;
 end_theta = pi;
 for i = 1:length(mat(:,1))
@@ -152,18 +152,27 @@ for i = 1:length(mat(:,1))
         end_theta = start_theta;
         start_theta = start_theta - pi/No;
     end
-    
+end
+
+subplot(1,2,2)
+ylabel('FE Solution')
+start_theta = pi - pi/No;
+end_theta = pi;
+for i = 1:length(mat(:,1))
+    [r, theta] = meshgrid(ri:0.1:ro, linspace(start_theta, end_theta, length(ri:0.1:ro)));
+    x = r .* cos(theta);
+    y = r .* sin(theta);
+    z = 10 * sin(2*theta)/k_th + C_o*theta + C_1;
+    surf(x,y,z, 'EdgeColor', 'none')
+    hold on
+
+    if (mod(i, Nr) == 0)
+        end_theta = start_theta;
+        start_theta = start_theta - pi/No;
+    end
 end
 
 
 end
 
-
-% plot(physical_domain, solution_analytical)
-% h = legend('N = what','analytical', 'Location', 'southeast');
-% set(h, 'FontSize', fontsize - 2);
-% xlabel('Problem domain', 'FontSize', fontsize)
-% ylabel(sprintf('Solution for k = %i', k_th), 'FontSize', fontsize)
-%saveas(gcf, sprintf('Nplot_for_k_%i', k_th), 'jpeg')
-%close all
 
